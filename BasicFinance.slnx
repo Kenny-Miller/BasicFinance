@@ -1,3 +1,3 @@
 <Solution>
-  <Project Path="BasicFinance.Api/BasicFinance.Api.csproj" />
+  <Project Path="src/BasicFinance.Api/BasicFinance.Api.csproj" />
 </Solution>
