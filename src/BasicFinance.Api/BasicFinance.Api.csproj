@@ -8,6 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.10.3" />
+	<PackageReference Include="WolverineFx.RabbitMQ" Version="5.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BasicFinance.Domain\BasicFinance.Domain.csproj" />
+    <ProjectReference Include="..\BasicFinance.ServiceDefaults\BasicFinance.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="src/BasicFinance.Api/BasicFinance.Api.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/BasicFinanace.Infrastructure/BasicFinanace.Infrastructure.csproj" Id="6f8a3d8a-869f-4709-b8f4-7d6daaa2229e" />
+    <Project Path="src/BasicFinance.Api/BasicFinance.Api.csproj" />
+    <Project Path="src/BasicFinance.AppHost/BasicFinance.AppHost.csproj" />
+    <Project Path="src/BasicFinance.DataProcessor/BasicFinance.DataProcessor.csproj" />
+    <Project Path="src/BasicFinance.Domain/BasicFinance.Domain.csproj" />
+    <Project Path="src/BasicFinance.ServiceDefaults/BasicFinance.ServiceDefaults.csproj" />
+    <Project Path="src/BasicFinance.SharedServiceDefaults/BasicFinance.SharedServiceDefaults.csproj" Id="88d385d7-b56a-4be5-9a43-9236998e6ac1" />
+  </Folder>
 </Solution>

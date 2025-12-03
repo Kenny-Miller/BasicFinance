@@ -1,27 +1,47 @@
-var builder = WebApplication.CreateBuilder(args);
+using BasicFinance.Domain.Commands;
+using BasicFinance.SharedServiceDefaults;
+using ImTools;
+using Scalar.AspNetCore;
+using Wolverine;
+using Wolverine.RabbitMQ;
+using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Host.UseWolverine(x =>
+{
+    x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
+        .DeclareExchange("test-exchange", exchange =>
+        {
+            exchange.ExchangeType = ExchangeType.Direct;
+            exchange.BindQueue("test-queue", "test-exchangeTotest-queue");
+        })
+        .AutoProvision();
 
-// Configure the HTTP request pipeline.
+    x.PublishAllMessages().ToRabbitRoutingKey("test-exchange", "test-exchangeTotest-queue");
+});
+
+WebApplication app = builder.Build();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
+app.MapDefaultEndpoints();
 
-var summaries = new[]
+string[] summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/weatherforecast", async (IMessageBus messageBus) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
+    WeatherForecast[] forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -29,6 +49,9 @@ app.MapGet("/weatherforecast", () =>
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
+
+    await messageBus.PublishAsync(new SyncFinancialData());
+
     return forecast;
 })
 .WithName("GetWeatherForecast");
