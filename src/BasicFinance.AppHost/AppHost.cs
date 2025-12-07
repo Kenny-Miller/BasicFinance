@@ -41,6 +41,7 @@ IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
     .WithChildRelationship(keycloakAdminUsername)
     .WithChildRelationship(keycloakAdminPassword)
     .WithChildRelationship(keycloakDbServer)
+    .WithRealmImport("./Realms")
     .WithDataVolume()
     .WithPostgres(keycloakDbServer)
     .WithExternalHttpEndpoints();
