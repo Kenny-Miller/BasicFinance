@@ -1,5 +1,6 @@
 using Aspire.Hosting.JavaScript;
 using BasicFinance.SharedServiceDefaults;
+using Microsoft.Extensions.DependencyInjection;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
@@ -33,7 +34,7 @@ IResourceBuilder<PostgresDatabaseResource> keycloakDbServer = builder.AddPostgre
 IResourceBuilder<ParameterResource> keycloakAdminUsername = builder.AddParameter("keycloak-admin-username", secret: true);
 IResourceBuilder<ParameterResource> keycloakAdminPassword = builder.AddParameter("keycloak-admin-password", secret: true);
 IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
-    "keycloak",
+    ServiceDiscoveryNames.Keycloak,
     8080,
     keycloakAdminUsername,
     keycloakAdminPassword)
@@ -74,7 +75,7 @@ IResourceBuilder<ProjectResource> dataProcessorService = builder.AddProject<Proj
 IResourceBuilder<JavaScriptAppResource> client = builder.AddJavaScriptApp("client", "../BasicFinance.Client", "start")
     .WithReference(api)
     .WaitFor(api)
-    .WithHttpEndpoint(env: "PORT")
+    .WithHttpEndpoint(env: "PORT", port: 4200)
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 

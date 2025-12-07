@@ -2,6 +2,7 @@ using BasicFinance.Domain.Commands;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
 using Scalar.AspNetCore;
+using System.Security.Claims;
 using Wolverine;
 using Wolverine.RabbitMQ;
 using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
@@ -9,6 +10,19 @@ using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication()
+    .AddKeycloakJwtBearer(ServiceDiscoveryNames.Keycloak, realm: "basic-hub", options =>
+    {
+        options.Audience = "account";
+
+        if (builder.Environment.IsDevelopment())
+        {
+            options.RequireHttpsMetadata = false;
+        }
+    });
+
 
 builder.Host.UseWolverine(x =>
 {
@@ -33,32 +47,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
+app.UseAuthentication();
+app.UseAuthorization();
 
-string[] summaries = new[]
+
+app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", async (IMessageBus messageBus) =>
-{
-    WeatherForecast[] forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-
+    var claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
     await messageBus.PublishAsync(new SyncFinancialData());
-
-    return forecast;
+    return claims;
 })
-.WithName("GetWeatherForecast");
+.RequireAuthorization();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

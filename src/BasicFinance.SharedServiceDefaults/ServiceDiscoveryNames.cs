@@ -4,5 +4,6 @@
     {
         public const string BasicFinanceDb = "basicfinancedbserver";
         public const string RabbitMq = "rabbitmq";
+        public const string Keycloak = "keycloak";
     }
 }
