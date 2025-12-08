@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
@@ -7,7 +7,7 @@ import { Menu } from 'primeng/menu';
   selector: 'app-root',
   imports: [RouterOutlet, Menu],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
+  styleUrl: './app.css',
 })
 export class App {
   protected readonly title = signal('BasicFinance.Client');

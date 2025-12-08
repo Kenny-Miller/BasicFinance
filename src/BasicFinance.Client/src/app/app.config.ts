@@ -1,21 +1,23 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import {
-  ApplicationConfig,
-  provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection,
-} from '@angular/core';
+import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { includeBearerTokenInterceptor, provideKeycloak } from 'keycloak-angular';
+import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
-import { keycloakProvider } from './keycloak.config';
+import { provideHttpClient } from '@angular/common/http';
+import { provideOAuthClient } from 'angular-oauth2-oidc';
+import { initializeOAuthFn } from './core/auth/auth.initializer';
+import { providePrimeNG } from 'primeng/config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(),
-    provideKeycloak(keycloakProvider),
-    provideHttpClient(withInterceptors([includeBearerTokenInterceptor])),
-  ],
+    provideOAuthClient(),
+    provideAppInitializer(initializeOAuthFn),
+    providePrimeNG({
+      theme: {
+        preset: Aura
+      }
+    })
+  ]
 };
