@@ -34,6 +34,8 @@
     "@angular/router": "^20.3.0",
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/postcss": "^4.1.17",
+    "keycloak-angular": "^20.0.0",
+    "keycloak-js": "^26.2.1",
     "postcss": "^8.5.6",
     "primeng": "^20.3.0",
     "rxjs": "~7.8.0",
@@ -56,8 +58,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.6.2",
+    "run-script-os": "^1.1.6",
     "typescript": "~5.9.2",
-    "typescript-eslint": "8.46.3",
-    "run-script-os": "^1.1.6"
+    "typescript-eslint": "8.46.3"
   }
 }
