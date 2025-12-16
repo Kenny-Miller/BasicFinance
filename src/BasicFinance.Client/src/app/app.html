@@ -1,10 +1,73 @@
-<div>
-  <aside>
-    <div>Header</div>
-    <nav id="sidebar">
-      <p-menu [model]="items" />
-    </nav>
-  </aside>
+@if(isMobile()){
+<p-toolbar>
+  <ng-template #start>
+    <p-button pButton icon="pi pi-bars" (onClick)="isDrawerOpen.set(true)" severity="secondary" variant="text" />
+  </ng-template>
+</p-toolbar>
+<p-drawer [(visible)]="isDrawerOpen">
+  <ng-template #header>
+    <h1 class="flex text-2xl font-semibold items-center flex-wrap">
+      <!-- <img src="logo.svg" /> -->
+      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
+      <span class="ms-2">Basic Finance</span>
+    </h1>
+  </ng-template>
+  <p-divider />
 
-  <router-outlet />
+  <ul>
+    @for(item of navigationItems; track item.label){
+    <li class="p-menu-item">
+      <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
+        <span [class]="item.icon"></span>
+        <span class="ms-2">{{ item.label }}</span>
+      </a>
+    </li>
+    }
+  </ul>
+  <ng-template #footer>
+    <div class="p-menu-item">
+      <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
+        <span [class]="settingItem.icon"></span>
+        <span class="ms-2">{{ settingItem.label }}</span>
+      </a>
+    </div>
+  </ng-template>
+</p-drawer>
+<router-outlet />
+}
+@else{
+<div class="flex h-screen" style="background-color: var(--p-surface-50);">
+  <div class="p-5  flex flex-col">
+    <h1 class="flex text-2xl font-semibold items-center flex-wrap">
+      <!-- <img src="logo.svg" /> -->
+      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
+      <span class="ms-2">Basic Finance</span>
+    </h1>
+    <p-divider />
+    <ul>
+      @for(item of navigationItems; track item.label){
+      <li class="p-menu-item">
+        <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
+          <span [class]="item.icon"></span>
+          <span class="ms-2">{{ item.label }}</span>
+        </a>
+      </li>
+      }
+    </ul>
+    <div class="flex flex-col flex-1 justify-end">
+      <div class="p-menu-item">
+        <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
+          <span [class]="settingItem.icon"></span>
+          <span class="ms-2">{{ settingItem.label }}</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <p-card class="flex-1 m-5">
+    <router-outlet />
+  </p-card>
+
 </div>
+}
