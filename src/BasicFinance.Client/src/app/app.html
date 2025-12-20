@@ -1,114 +1,80 @@
-<!-- @if(isMobile()){
-<mat-toolbar>
-  <button matIconButton (click)="nav.toggle()"><mat-icon>menu</mat-icon></button>
-  <div class="example-app-name">Basic Finance </div>
-</mat-toolbar>
-}
+<hlm-sidebar-wrapper>
+  <hlm-sidebar variant="inset" collapsible="icon">
+    <hlm-sidebar-header class="justify-center h-16">
+      <ul hlmSidebarMenu>
+        <li hlmSidebarMenuItem>
+          <a hlmSidebarMenuButton size="lg" href="#" class="p-2">
+            <div
+              class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <ng-icon hlm name="lucideChartLine" class="text-base" />
+            </div>
+            <div class="grid flex-1 text-left leading-tight">
+              <span class="truncate font-medium">Basic Finance</span>
+              <span class="truncate text-xs">Finance that matter to you</span>
+            </div>
+          </a>
 
-<mat-sidenav-container class="example-sidenav-container h-full">
-  <mat-sidenav #nav [mode]="isMobile() ? 'over' : 'side'" [(opened)]="isSidenavOpen" [fixedInViewport]="isMobile()"
-    fixedTopGap="56">
-    <mat-toolbar class="flex text-2xl font-semibold items-center flex-wrap">
-      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
-      <span class="ms-2">Basic Finance</span>
-    </mat-toolbar>
-    <mat-nav-list>
-      @for (item of navigationItems; track item) {
-      <a mat-list-item href="...">
-        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-        {{ item.label }}
-      </a>
+        </li>
+      </ul>
+    </hlm-sidebar-header>
+    <hlm-separator />
+    <hlm-sidebar-content>
+      <hlm-sidebar-group>
+        <div hlmSidebarGroupContent>
+          <ul hlmSidebarMenu>
+            @for(item of navigationItems; track item.label){
+            <li hlmSidebarMenuItem>
+              <a hlmSidebarMenuButton>
+                <ng-icon hlm [name]="item.icon" />
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+            }
+          </ul>
+        </div>
+      </hlm-sidebar-group>
+    </hlm-sidebar-content>
+    <hlm-separator />
+    <hlm-sidebar-footer>
+      @if(!isMobile() && !desktopSidebarIsOpen()){
+
+      <ul hlmSidebarMenu>
+        <li hlmSidebarMenuItem>
+
+          <button hlmSidebarMenuButton (click)="toggleOpen()">
+            <ng-icon hlm name="lucideChevronRight" />
+            <span class="sr-only">Toggle Sidebar Open</span>
+          </button>
+        </li>
+      </ul>
       }
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content>
+      <ul hlmSidebarMenu>
+        <li hlmSidebarMenuItem>
+          <a hlmSidebarMenuButton>
+            <ng-icon hlm [name]="settingItem.icon" />
+            <span>{{ settingItem.label }}</span>
+          </a>
 
-    <mat-card>
-      <mat-card-content>
-        <router-outlet />
-      </mat-card-content>
-    </mat-card>
-
-  </mat-sidenav-content>
-</mat-sidenav-container> -->
-
-
-
-
-
-
-@if(isMobile()){
-<p-toolbar>
-  <ng-template #start>
-    <p-button pButton icon="pi pi-bars" (onClick)="isDrawerOpen.set(true)" severity="secondary" variant="text" />
-  </ng-template>
-</p-toolbar>
-<p-drawer [(visible)]="isDrawerOpen">
-  <ng-template #header>
-    <h1 class="flex text-2xl font-semibold items-center flex-wrap">
-
-      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
-      <span class="ms-2">Basic Finance</span>
-    </h1>
-  </ng-template>
-  <p-divider />
-
-  <ul>
-    @for(item of navigationItems; track item.label){
-    <li class="p-menu-item">
-      <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
-        <span [class]="item.icon"></span>
-        <span class="ms-2">{{ item.label }}</span>
-      </a>
-    </li>
-    }
-  </ul>
-  <ng-template #footer>
-    <div class="p-menu-item">
-      <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
-        <span [class]="settingItem.icon"></span>
-        <span class="ms-2">{{ settingItem.label }}</span>
-      </a>
-    </div>
-  </ng-template>
-</p-drawer>
-<div class="flex-1 m-5">
-  <router-outlet />
-</div>
-}
-@else{
-<div class="flex h-screen" style="background-color: var(--p-surface-50);">
-  <div class="p-5 my-5 flex flex-col">
-    <div class="flex text-2xl font-semibold items-center flex-wrap">
-
-      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
-      <span class="ms-2">Basic Finance</span>
-    </div>
-    <p-divider />
-    <ul>
-      @for(item of navigationItems; track item.label){
-      <li class="p-menu-item">
-        <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
-          <span [class]="item.icon"></span>
-          <span class="ms-2">{{ item.label }}</span>
-        </a>
-      </li>
-      }
-    </ul>
-    <div class="flex flex-col flex-1 justify-end">
-      <div class="p-menu-item">
-        <a class="flex items-center px-3 py-2 cursor-pointer p-menu-item-content">
-          <span [class]="settingItem.icon"></span>
-          <span class="ms-2">{{ settingItem.label }}</span>
-        </a>
+          @if(!isMobile()){
+          <button hlmSidebarMenuAction (click)="toggleOpen()">
+            <ng-icon hlm name=" lucideChevronLeft" />
+            <span class="sr-only">Toggle Sidebar Close</span>
+          </button>
+          }
+        </li>
+      </ul>
+    </hlm-sidebar-footer>
+  </hlm-sidebar>
+  <main hlmSidebarInset variant="inset">
+    <header class="flex h-16 shrink-0 items-center gap-2">
+      <div class="flex items-center gap-2 px-4">
+        @if(isMobile()){
+        <button hlmSidebarTrigger></button>
+        }
+        Good Afternoon Test
       </div>
-
-    </div>
-  </div>
-
-  <p-card class="flex-1 m-5">
+    </header>
+    <hlm-separator />
     <router-outlet />
-  </p-card>
-
-</div>
-}
+  </main>
+</hlm-sidebar-wrapper>

@@ -6,5 +6,13 @@
   "singleQuote": true,
   "trailingComma": "all",
   "bracketSpacing": true,
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "tailwindFunctions": [
+    "hlm",
+    "cva"
+  ],
+  "tailwindStylesheet": "./src/styles.css",
+  "plugins": [
+    "prettier-plugin-tailwindcss"
+  ]
 }
