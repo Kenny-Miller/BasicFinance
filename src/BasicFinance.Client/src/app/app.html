@@ -1,3 +1,42 @@
+<!-- @if(isMobile()){
+<mat-toolbar>
+  <button matIconButton (click)="nav.toggle()"><mat-icon>menu</mat-icon></button>
+  <div class="example-app-name">Basic Finance </div>
+</mat-toolbar>
+}
+
+<mat-sidenav-container class="example-sidenav-container h-full">
+  <mat-sidenav #nav [mode]="isMobile() ? 'over' : 'side'" [(opened)]="isSidenavOpen" [fixedInViewport]="isMobile()"
+    fixedTopGap="56">
+    <mat-toolbar class="flex text-2xl font-semibold items-center flex-wrap">
+      <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
+      <span class="ms-2">Basic Finance</span>
+    </mat-toolbar>
+    <mat-nav-list>
+      @for (item of navigationItems; track item) {
+      <a mat-list-item href="...">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        {{ item.label }}
+      </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+
+    <mat-card>
+      <mat-card-content>
+        <router-outlet />
+      </mat-card-content>
+    </mat-card>
+
+  </mat-sidenav-content>
+</mat-sidenav-container> -->
+
+
+
+
+
+
 @if(isMobile()){
 <p-toolbar>
   <ng-template #start>
@@ -7,7 +46,7 @@
 <p-drawer [(visible)]="isDrawerOpen">
   <ng-template #header>
     <h1 class="flex text-2xl font-semibold items-center flex-wrap">
-      <!-- <img src="logo.svg" /> -->
+
       <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
       <span class="ms-2">Basic Finance</span>
     </h1>
@@ -33,16 +72,18 @@
     </div>
   </ng-template>
 </p-drawer>
-<router-outlet />
+<div class="flex-1 m-5">
+  <router-outlet />
+</div>
 }
 @else{
 <div class="flex h-screen" style="background-color: var(--p-surface-50);">
-  <div class="p-5  flex flex-col">
-    <h1 class="flex text-2xl font-semibold items-center flex-wrap">
-      <!-- <img src="logo.svg" /> -->
+  <div class="p-5 my-5 flex flex-col">
+    <div class="flex text-2xl font-semibold items-center flex-wrap">
+
       <span class="pi pi-microsoft" style="font-size: var(--text-2xl);"></span>
       <span class="ms-2">Basic Finance</span>
-    </h1>
+    </div>
     <p-divider />
     <ul>
       @for(item of navigationItems; track item.label){
