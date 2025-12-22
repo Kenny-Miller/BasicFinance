@@ -39,6 +39,9 @@
       ],
       "@spartan-ng/helm/tooltip": [
         "./libs/ui/tooltip/src/index.ts"
+      ],
+      "@spartan-ng/helm/card": [
+        "./libs/ui/card/src/index.ts"
       ]
     }
   },

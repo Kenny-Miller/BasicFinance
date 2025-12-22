@@ -4,6 +4,7 @@ import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { initializeOAuthFn } from './core/auth/auth.initializer';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 
 export const appConfig: ApplicationConfig = {
@@ -12,7 +13,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     provideOAuthClient(),
-    provideAppInitializer(initializeOAuthFn)
+    provideAppInitializer(initializeOAuthFn),
+    provideCharts(withDefaultRegisterables())
   ]
 };
 

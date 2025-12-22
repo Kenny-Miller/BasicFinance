@@ -3,89 +3,222 @@
     {{user() | json}}
 </p> -->
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5 grid-rows-3 ">
-    <!-- <mat-card class="col-span-3 md:col-span-1 row-span-3 ">
-        <mat-card-header>
-            Net Worth
-        </mat-card-header>
-        <mat-card-content>
-            {{300000 | currency}}
-        </mat-card-content>
-        <mat-card-footer>
-            Your networth has increased by <span class="font-medium">$5500</span>
-            this month
-        </mat-card-footer>
-    </mat-card>
-    <mat-card class="col-span-3 md:col-span-1">
-        <mat-card-header>
-            Income
-        </mat-card-header>
-        <mat-card-content>
-            {{300000 | currency}}
-        </mat-card-content>
-        <mat-card-footer>
-            Your networth has increased by <span class="font-medium">$5500</span>
-            this month
-        </mat-card-footer>
-    </mat-card>
-    <mat-card class="col-span-3 md:col-span-1">
-        <mat-card-header>
-            Spending
-        </mat-card-header>
-        <mat-card-content>
-            {{300000 | currency}}
-        </mat-card-content>
-        <mat-card-footer>
-            Your networth has increased by <span class="font-medium">$5500</span>
-            this month
-        </mat-card-footer>
-    </mat-card>
-    <mat-card class="col-span-3 md:col-span-2 row-span-2">
-        <mat-card-header>
-            Recent Transactions
-        </mat-card-header>
-        <mat-card-content>
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+<!-- <div class="grid grid-cols-3 gap-5 grid-rows-5 p-5">
+    <section hlmCard class="col-span-3 lg:col-span-2 row-start-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Networth</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1 font-semibold text-2xl">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+                <p>You've increased your networth by <span class="text-emerald-500"> {{5000| currency}} </span> this
+                    month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
 
-                <ng-container matColumnDef="position">
-                    <th mat-header-cell *matHeaderCellDef> No. </th>
-                    <td mat-cell *matCellDef="let element"> {{element.position}} </td>
-                </ng-container>
+    <section hlmCard class="col-span-3 lg:col-span-2 row-span-2 row-start-2 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Spend Activity</h3>
+            <div hlmCardAction>View</div>
+        </div>
 
-             
-                <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Name </th>
-                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-                </ng-container>
+        <div hlmCardContent class="flex-1">
+            @if(displayChart()){
+            <canvas baseChart [data]="spendActivityChartData" [options]="spendActivityChartOptions"
+                [plugins]="chartPlugins" type="line"></canvas>
+            }
+        </div>
+    </section>
 
-  
-                <ng-container matColumnDef="weight">
-                    <th mat-header-cell *matHeaderCellDef> Weight </th>
-                    <td mat-cell *matCellDef="let element"> {{element.weight}} </td>
-                </ng-container>
+    <section hlmCard class="col-span-3 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Checking</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1 font-semibold text-2xl ">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
 
-                <ng-container matColumnDef="symbol">
-                    <th mat-header-cell *matHeaderCellDef> Symbol </th>
-                    <td mat-cell *matCellDef="let element"> {{element.symbol}} </td>
-                </ng-container>
+                <p><span class="text-emerald-500"> +6% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
+    <section hlmCard class="col-span-3 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Savings</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1 font-semibold text-2xl ">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
 
-        </mat-card-content>
-    </mat-card>
-    <mat-card class="col-span-3">
-        <mat-card-header>
-            Spend Activity
-        </mat-card-header>
-        <mat-card-content>
-            {{300000 | currency}}
-        </mat-card-content>
-        <mat-card-footer>
-            Your networth has increased by <span class="font-medium">$5500</span>
-            this month
-        </mat-card-footer>
-    </mat-card> -->
+                <p><span class="text-emerald-500"> +6% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
 
+    <section hlmCard class="col-span-3 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Investments</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1 font-semibold text-2xl">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+                <p><span class="text-red-500"> -3% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-3 gap-2 row-span-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Recent Transactions</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1">
+
+        </div>
+    </section>
+</div> -->
+
+<div class="grid grid-cols-4 gap-5 grid-rows-5 p-5">
+
+
+    <section hlmCard class="col-span-4 lg:col-span-2 lg:row-span-2 row-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Spend Activity</h3>
+            <div hlmCardAction>View</div>
+        </div>
+
+        <div hlmCardContent class="h-full">
+            @if(displayChart()){
+            <canvas baseChart [data]="spendActivityChartData" [options]="spendActivityChartOptions"
+                [plugins]="chartPlugins" type="line"></canvas>
+            }
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Networth</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class=" font-semibold text-2xl">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+                <p>You've increased your networth by <span class="text-emerald-500"> {{5000| currency}} </span> this
+                    month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Checking</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="font-semibold text-2xl ">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+
+                <p><span class="text-emerald-500"> +6% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Savings</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class=" font-semibold text-2xl ">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+
+                <p><span class="text-emerald-500"> +6% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Investments</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class=" font-semibold text-2xl">
+            <div>
+                {{50000 | currency}}
+            </div>
+            <div class="text-muted-foreground text-sm">
+                <p><span class="text-red-500"> -3% </span> vs last month
+                </p>
+            </div>
+            <div class="h-24">
+                <canvas baseChart [data]="incomeChartData" [options]="incomeChartOptions" [plugins]="chartPlugins"
+                    type="line"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section hlmCard class="col-span-4 gap-2 row-span-2 rounded-sm">
+        <div hlmCardHeader>
+            <h3 hlmCardTitle>Recent Transactions</h3>
+            <div hlmCardAction>View</div>
+        </div>
+        <div hlmCardContent class="flex-1">
+
+        </div>
+    </section>
 </div>
