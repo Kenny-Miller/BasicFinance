@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-tailwindcss-colors": "^0.2.4",
     "date-fns": "^4.1.0"
   }
 }

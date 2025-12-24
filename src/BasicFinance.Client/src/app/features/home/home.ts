@@ -56,7 +56,7 @@ export class Home implements OnInit, AfterViewInit {
       {
         data: [28, 48, 40, 19, 86, 27, 90],
         label: 'Spend',
-        backgroundColor: 'rgba(77,83,96,0.2)',
+        backgroundColor: "var(--color-blue-500)",
         borderColor: 'rgba(77,83,96,1)',
         pointBackgroundColor: 'rgba(77,83,96,1)',
         pointBorderColor: '#fff',
@@ -92,6 +92,7 @@ export class Home implements OnInit, AfterViewInit {
     },
     responsive: true,
     maintainAspectRatio: false,
+    aspectRatio: 2,
     plugins: {
       deferred: { delay: 500 },
       legend: { display: true },
@@ -122,7 +123,7 @@ export class Home implements OnInit, AfterViewInit {
     },
     responsive: true,
     maintainAspectRatio: false,
-    //aspectRatio: 1,
+    aspectRatio: 3,
     plugins: {
       deferred: { delay: 500 },
       legend: { display: false },
