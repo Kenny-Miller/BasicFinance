@@ -1,39 +1,59 @@
-import { Component, inject, linkedSignal, OnDestroy, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { MenuItem, PrimeIcons } from 'primeng/api';
-import { Menu } from 'primeng/menu';
-import { Toolbar } from 'primeng/toolbar';
-import { Card } from 'primeng/card';
-import { Drawer } from 'primeng/drawer';
-import { DividerModule } from 'primeng/divider';
-import { Button } from 'primeng/button';
-import { LayoutService } from './core/layout/layout.service';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideChartLine,
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideLandmark,
+  lucideLayoutDashboard,
+  lucideReceiptText,
+  lucideRepeat,
+  lucideSettings,
+  lucideWallet,
+} from '@ng-icons/lucide';
+import { HlmIcon } from '@spartan-ng/helm/icon';
+import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
+import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Menu, Toolbar, Drawer, Button, CommonModule, DividerModule, Card],
+  imports: [RouterOutlet, CommonModule, HlmSidebarImports, NgIcon, HlmIcon, HlmSeparatorImports],
+  providers: [
+    provideIcons({
+      lucideLayoutDashboard,
+      lucideWallet,
+      lucideRepeat,
+      lucideReceiptText,
+      lucideLandmark,
+      lucideChartLine,
+      lucideSettings,
+      lucideChevronLeft,
+      lucideChevronRight,
+    }),
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
-
   protected readonly title = signal('BasicFinance.Client');
 
-  private readonly layoutService = inject(LayoutService)
-  readonly isMobile = this.layoutService.isMobile;
+  private readonly sidebarService = inject(HlmSidebarService);
+  readonly desktopSidebarIsOpen = computed(() => this.sidebarService.open());
+  readonly isMobile = computed(() => this.sidebarService.isMobile());
 
-  readonly isDrawerOpen = linkedSignal({ source: this.isMobile, computation: () => false });
-
-  readonly navigationItems: MenuItem[] = [
-    { label: 'Dashboard', icon: PrimeIcons.TH_LARGE },
-    { label: 'Accounts', icon: PrimeIcons.USERS },
-    { label: 'Recurring', icon: PrimeIcons.CLOCK },
-    { label: 'Transactions', icon: PrimeIcons.RECEIPT },
-    { label: 'Spending', icon: PrimeIcons.MONEY_BILL }
+  readonly navigationItems: any[] = [
+    { label: 'Home', icon: 'lucideLayoutDashboard', href: '' },
+    { label: 'Accounts', icon: 'lucideLandmark', href: 'accounts' },
+    { label: 'Recurring', icon: 'lucideRepeat', href: 'recurring' },
+    { label: 'Transactions', icon: 'lucideReceiptText', href: 'transactions' },
+    { label: 'Spending', icon: 'lucideWallet', href: 'spending' },
   ];
 
-  readonly settingItem: MenuItem = { label: 'Settings', icon: PrimeIcons.COG }
+  readonly settingItem: any = { label: 'Settings', icon: 'lucideSettings', href: 'settings' };
+
+  public toggleOpen(): void {
+    this.sidebarService.setOpen(!this.desktopSidebarIsOpen());
+  }
 }
-
-
