@@ -40,7 +40,7 @@ export class App {
   protected readonly title = signal('BasicFinance.Client');
 
   private readonly sidebarService = inject(HlmSidebarService);
-  readonly desktopSidebarIsOpen = computed(() => this.sidebarService.open());
+  readonly isDesktopSidebarOpen = computed(() => this.sidebarService.open());
   readonly isMobile = computed(() => this.sidebarService.isMobile());
 
   readonly navigationItems: any[] = [
@@ -54,6 +54,6 @@ export class App {
   readonly settingItem: any = { label: 'Settings', icon: 'lucideSettings', href: 'settings' };
 
   public toggleOpen(): void {
-    this.sidebarService.setOpen(!this.desktopSidebarIsOpen());
+    this.sidebarService.setOpen(!this.isDesktopSidebarOpen());
   }
 }

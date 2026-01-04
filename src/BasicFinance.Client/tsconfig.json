@@ -17,9 +17,6 @@
       "@spartan-ng/helm/sidebar": [
         "./libs/ui/sidebar/src/index.ts"
       ],
-      "@spartan-ng/helm/utils": [
-        "./libs/ui/utils/src/index.ts"
-      ],
       "@spartan-ng/helm/button": [
         "./libs/ui/button/src/index.ts"
       ],
@@ -43,6 +40,12 @@
       ],
       "@spartan-ng/helm/card": [
         "./libs/ui/card/src/index.ts"
+      ],
+      "@spartan-ng/helm/dialog": [
+        "./libs/ui/dialog/src/index.ts"
+      ],
+      "@spartan-ng/helm/utils": [
+        "./libs/ui/utils/src/index.ts"
       ]
     }
   },

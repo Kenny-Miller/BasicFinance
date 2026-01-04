@@ -1,1 +1,22 @@
-<p>settings works!</p>
+<hlm-dialog>
+  <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle>Settings</h3>
+      <!-- <p hlmDialogDescription>Make changes to your profile here. Click save when you're done.</p> -->
+    </hlm-dialog-header>
+    <div class="grid gap-4">
+      <div class="grid gap-3">
+        <label hlmLabel for="name" class="text-right">Add Spreadsheet</label>
+        <button hlmBtn type="submit">Add Spreadsheet</button>
+      </div>
+      <div class="grid gap-3">
+        <label hlmLabel for="username" class="text-right">Your Spreadsheets (2)</label>
+        <input hlmInput id="username" value="@peduarte" class="col-span-3" />
+      </div>
+    </div>
+    <hlm-dialog-footer>
+      <!-- <button hlmBtn variant="outline" brnDialogClose>Close</button> -->
+      <button hlmBtn type="submit">Close</button>
+    </hlm-dialog-footer>
+  </hlm-dialog-content>
+</hlm-dialog>

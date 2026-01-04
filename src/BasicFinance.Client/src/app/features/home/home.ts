@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -18,7 +18,7 @@ import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-u
 
 @Component({
   selector: 'app-home',
-  imports: [JsonPipe, DatePipe, CommonModule, HlmCardImports, BaseChartDirective],
+  imports: [CommonModule, HlmCardImports, BaseChartDirective],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

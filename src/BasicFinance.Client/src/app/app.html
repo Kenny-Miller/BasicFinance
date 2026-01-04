@@ -36,7 +36,7 @@
     </hlm-sidebar-content>
     <hlm-separator />
     <hlm-sidebar-footer>
-      @if (!isMobile() && !desktopSidebarIsOpen()) {
+      @if (!isMobile() && !isDesktopSidebarOpen()) {
         <ul hlmSidebarMenu>
           <li hlmSidebarMenuItem>
             <button hlmSidebarMenuButton (click)="toggleOpen()">
