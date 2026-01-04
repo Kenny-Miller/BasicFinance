@@ -1,11 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import '@googleworkspace/drive-picker-element';
 
 @Component({
   selector: 'app-accounts',
-  imports: [],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './accounts.html',
   styleUrl: './accounts.css',
 })
-export class Accounts {
-
-}
+export class Accounts {}

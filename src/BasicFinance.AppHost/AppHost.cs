@@ -33,6 +33,8 @@ IResourceBuilder<PostgresDatabaseResource> keycloakDbServer = builder.AddPostgre
 
 IResourceBuilder<ParameterResource> keycloakAdminUsername = builder.AddParameter("keycloak-admin-username", secret: true);
 IResourceBuilder<ParameterResource> keycloakAdminPassword = builder.AddParameter("keycloak-admin-password", secret: true);
+IResourceBuilder<ParameterResource> keycloakGoogleClientId = builder.AddParameter("keycloak-google-clientid", secret: true);
+IResourceBuilder<ParameterResource> keycloakGoogleClientSecret = builder.AddParameter("keycloak-google-clientsecret", secret: true);
 IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
     ServiceDiscoveryNames.Keycloak,
     8080,
@@ -40,7 +42,11 @@ IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
     keycloakAdminPassword)
     .WithChildRelationship(keycloakAdminUsername)
     .WithChildRelationship(keycloakAdminPassword)
+    .WithChildRelationship(keycloakGoogleClientId)
+    .WithChildRelationship(keycloakGoogleClientSecret)
     .WithChildRelationship(keycloakDbServer)
+    .WithEnvironment("KEYCLOAK-GOOGLE-CLIENTID", keycloakGoogleClientId)
+    .WithEnvironment("KEYCLOAK-GOOGLE-CLIENTSECRET", keycloakGoogleClientSecret)
     .WithRealmImport("./Realms")
     .WithDataVolume()
     .WithPostgres(keycloakDbServer)
@@ -73,10 +79,16 @@ IResourceBuilder<ProjectResource> dataProcessorService = builder.AddProject<Proj
     .WaitFor(rabbitmq)
     .PublishAsDockerFile();
 
+IResourceBuilder<ParameterResource> clientGoogleClientAuthority = builder.AddParameter("basicfinance-google-authority");
+IResourceBuilder<ParameterResource> clientGoogleClientId = builder.AddParameter("basicfinance-google-clientid");
 IResourceBuilder<JavaScriptAppResource> client = builder.AddJavaScriptApp("client", "../BasicFinance.Client", "start")
+    .WithChildRelationship(clientGoogleClientAuthority)
+    .WithChildRelationship(clientGoogleClientId)
     .WithReference(api)
     .WaitFor(api)
     .WithHttpEndpoint(env: "PORT", port: 4200)
+    .WithEnvironment("BASICFINANCE-GOOGLE-AUTHORITY", clientGoogleClientAuthority)
+    .WithEnvironment("BASICFINANCE-GOOGLE-CLIENTID", clientGoogleClientId)
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
