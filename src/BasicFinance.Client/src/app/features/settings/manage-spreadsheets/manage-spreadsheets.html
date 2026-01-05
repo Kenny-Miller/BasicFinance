@@ -1,0 +1,50 @@
+<section hlmCard class="rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Mange Spreadsheets ({{ linkedGoogleSpreadsheets().length }})</h3>
+    <p hlmCardDescription>
+      Add or remove the spreadsheets that the application will source financial data from
+    </p>
+  </div>
+  <div hlmCardContent>
+    <div hlmItemGroup class="gap-2">
+      @for (spreadsheet of linkedGoogleSpreadsheets(); track spreadsheet.id) {
+        <div hlmItem variant="outline">
+          <div hlmItemContent>
+            <div hlmItemTitle>{{ spreadsheet.name }}</div>
+            <p hlmItemDescription>
+              <a
+                [href]="'https://docs.google.com/spreadsheets/d/' + spreadsheet.id"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Open in Google Sheets →</a
+              >
+            </p>
+          </div>
+          <div hlmItemActions>
+            <button hlmBtn size="icon" variant="outline" size="sm">
+              <ng-icon hlm size="sm" name="lucideTrash" />
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div hlmCardFooter class="justify-end">
+    <button hlmBtn (click)="openGoogleFilePicker()" [disabled]="isGoogleFilePickerOpen()">
+      <ng-icon hlm size="sm" name="lucidePlus" />
+      Add Spreadsheet
+    </button>
+  </div>
+</section>
+
+@if (isGoogleFilePickerOpen()) {
+  <drive-picker
+    [attr.client-id]="environmnetConfig.openIdClientId"
+    [attr.app-id]="environmnetConfig.openIdAuthority"
+    (picker-oauth-error)="handleOAuthError($event)"
+    (picker-picked)="handlePickerPicked($event)"
+    (picker-canceled)="handlePickerCanceled($event)"
+  >
+    <drive-picker-docs-view></drive-picker-docs-view>
+  </drive-picker>
+}

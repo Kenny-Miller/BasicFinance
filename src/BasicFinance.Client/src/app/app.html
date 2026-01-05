@@ -3,7 +3,7 @@
     <hlm-sidebar-header class="justify-center h-16">
       <ul hlmSidebarMenu>
         <li hlmSidebarMenuItem>
-          <a hlmSidebarMenuButton size="lg" href="" class="p-2">
+          <a hlmSidebarMenuButton size="lg" routerLink="" class="p-2">
             <div
               class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
             >
@@ -11,7 +11,7 @@
             </div>
             <div class="grid flex-1 text-left leading-tight">
               <span class="truncate font-medium">Basic Finance</span>
-              <span class="truncate text-xs">Finance that matter to yous</span>
+              <span class="truncate text-xs">Finance that matter to you</span>
             </div>
           </a>
         </li>
@@ -24,7 +24,14 @@
           <ul hlmSidebarMenu>
             @for (item of navigationItems; track item.label) {
               <li hlmSidebarMenuItem>
-                <a hlmSidebarMenuButton [href]="item.href">
+                <a
+                  hlmSidebarMenuButton
+                  [routerLink]="item.routerLink"
+                  routerLinkActive
+                  #rla="routerLinkActive"
+                  [isActive]="rla.isActive"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                >
                   <ng-icon hlm [name]="item.icon" />
                   <span>{{ item.label }}</span>
                 </a>
@@ -39,7 +46,7 @@
       @if (!isMobile() && !isDesktopSidebarOpen()) {
         <ul hlmSidebarMenu>
           <li hlmSidebarMenuItem>
-            <button hlmSidebarMenuButton (click)="toggleOpen()">
+            <button hlmSidebarMenuButton (click)="toggleSidebarOpen()">
               <ng-icon hlm name="lucideChevronRight" />
               <span class="sr-only">Toggle Sidebar Open</span>
             </button>
@@ -48,13 +55,19 @@
       }
       <ul hlmSidebarMenu>
         <li hlmSidebarMenuItem>
-          <a hlmSidebarMenuButton [href]="settingItem.href">
-            <ng-icon hlm [name]="settingItem.icon" />
-            <span>{{ settingItem.label }}</span>
+          <a
+            hlmSidebarMenuButton
+            routerLink="settings"
+            routerLinkActive
+            #rla="routerLinkActive"
+            [isActive]="rla.isActive"
+          >
+            <ng-icon hlm name=" lucideSettings" />
+            <span>Settings</span>
           </a>
 
           @if (!isMobile()) {
-            <button hlmSidebarMenuAction (click)="toggleOpen()">
+            <button hlmSidebarMenuAction (click)="toggleSidebarOpen()">
               <ng-icon hlm name=" lucideChevronLeft" />
               <span class="sr-only">Toggle Sidebar Close</span>
             </button>
@@ -69,10 +82,11 @@
         @if (isMobile()) {
           <button hlmSidebarTrigger></button>
         }
-        Good Afternoon Test
       </div>
     </header>
     <hlm-separator />
-    <router-outlet />
+    <div class="bg-muted/40 flex flex-1 flex-col p-5">
+      <router-outlet />
+    </div>
   </main>
 </hlm-sidebar-wrapper>

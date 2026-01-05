@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChartLine,
@@ -16,10 +16,20 @@ import {
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
+import { NavMenuItem } from './core/menu/nav-menu-item';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule, HlmSidebarImports, NgIcon, HlmIcon, HlmSeparatorImports],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    HlmSidebarImports,
+    NgIcon,
+    HlmIcon,
+    HlmSeparatorImports,
+    RouterLink,
+    RouterLinkActive,
+  ],
   providers: [
     provideIcons({
       lucideLayoutDashboard,
@@ -43,17 +53,15 @@ export class App {
   readonly isDesktopSidebarOpen = computed(() => this.sidebarService.open());
   readonly isMobile = computed(() => this.sidebarService.isMobile());
 
-  readonly navigationItems: any[] = [
-    { label: 'Home', icon: 'lucideLayoutDashboard', href: '' },
-    { label: 'Accounts', icon: 'lucideLandmark', href: 'accounts' },
-    { label: 'Recurring', icon: 'lucideRepeat', href: 'recurring' },
-    { label: 'Transactions', icon: 'lucideReceiptText', href: 'transactions' },
-    { label: 'Spending', icon: 'lucideWallet', href: 'spending' },
+  readonly navigationItems: NavMenuItem[] = [
+    { label: 'Home', icon: 'lucideLayoutDashboard', routerLink: '' },
+    { label: 'Accounts', icon: 'lucideLandmark', routerLink: 'accounts' },
+    { label: 'Recurring', icon: 'lucideRepeat', routerLink: 'recurring' },
+    { label: 'Transactions', icon: 'lucideReceiptText', routerLink: 'transactions' },
+    { label: 'Spending', icon: 'lucideWallet', routerLink: 'spending' },
   ];
 
-  readonly settingItem: any = { label: 'Settings', icon: 'lucideSettings', href: 'settings' };
-
-  public toggleOpen(): void {
+  public toggleSidebarOpen(): void {
     this.sidebarService.setOpen(!this.isDesktopSidebarOpen());
   }
 }

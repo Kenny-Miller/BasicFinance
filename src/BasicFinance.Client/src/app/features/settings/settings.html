@@ -1,22 +1,42 @@
-<hlm-dialog>
-  <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
-    <hlm-dialog-header>
-      <h3 hlmDialogTitle>Settings</h3>
-      <!-- <p hlmDialogDescription>Make changes to your profile here. Click save when you're done.</p> -->
-    </hlm-dialog-header>
-    <div class="grid gap-4">
-      <div class="grid gap-3">
-        <label hlmLabel for="name" class="text-right">Add Spreadsheet</label>
-        <button hlmBtn type="submit">Add Spreadsheet</button>
+<div class="mb-4">
+  <span class="text-2xl font-bold tracking-tight">Settings</span>
+  <p class="text-muted-foreground">Manage application and account settings.</p>
+</div>
+
+<div class="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+  <aside class="lg:width-64">
+    <section hlmCard class="rounded-sm py-2">
+      <div hlmCardContent class="px-2">
+        <nav>
+          <ul>
+            @for (item of navigationItems; track item.routerLink) {
+              <li>
+                <a
+                  hlmItem
+                  [routerLink]="item.routerLink"
+                  routerLinkActive
+                  #rla="routerLinkActive"
+                  [isActive]="rla.isActive"
+                  class="flex flex-row"
+                >
+                  <div hlmItemMedia>
+                    <ng-icon hlm [name]="item.icon" size="sm" />
+                  </div>
+                  <div hlmItemContent>
+                    <div hlmItemTitle>{{ item.label }}</div>
+                  </div>
+                  <div hlmItemActions>
+                    <ng-icon hlm name="lucideChevronRight" size="sm" />
+                  </div>
+                </a>
+              </li>
+            }
+          </ul>
+        </nav>
       </div>
-      <div class="grid gap-3">
-        <label hlmLabel for="username" class="text-right">Your Spreadsheets (2)</label>
-        <input hlmInput id="username" value="@peduarte" class="col-span-3" />
-      </div>
-    </div>
-    <hlm-dialog-footer>
-      <!-- <button hlmBtn variant="outline" brnDialogClose>Close</button> -->
-      <button hlmBtn type="submit">Close</button>
-    </hlm-dialog-footer>
-  </hlm-dialog-content>
-</hlm-dialog>
+    </section>
+  </aside>
+  <div class="flex-1">
+    <router-outlet></router-outlet>
+  </div>
+</div>
