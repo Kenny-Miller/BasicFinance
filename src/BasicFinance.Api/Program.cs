@@ -54,6 +54,7 @@ app.UseAuthorization();
 app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {
     var claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
+
     await messageBus.PublishAsync(new SyncFinancialData());
     return claims;
 })

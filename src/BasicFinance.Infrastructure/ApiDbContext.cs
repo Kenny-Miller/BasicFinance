@@ -1,6 +1,6 @@
 ﻿namespace BasicFinanace.Infrastructure
 {
-    public class Class1
+    public class ApiDbContext
     {
 
     }

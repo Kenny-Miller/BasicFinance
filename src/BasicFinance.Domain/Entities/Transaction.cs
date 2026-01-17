@@ -5,7 +5,8 @@ namespace BasicFinance.Domain.Entities
 {
     public class Transaction : IEntity
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
+        public required string UserId { get; init; }
 
         [ForeignKey(nameof(AccountId))]
         public Account Account { get; set; } = null!;
@@ -14,7 +15,7 @@ namespace BasicFinance.Domain.Entities
         public decimal Amount { get; set; }
         public required string Description { get; set; }
         public required string Category { get; set; }
-        public DateTimeOffset SystemCreatedDate { get; set; }
+        public DateTimeOffset SystemCreatedDate { get; init; }
         public DateTimeOffset SystemModifiedDate { get; set; }
         public bool IsActive { get; set; }
     }

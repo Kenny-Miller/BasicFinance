@@ -7,8 +7,4 @@
 	<IsAspireSharedProject>true</IsAspireSharedProject>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Events\" />
-  </ItemGroup>
-
 </Project>

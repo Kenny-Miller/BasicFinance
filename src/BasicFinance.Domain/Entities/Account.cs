@@ -4,7 +4,8 @@ namespace BasicFinance.Domain.Entities
 {
     public class Account : IEntity
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
+        public required string UserId { get; init; }
         public required string AccountName { get; set; }
         public decimal Balance { get; set; }
         public required string Currency { get; set; }
@@ -13,7 +14,7 @@ namespace BasicFinance.Domain.Entities
         public required string Institution { get; set; }
         public Guid AccountId { get; set; }
         public decimal AvailableBalance { get; set; }
-        public DateTimeOffset SystemCreatedDate { get; set; }
+        public DateTimeOffset SystemCreatedDate { get; init; }
         public DateTimeOffset SystemModifiedDate { get; set; }
         public bool IsActive { get; set; }
         public ICollection<Transaction> Transactions { get; set; } = [];
