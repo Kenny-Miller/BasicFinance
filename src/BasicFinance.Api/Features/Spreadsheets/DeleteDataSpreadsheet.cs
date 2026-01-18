@@ -1,6 +1,6 @@
 ﻿namespace BasicFinance.Api.Features.Spreadsheets
 {
-    public class RemoveDataSpreadsheet
+    public class DeleteDataSpreadsheet
     {
     }
 }

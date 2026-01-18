@@ -1,5 +1,5 @@
-﻿using BasicFinance.Domain.Interfaces;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using BasicFinance.Domain.Interfaces;
 
 namespace BasicFinance.Domain.Entities
 {

@@ -1,9 +1,12 @@
+using System.Security.Claims;
 using BasicFinance.Domain.Commands;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
 using Scalar.AspNetCore;
-using System.Security.Claims;
 using Wolverine;
+using Wolverine.FluentValidation;
+using Wolverine.Http;
+using Wolverine.Http.FluentValidation;
 using Wolverine.RabbitMQ;
 using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
@@ -24,8 +27,10 @@ builder.Services.AddAuthentication()
     });
 
 
-builder.Host.UseWolverine(x =>
+builder.UseWolverine(x =>
 {
+    x.UseFluentValidation();
+
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .DeclareExchange("test-exchange", exchange =>
         {
@@ -36,6 +41,7 @@ builder.Host.UseWolverine(x =>
 
     x.PublishAllMessages().ToRabbitRoutingKey("test-exchange", "test-exchangeTotest-queue");
 });
+builder.Services.AddWolverineHttp();
 
 WebApplication app = builder.Build();
 
@@ -45,6 +51,11 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+
+app.MapWolverineEndpoints(opts =>
+{
+    opts.UseFluentValidationProblemDetailMiddleware();
+});
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
 app.UseAuthentication();

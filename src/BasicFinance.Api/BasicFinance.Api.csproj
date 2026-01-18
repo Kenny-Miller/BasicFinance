@@ -7,14 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.10.3" />
-	  <PackageReference Include="WolverineFx.RabbitMQ" Version="5.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.11" />
+    <PackageReference Include="WolverineFx.Http.FluentValidation" Version="5.10.0" />
+	<PackageReference Include="WolverineFx.RabbitMQ" Version="5.10.0" />
     <PackageReference Include="Aspire.Keycloak.Authentication" Version="13.0.2-preview.1.25603.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BasicFinance.Domain\BasicFinance.Domain.csproj" />
+    <ProjectReference Include="..\BasicFinance.Infrastructure\BasicFinance.Infrastructure.csproj" />
     <ProjectReference Include="..\BasicFinance.ServiceDefaults\BasicFinance.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" />
   </ItemGroup>

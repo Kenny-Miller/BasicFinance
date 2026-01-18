@@ -9,8 +9,14 @@ export class SettingsClient {
   client = inject(HttpClient);
 
   getSpreadSheets(): Observable<any> {
-    return this.client.get("api/settings/spreadsheets").pipe(
-      catch((e) => )
-    )
+    return this.client.get('api/settings/spreadsheets').pipe();
+  }
+
+  addSpreadSheet(spreadsheetId: string): Observable<any> {
+    const request = {
+      spreadsheetId: spreadsheetId,
+    };
+
+    return this.client.post('api/spreadsheets', request).pipe();
   }
 }

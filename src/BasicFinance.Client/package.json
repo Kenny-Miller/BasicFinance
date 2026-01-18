@@ -41,6 +41,7 @@
     "@ng-icons/lucide": ">=32.0.0 <34.0.0",
     "@spartan-ng/brain": "^0.0.1-alpha.584",
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/google.picker": "^0.0.52",
     "angular-oauth2-oidc": "^20.0.2",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",

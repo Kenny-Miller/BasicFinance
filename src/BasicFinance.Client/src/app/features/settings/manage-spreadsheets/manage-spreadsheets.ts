@@ -1,4 +1,3 @@
-import { JsonPipe } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal } from '@angular/core';
 import '@googleworkspace/drive-picker-element';
 import {
@@ -19,6 +18,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { ENVIRONMENT_CONFIG } from '../../../environment-config';
+import { SettingsClient } from '../settings-client';
 
 @Component({
   selector: 'app-manage-spreadsheets',
@@ -32,12 +32,14 @@ import { ENVIRONMENT_CONFIG } from '../../../environment-config';
     }),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [HlmIcon, HlmButtonImports, HlmItemImports, NgIcon, HlmCardImports, JsonPipe],
+  imports: [HlmIcon, HlmButtonImports, HlmItemImports, NgIcon, HlmCardImports],
   templateUrl: './manage-spreadsheets.html',
   styleUrl: './manage-spreadsheets.css',
 })
 export class ManageSpreadsheets {
   environmnetConfig = inject(ENVIRONMENT_CONFIG);
+  settingsClient = inject(SettingsClient);
+
   isGoogleFilePickerOpen = signal<boolean>(false);
 
   linkedGoogleSpreadsheets = signal([
@@ -56,12 +58,20 @@ export class ManageSpreadsheets {
   }
 
   public handlePickerPicked(event: PickerPickedEvent): void {
-    console.log(event);
-    this.isGoogleFilePickerOpen.set(false);
+    if (event.detail['docs'] === undefined) {
+      this.isGoogleFilePickerOpen.set(false);
+      return;
+    }
+
+    const spreadsheetId = event.detail['docs'][0]['id'];
+    this.settingsClient.addSpreadSheet(spreadsheetId).subscribe({
+      next: (res) => console.log(res),
+      error: (e) => console.log(e),
+      complete: () => this.isGoogleFilePickerOpen.set(false),
+    });
   }
 
   public handlePickerCanceled(event: PickerCanceledEvent): void {
-    console.log(event);
     this.isGoogleFilePickerOpen.set(false);
   }
 }
