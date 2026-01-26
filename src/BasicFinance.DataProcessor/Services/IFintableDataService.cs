@@ -1,5 +1,5 @@
-﻿using BasicFinance.Domain.Entities;
-using Transaction = BasicFinance.Domain.Entities.Transaction;
+﻿using BasicFinance.Infrastructure.Entities;
+using Transaction = BasicFinance.Infrastructure.Entities.Transaction;
 
 namespace BasicFinance.DataProcessor.Services
 {

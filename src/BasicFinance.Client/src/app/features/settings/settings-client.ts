@@ -1,5 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { OAuthService } from 'angular-oauth2-oidc';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,16 +8,22 @@ import { Observable } from 'rxjs';
 })
 export class SettingsClient {
   client = inject(HttpClient);
+  oauthService = inject(OAuthService);
 
   getSpreadSheets(): Observable<any> {
-    return this.client.get('api/settings/spreadsheets').pipe();
+    return this.client.get('api/spreadsheets').pipe();
   }
 
-  addSpreadSheet(spreadsheetId: string): Observable<any> {
+  addSpreadSheet(spreadsheetId: string, googleOAuthToken: string): Observable<any> {
     const request = {
       spreadsheetId: spreadsheetId,
     };
 
-    return this.client.post('api/spreadsheets', request).pipe();
+    const token = this.oauthService.getAccessToken();
+    const httpHeader = new HttpHeaders()
+      .append('Authorization', `Bearer ${token}`)
+      .append('x-google-auth-token', googleOAuthToken);
+
+    return this.client.post('api/spreadsheets', request, { headers: httpHeader }).pipe();
   }
 }

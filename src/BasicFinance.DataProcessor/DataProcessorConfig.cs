@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BasicFinance.DataProcesser
+namespace BasicFinance.DataProcessor
 {
     public record class DataProcessorConfig(string EdwardJonesDocumentDropPath, string TrowPriceDocumentDropPath);
 }

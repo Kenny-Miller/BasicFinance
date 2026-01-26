@@ -17,6 +17,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\BasicFinance.Domain\BasicFinance.Domain.csproj" />
+	<ProjectReference Include="..\BasicFinance.Infrastructure\BasicFinance.Infrastructure.csproj" />
 	<ProjectReference Include="..\BasicFinance.ServiceDefaults\BasicFinance.ServiceDefaults.csproj" />
 	<ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" />
   </ItemGroup>

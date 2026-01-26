@@ -1,7 +1,11 @@
 using System.Security.Claims;
 using BasicFinance.Domain.Commands;
+using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Clients;
+using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -13,7 +17,6 @@ using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
-
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(ServiceDiscoveryNames.Keycloak, realm: "basic-hub", options =>
@@ -26,6 +29,13 @@ builder.Services.AddAuthentication()
         }
     });
 
+// Register Services
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString(ServiceDiscoveryNames.BasicFinanceDb)));
+builder.EnrichNpgsqlDbContext<AppDbContext>();
+
+builder.Services.AddSingleton<GoogleServiceAccountClient>();
+builder.Services.AddSingleton<GoogleUserClient>();
 
 builder.UseWolverine(x =>
 {

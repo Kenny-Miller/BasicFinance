@@ -2,7 +2,7 @@
 {
     public static class ServiceDiscoveryNames
     {
-        public const string BasicFinanceDb = "basicfinancedbserver";
+        public const string BasicFinanceDb = "basicfinancedb";
         public const string RabbitMq = "rabbitmq";
         public const string Keycloak = "keycloak";
     }

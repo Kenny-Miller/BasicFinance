@@ -2,6 +2,7 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal } from '@angular/core
 import '@googleworkspace/drive-picker-element';
 import {
   OAuthErrorEvent,
+  OAuthResponseEvent,
   PickerCanceledEvent,
   PickerPickedEvent,
 } from '@googleworkspace/drive-picker-element';
@@ -40,6 +41,7 @@ export class ManageSpreadsheets {
   environmnetConfig = inject(ENVIRONMENT_CONFIG);
   settingsClient = inject(SettingsClient);
 
+  googleOAuthToken = signal<string | null>(null);
   isGoogleFilePickerOpen = signal<boolean>(false);
 
   linkedGoogleSpreadsheets = signal([
@@ -53,25 +55,38 @@ export class ManageSpreadsheets {
     this.isGoogleFilePickerOpen.set(true);
   }
 
+  public handlOAuthResponse(event: OAuthResponseEvent): void {
+    console.log(event);
+    this.googleOAuthToken.set(event.detail.access_token);
+  }
+
   public handleOAuthError(event: OAuthErrorEvent): void {
+    console.log(event);
     this.isGoogleFilePickerOpen.set(false);
   }
 
   public handlePickerPicked(event: PickerPickedEvent): void {
-    if (event.detail['docs'] === undefined) {
+    const googleOAuthToken = this.googleOAuthToken();
+    if (event.detail['docs'] === undefined || googleOAuthToken === null) {
       this.isGoogleFilePickerOpen.set(false);
       return;
     }
 
     const spreadsheetId = event.detail['docs'][0]['id'];
-    this.settingsClient.addSpreadSheet(spreadsheetId).subscribe({
+    this.settingsClient.addSpreadSheet(spreadsheetId, googleOAuthToken).subscribe({
       next: (res) => console.log(res),
-      error: (e) => console.log(e),
-      complete: () => this.isGoogleFilePickerOpen.set(false),
+      error: (e) => {
+        this.isGoogleFilePickerOpen.set(false);
+      },
+      complete: () => {
+        this.isGoogleFilePickerOpen.set(false);
+        this.googleOAuthToken.set(null);
+      },
     });
   }
 
   public handlePickerCanceled(event: PickerCanceledEvent): void {
+    console.log(event);
     this.isGoogleFilePickerOpen.set(false);
   }
 }

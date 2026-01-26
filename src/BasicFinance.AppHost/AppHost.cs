@@ -1,6 +1,7 @@
 using Aspire.Hosting.JavaScript;
 using BasicFinance.SharedServiceDefaults;
 using Microsoft.Extensions.DependencyInjection;
+using Scalar.Aspire;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
@@ -8,14 +9,18 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 IResourceBuilder<ParameterResource> basicFinanceDbUsername = builder.AddParameter("basicfinance-db-username", secret: true);
 IResourceBuilder<ParameterResource> basicFinanceDbPassword = builder.AddParameter("basicfinance-db-password", secret: true);
 IResourceBuilder<PostgresDatabaseResource> basicFinanceDbServer = builder.AddPostgres(
-    ServiceDiscoveryNames.BasicFinanceDb,
+    "basicfinancedbserver",
     basicFinanceDbUsername,
     basicFinanceDbPassword)
     .WithChildRelationship(basicFinanceDbUsername)
     .WithChildRelationship(basicFinanceDbPassword)
     .WithDataVolume()
     .WithPgAdmin()
-    .AddDatabase("basicFinanceDb");
+    .AddDatabase(ServiceDiscoveryNames.BasicFinanceDb);
+
+IResourceBuilder<ProjectResource> migrationWorker = builder.AddProject<Projects.BasicFinance_MigrationWorker>("migration")
+       .WaitFor(basicFinanceDbServer)
+       .WithReference(basicFinanceDbServer);
 
 // Configure database for Identity Management
 // Todo: Move to seperate repo so that additional repos/projects can use instance
@@ -62,10 +67,18 @@ IResourceBuilder<RabbitMQServerResource> rabbitmq = builder.AddRabbitMQ(ServiceD
     .WithDataVolume()
     .WithManagementPlugin();
 
+IResourceBuilder<ParameterResource> apiGoogleClientEmail = builder.AddParameter("basicfinance-google-serviceaccount-email");
+IResourceBuilder<ParameterResource> apiGoogleClientPk = builder.AddParameter("basicfinance-google-serviceaccount-pk");
 IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.BasicFinance_Api>("api")
+     .WithChildRelationship(apiGoogleClientEmail)
+    .WithChildRelationship(apiGoogleClientPk)
     .WithReference(keycloak)
     .WithReference(basicFinanceDbServer)
     .WithReference(rabbitmq)
+    .WithReference(basicFinanceDbServer)
+    .WithEnvironment("BASICFINANCE-GOOGLE-SERVICEACCOUNT-EMAIL", apiGoogleClientEmail)
+    .WithEnvironment("BASICFINANCE-GOOGLE-SERVICEACCOUNT-PK", apiGoogleClientPk)
+    .WaitFor(basicFinanceDbServer)
     .WaitFor(keycloak)
     .WaitFor(basicFinanceDbServer)
     .WaitFor(rabbitmq)
@@ -104,5 +117,13 @@ IResourceBuilder<JavaScriptAppResource> client = builder.AddJavaScriptApp("clien
 //        yarp.AddRoute("/api/{**catch-all}", api);
 //    })
 //    .WithExternalHttpEndpoints();
+
+var scalar = builder.AddScalarApiReference(options =>
+{
+    options.PreferHttpsEndpoint()
+        .AllowSelfSignedCertificates();
+});
+
+scalar.WithApiReference(api);
 
 builder.Build().Run();

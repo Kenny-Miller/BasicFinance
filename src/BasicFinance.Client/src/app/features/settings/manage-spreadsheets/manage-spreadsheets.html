@@ -41,6 +41,7 @@
   <drive-picker
     [attr.client-id]="environmnetConfig.openIdClientId"
     [attr.app-id]="environmnetConfig.openIdAuthority"
+    (picker-oauth-response)="handlOAuthResponse($event)"
     (picker-oauth-error)="handleOAuthError($event)"
     (picker-picked)="handlePickerPicked($event)"
     (picker-canceled)="handlePickerCanceled($event)"
