@@ -1,10 +1,10 @@
-﻿using BasicFinance.Domain.Entities;
+﻿using BasicFinance.Infrastructure.Entities;
 using BasicFinance.Infrastructure.Interceptors;
 using Microsoft.EntityFrameworkCore;
 
-namespace BasicFinanace.Infrastructure
+namespace BasicFinance.Infrastructure
 {
-    public class AppDbContext: DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<Account> Accounts { get; init; }
         public DbSet<DataSpreadsheet> DataSpreadsheets { get; init; }
@@ -15,6 +15,11 @@ namespace BasicFinanace.Infrastructure
         /// trim leading and trailing whitespace from string properties on entities before they are saved to the database.
         /// </summary>
         private static readonly TrimWhitespaceInterceptor _interceptor = new();
+
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
 
         /// <inheritdoc/>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.AddInterceptors(_interceptor);

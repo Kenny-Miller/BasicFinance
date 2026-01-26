@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BasicFinance.Infrastructure.Interceptors
 {
-    internal class TrimWhitespaceInterceptor: SaveChangesInterceptor
+    internal class TrimWhitespaceInterceptor : SaveChangesInterceptor
     {
         /// <inheritdoc />
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -31,9 +28,10 @@ namespace BasicFinance.Infrastructure.Interceptors
         /// Trims leading and trailing whitespace from all string properties that have been added or modified.
         /// </summary>
         /// <param name="context"></param>
-        private void TrimWhitespace(DbContext? context)
+        private static void TrimWhitespace(DbContext? context)
         {
-            if (context == null) {
+            if (context == null)
+            {
                 return;
             }
 
@@ -42,7 +40,7 @@ namespace BasicFinance.Infrastructure.Interceptors
                 .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
                 .SelectMany(e => e.Properties);
 
-            foreach(var entry in entriesToTrim)
+            foreach (var entry in entriesToTrim)
             {
                 if (entry.CurrentValue is string stringValue)
                 {

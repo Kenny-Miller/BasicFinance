@@ -5,6 +5,7 @@
     <Project Path="src/BasicFinance.DataProcessor/BasicFinance.DataProcessor.csproj" />
     <Project Path="src/BasicFinance.Domain/BasicFinance.Domain.csproj" />
     <Project Path="src/BasicFinance.Infrastructure/BasicFinance.Infrastructure.csproj" />
+    <Project Path="src/BasicFinance.MigrationWorker/BasicFinance.MigrationWorker.csproj" />
     <Project Path="src/BasicFinance.ServiceDefaults/BasicFinance.ServiceDefaults.csproj" />
     <Project Path="src/BasicFinance.SharedServiceDefaults/BasicFinance.SharedServiceDefaults.csproj" Id="88d385d7-b56a-4be5-9a43-9236998e6ac1" />
   </Folder>
