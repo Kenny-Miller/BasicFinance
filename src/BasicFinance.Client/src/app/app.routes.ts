@@ -12,6 +12,11 @@ export const routes: Routes = [
   { path: 'recurring', component: Recurring, canActivate: [authGuard] },
   { path: 'transactions', component: Transactions, canActivate: [authGuard] },
   { path: 'spending', component: Spending, canActivate: [authGuard] },
-  { path: 'settings', component: Settings, canActivate: [authGuard] },
+  {
+    path: 'settings',
+    component: Settings,
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/settings/settings.routes').then((m) => m.settingsRoutes),
+  },
   { path: '**', component: Home, canActivate: [authGuard] },
 ];

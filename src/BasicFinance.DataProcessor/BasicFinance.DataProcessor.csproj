@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>c42a3c98-f9fe-4a96-bdee-f9d6e1594aa9</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\BasicFinance.Domain\BasicFinance.Domain.csproj" />
+	<ProjectReference Include="..\BasicFinance.Infrastructure\BasicFinance.Infrastructure.csproj" />
 	<ProjectReference Include="..\BasicFinance.ServiceDefaults\BasicFinance.ServiceDefaults.csproj" />
 	<ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" />
   </ItemGroup>

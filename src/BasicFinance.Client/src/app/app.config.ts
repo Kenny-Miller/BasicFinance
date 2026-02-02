@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   provideAppInitializer,
@@ -10,13 +10,14 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { routes } from './app.routes';
 import { initializeOAuthFn } from './core/auth/auth.initializer';
 import { ENVIRONMENT_CONFIG, EnvironmentConfig } from './environment-config';
+import { authInterceptor } from './core/auth/auth.interceptor';
 
 export const createAppConfig = (config: EnvironmentConfig): ApplicationConfig => {
   return {
     providers: [
       provideBrowserGlobalErrorListeners(),
       provideRouter(routes),
-      provideHttpClient(),
+      provideHttpClient(withInterceptors([authInterceptor])),
       provideOAuthClient(),
       provideAppInitializer(initializeOAuthFn),
       provideCharts(withDefaultRegisterables()),

@@ -4,11 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<IsAspireSharedProject>true</IsAspireSharedProject>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Events\" />
-  </ItemGroup>
 
 </Project>

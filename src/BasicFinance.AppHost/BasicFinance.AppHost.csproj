@@ -15,11 +15,13 @@
 		<PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.0.0" />
 		<PackageReference Include="Aspire.Hosting.Yarp" Version="13.0.0" />
 		<PackageReference Include="CommunityToolkit.Aspire.Hosting.Keycloak.Extensions" Version="13.0.0-beta.454" />
+		<PackageReference Include="Scalar.Aspire" Version="0.8.20" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\BasicFinance.Api\BasicFinance.Api.csproj" />
 		<ProjectReference Include="..\BasicFinance.DataProcessor\BasicFinance.DataProcessor.csproj" />
+		<ProjectReference Include="..\BasicFinance.MigrationWorker\BasicFinance.MigrationWorker.csproj" />
 		<ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" IsAspireProjectResource="false" />
 	</ItemGroup>
 

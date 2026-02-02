@@ -5,7 +5,7 @@ export const authConfig: AuthConfig = {
   redirectUri: window.location.origin + '/index.html',
   clientId: 'basic-finance-public',
   responseType: 'code',
-  scope: 'openid profile email offline_access',
+  scope: 'openid profile email offline_access basic',
   showDebugInformation: true,
   oidc: true,
   requestAccessToken: true,
