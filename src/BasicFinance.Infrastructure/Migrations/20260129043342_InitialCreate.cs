@@ -38,6 +38,8 @@ namespace BasicFinance.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GoogleSheetId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    GoogleSheetName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

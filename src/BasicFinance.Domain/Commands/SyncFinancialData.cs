@@ -1,4 +1,4 @@
 ﻿namespace BasicFinance.Domain.Commands
 {
-    public record SyncFinancialData();
+    public record SyncFinancialData(string UserId);
 }

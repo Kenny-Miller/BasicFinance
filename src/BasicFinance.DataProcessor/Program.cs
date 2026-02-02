@@ -1,4 +1,3 @@
-using BasicFinance.DataProcessor;
 using BasicFinance.Infrastructure;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
@@ -24,9 +23,6 @@ builder.Host.UseWolverine(x =>
         .AutoProvision();
 });
 
-IConfigurationSection config = builder.Configuration.GetSection("DataProcessor");
-builder.Services.Configure<DataProcessorConfig>(config);
-
 WebApplication app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -36,3 +32,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
+
+app.Run();

@@ -67,17 +67,14 @@ IResourceBuilder<RabbitMQServerResource> rabbitmq = builder.AddRabbitMQ(ServiceD
     .WithDataVolume()
     .WithManagementPlugin();
 
-IResourceBuilder<ParameterResource> apiGoogleClientEmail = builder.AddParameter("basicfinance-google-serviceaccount-email");
-IResourceBuilder<ParameterResource> apiGoogleClientPk = builder.AddParameter("basicfinance-google-serviceaccount-pk");
+IResourceBuilder<ParameterResource> googleServiceAccountCredentialFile = builder.AddParameter("google-service-account-credential-file");
 IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.BasicFinance_Api>("api")
-     .WithChildRelationship(apiGoogleClientEmail)
-    .WithChildRelationship(apiGoogleClientPk)
+    .WithChildRelationship(googleServiceAccountCredentialFile)
     .WithReference(keycloak)
     .WithReference(basicFinanceDbServer)
     .WithReference(rabbitmq)
     .WithReference(basicFinanceDbServer)
-    .WithEnvironment("BASICFINANCE-GOOGLE-SERVICEACCOUNT-EMAIL", apiGoogleClientEmail)
-    .WithEnvironment("BASICFINANCE-GOOGLE-SERVICEACCOUNT-PK", apiGoogleClientPk)
+    .WithEnvironment("GOOGLE-APPLICATION-CREDENTIALS", googleServiceAccountCredentialFile)
     .WaitFor(basicFinanceDbServer)
     .WaitFor(keycloak)
     .WaitFor(basicFinanceDbServer)

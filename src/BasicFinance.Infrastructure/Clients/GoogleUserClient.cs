@@ -14,10 +14,12 @@ namespace BasicFinance.Infrastructure.Clients
     /// </summary>
     public class GoogleUserClient
     {
+        private readonly ServiceAccountCredential _googleServiceAccountCredential;
         private readonly ILogger _logger;
 
-        public GoogleUserClient(ILogger<GoogleUserClient> logger)
+        public GoogleUserClient(ServiceAccountCredential googleServiceAccountCredential, ILogger<GoogleUserClient> logger)
         {
+            _googleServiceAccountCredential = googleServiceAccountCredential;
             _logger = logger;
         }
 
@@ -25,9 +27,9 @@ namespace BasicFinance.Infrastructure.Clients
         /// Retrieves a Google Spreadsheet by its Id if it
         /// exists.
         /// </summary>
-        /// <param name="spreadsheetId"></param>
+        /// <param name="googleSpreadsheetId"></param>
         /// <returns></returns>
-        public async Task<Spreadsheet?> GetSpreadsheetAsync(string spreadsheetId, string accessToken)
+        public async Task<Spreadsheet?> GetSpreadsheetAsync(string googleSpreadsheetId, string accessToken)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
             var sheetsService = new SheetsService(new BaseClientService.Initializer
@@ -36,7 +38,7 @@ namespace BasicFinance.Infrastructure.Clients
                 ApplicationName = "Basic Finance"
             });
 
-            var request = sheetsService.Spreadsheets.Get(spreadsheetId);
+            var request = sheetsService.Spreadsheets.Get(googleSpreadsheetId);
             var response = await request.ExecuteAsync();
             return response;
         }
@@ -45,10 +47,10 @@ namespace BasicFinance.Infrastructure.Clients
         /// Updates the specified spreadsheet to permit the Basic Finance
         /// Application to access their spreadsheet.
         /// </summary>
-        /// <param name="spreadsheetId"></param>
+        /// <param name="googleSpreadsheetId"></param>
         /// <param name="accessToken"></param>
         /// <returns></returns>
-        public async Task GrantSpreadSheetAccessAsync(string spreadsheetId, string accessToken)
+        public async Task GrantSpreadSheetAccessAsync(string googleSpreadsheetId, string accessToken)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
             var driveService = new DriveService(new BaseClientService.Initializer
@@ -61,11 +63,11 @@ namespace BasicFinance.Infrastructure.Clients
             {
                 Type = "user",
                 Role = "reader",
-                EmailAddress = "basicfinance-api@basichub.iam.gserviceaccount.com"
+                EmailAddress = _googleServiceAccountCredential.Id
             };
 
-            _logger.LogDebug("Granting read access to SpreadSheet: {SpreadheetId}", spreadsheetId);
-            var request = driveService.Permissions.Create(permission, spreadsheetId);
+            _logger.LogDebug("Granting read access to Google SpreadSheet: {GoogleSpreadheetId}", googleSpreadsheetId);
+            var request = driveService.Permissions.Create(permission, googleSpreadsheetId);
             request.SendNotificationEmail = false;
             await request.ExecuteAsync();
         }

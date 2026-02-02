@@ -6,7 +6,7 @@ namespace BasicFinance.Infrastructure.Entities
     public class Account : IEntity
     {
         [Key]
-        public Guid Id { get; init; }
+        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(36)]

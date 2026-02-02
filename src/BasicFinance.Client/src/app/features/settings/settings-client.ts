@@ -1,29 +1,26 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { OAuthService } from 'angular-oauth2-oidc';
 import { Observable } from 'rxjs';
+import { Spreadsheet } from '../../core/spreadsheets/spreadsheet';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SettingsClient {
   client = inject(HttpClient);
-  oauthService = inject(OAuthService);
 
-  getSpreadSheets(): Observable<any> {
-    return this.client.get('api/spreadsheets').pipe();
-  }
+  spreadsheetResource = httpResource<Spreadsheet[]>(() => 'api/spreadsheets');
 
-  addSpreadSheet(spreadsheetId: string, googleOAuthToken: string): Observable<any> {
+  addSpreadSheet(googleSpreadsheetId: string, googleOAuthToken: string): Observable<any> {
     const request = {
-      spreadsheetId: spreadsheetId,
+      googleSpreadsheetId: googleSpreadsheetId,
     };
 
-    const token = this.oauthService.getAccessToken();
-    const httpHeader = new HttpHeaders()
-      .append('Authorization', `Bearer ${token}`)
-      .append('x-google-auth-token', googleOAuthToken);
+    const httpHeader = new HttpHeaders().append('x-google-auth-token', googleOAuthToken);
+    return this.client.post('api/spreadsheets', request, { headers: httpHeader });
+  }
 
-    return this.client.post('api/spreadsheets', request, { headers: httpHeader }).pipe();
+  deleteSpreadSheet(spreadsheetId: string): Observable<any> {
+    return this.client.delete(`api/spreadsheets/${spreadsheetId}`);
   }
 }

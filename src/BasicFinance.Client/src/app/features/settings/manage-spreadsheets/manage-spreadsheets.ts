@@ -44,24 +44,18 @@ export class ManageSpreadsheets {
   googleOAuthToken = signal<string | null>(null);
   isGoogleFilePickerOpen = signal<boolean>(false);
 
-  linkedGoogleSpreadsheets = signal([
-    { id: '1', name: 'aaaaa' },
-    { id: '2', name: 'asdfasd' },
-    { id: '3', name: 'asdfsd' },
-    { id: '4', name: 'sdaaa' },
-  ]);
+  spreadsheets = this.settingsClient.spreadsheetResource;
 
   public openGoogleFilePicker(): void {
     this.isGoogleFilePickerOpen.set(true);
   }
 
-  public handlOAuthResponse(event: OAuthResponseEvent): void {
-    console.log(event);
+  public handleOAuthResponse(event: OAuthResponseEvent): void {
     this.googleOAuthToken.set(event.detail.access_token);
   }
 
   public handleOAuthError(event: OAuthErrorEvent): void {
-    console.log(event);
+    this.googleOAuthToken.set(null);
     this.isGoogleFilePickerOpen.set(false);
   }
 
@@ -72,9 +66,9 @@ export class ManageSpreadsheets {
       return;
     }
 
-    const spreadsheetId = event.detail['docs'][0]['id'];
-    this.settingsClient.addSpreadSheet(spreadsheetId, googleOAuthToken).subscribe({
-      next: (res) => console.log(res),
+    const googleSpreadsheetId = event.detail['docs'][0]['id'];
+    this.settingsClient.addSpreadSheet(googleSpreadsheetId, googleOAuthToken).subscribe({
+      next: () => this.spreadsheets.reload(),
       error: (e) => {
         this.isGoogleFilePickerOpen.set(false);
       },
@@ -86,7 +80,12 @@ export class ManageSpreadsheets {
   }
 
   public handlePickerCanceled(event: PickerCanceledEvent): void {
-    console.log(event);
     this.isGoogleFilePickerOpen.set(false);
+  }
+
+  public deleteGoogleSpreadsheet(spreadsheetId: string) {
+    this.settingsClient.deleteSpreadSheet(spreadsheetId).subscribe({
+      next: () => this.spreadsheets.reload(),
+    });
   }
 }

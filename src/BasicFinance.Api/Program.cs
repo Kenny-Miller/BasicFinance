@@ -1,7 +1,8 @@
 using System.Security.Claims;
-using BasicFinance.Domain.Commands;
+using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
+using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
@@ -34,13 +35,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(ServiceDiscoveryNames.BasicFinanceDb)));
 builder.EnrichNpgsqlDbContext<AppDbContext>();
 
+builder.Services.AddGoogleServiceAccountCredentials();
 builder.Services.AddSingleton<GoogleServiceAccountClient>();
 builder.Services.AddSingleton<GoogleUserClient>();
+builder.Services.AddWolverineHttp();
 
+// Configure Wolvering Messaging
 builder.UseWolverine(x =>
 {
     x.UseFluentValidation();
-
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .DeclareExchange("test-exchange", exchange =>
         {
@@ -51,7 +54,7 @@ builder.UseWolverine(x =>
 
     x.PublishAllMessages().ToRabbitRoutingKey("test-exchange", "test-exchangeTotest-queue");
 });
-builder.Services.AddWolverineHttp();
+
 
 WebApplication app = builder.Build();
 
@@ -61,11 +64,13 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-
+// Configure Wolvering HTTP
 app.MapWolverineEndpoints(opts =>
 {
+    opts.AddMiddleware(typeof(AuthenticatedUserMiddleware));
     opts.UseFluentValidationProblemDetailMiddleware();
 });
+
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
 app.UseAuthentication();
@@ -75,8 +80,6 @@ app.UseAuthorization();
 app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {
     var claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
-
-    await messageBus.PublishAsync(new SyncFinancialData());
     return claims;
 })
 .RequireAuthorization();
