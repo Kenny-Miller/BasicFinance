@@ -9,6 +9,6 @@ export const authConfig: AuthConfig = {
   showDebugInformation: true,
   oidc: true,
   requestAccessToken: true,
-  timeoutFactor: 0.01,
+  timeoutFactor: 0.75,
   checkOrigin: true,
 };

@@ -55,6 +55,7 @@ IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
     .WithRealmImport("./Realms")
     .WithDataVolume()
     .WithPostgres(keycloakDbServer)
+    .WithOtlpExporter()
     .WithExternalHttpEndpoints();
 
 // Configure RabbitMq server to handle message queue functionality 

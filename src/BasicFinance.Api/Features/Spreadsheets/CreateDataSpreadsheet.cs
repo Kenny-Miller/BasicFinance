@@ -30,6 +30,9 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// </summary>
         public class RequestValidator : AbstractValidator<Request>
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RequestValidator"/> class.
+            /// </summary>
             public RequestValidator()
             {
                 RuleFor(x => x.GoogleSpreadsheetId).NotEmpty().WithMessage("SpreadsheetId is required.");
