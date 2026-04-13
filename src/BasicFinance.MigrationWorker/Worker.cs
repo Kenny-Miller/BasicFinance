@@ -23,7 +23,15 @@ namespace BasicFinance.MigrationWorker
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 logger.LogInformation("Starting database migration...");
 
-                await dbContext.Database.MigrateAsync(cancellationToken);
+                var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+                if (pendingMigrations.Any())
+                {
+                    await dbContext.Database.MigrateAsync(cancellationToken);
+                }
+                else
+                {
+                    logger.LogInformation("No pending migrations found");
+                }
 
 
                 logger.LogInformation("Database migration completed");

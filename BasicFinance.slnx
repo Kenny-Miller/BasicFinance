@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/BasicFinance.Api/BasicFinance.Api.csproj" />
     <Project Path="src/BasicFinance.AppHost/BasicFinance.AppHost.csproj" />

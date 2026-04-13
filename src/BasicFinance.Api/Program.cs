@@ -23,10 +23,10 @@ builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(ServiceDiscoveryNames.Keycloak, realm: "basic-hub", options =>
     {
         options.Audience = "account";
-
         if (builder.Environment.IsDevelopment())
         {
             options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters.ValidIssuers = ["http://localhost:8080/realms/basic-hub"];
         }
     });
 
