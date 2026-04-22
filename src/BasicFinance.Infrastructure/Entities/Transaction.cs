@@ -7,7 +7,10 @@ namespace BasicFinance.Infrastructure.Entities
     public class Transaction : IEntity
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid TransactionId { get; set; }
+
+        [NotMapped]
+        public Guid Id => TransactionId;
 
         [Required]
         [MaxLength(36)]

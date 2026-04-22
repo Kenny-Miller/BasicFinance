@@ -17,18 +17,15 @@ namespace BasicFinance.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("AccountId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AccountName")
@@ -44,6 +41,9 @@ namespace BasicFinance.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
+
+                    b.Property<Guid>("FinancialAccountId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Institution")
                         .IsRequired()
@@ -71,7 +71,7 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
-                    b.HasKey("Id");
+                    b.HasKey("AccountId");
 
                     b.ToTable("Accounts");
                 });
@@ -113,7 +113,7 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Transaction", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("TransactionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -151,7 +151,7 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
-                    b.HasKey("Id");
+                    b.HasKey("TransactionId");
 
                     b.HasIndex("AccountId");
 

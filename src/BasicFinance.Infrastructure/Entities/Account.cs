@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace BasicFinance.Infrastructure.Entities
@@ -6,7 +7,10 @@ namespace BasicFinance.Infrastructure.Entities
     public class Account : IEntity
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid AccountId { get; set; }
+
+        [NotMapped]
+        public Guid Id => AccountId;
 
         [Required]
         [MaxLength(36)]
@@ -30,7 +34,7 @@ namespace BasicFinance.Infrastructure.Entities
         [Required]
         [MaxLength(255)]
         public required string Institution { get; set; }
-        public Guid AccountId { get; set; }
+        public Guid FinancialAccountId { get; set; }
         public DateTimeOffset SystemCreatedDate { get; init; }
         public DateTimeOffset SystemModifiedDate { get; set; }
         public bool IsActive { get; set; }

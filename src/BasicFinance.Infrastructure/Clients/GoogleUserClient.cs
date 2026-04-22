@@ -28,8 +28,10 @@ namespace BasicFinance.Infrastructure.Clients
         /// exists.
         /// </summary>
         /// <param name="googleSpreadsheetId"></param>
+        /// <param name="accessToken">The access token for the authenticated user.</param>
+        /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns></returns>
-        public async Task<Spreadsheet?> GetSpreadsheetAsync(string googleSpreadsheetId, string accessToken)
+        public async Task<Spreadsheet?> GetSpreadsheetAsync(string googleSpreadsheetId, string accessToken, CancellationToken cancellationToken = default)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
             var sheetsService = new SheetsService(new BaseClientService.Initializer
@@ -39,7 +41,7 @@ namespace BasicFinance.Infrastructure.Clients
             });
 
             var request = sheetsService.Spreadsheets.Get(googleSpreadsheetId);
-            var response = await request.ExecuteAsync();
+            var response = await request.ExecuteAsync(cancellationToken);
             return response;
         }
 
@@ -49,8 +51,9 @@ namespace BasicFinance.Infrastructure.Clients
         /// </summary>
         /// <param name="googleSpreadsheetId"></param>
         /// <param name="accessToken"></param>
+        /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns></returns>
-        public async Task GrantSpreadSheetAccessAsync(string googleSpreadsheetId, string accessToken)
+        public async Task GrantSpreadSheetAccessAsync(string googleSpreadsheetId, string accessToken, CancellationToken cancellationToken = default)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
             var driveService = new DriveService(new BaseClientService.Initializer
@@ -69,7 +72,7 @@ namespace BasicFinance.Infrastructure.Clients
             _logger.LogDebug("Granting read access to Google SpreadSheet: {GoogleSpreadheetId}", googleSpreadsheetId);
             var request = driveService.Permissions.Create(permission, googleSpreadsheetId);
             request.SendNotificationEmail = false;
-            await request.ExecuteAsync();
+            await request.ExecuteAsync(cancellationToken);
         }
     }
 }

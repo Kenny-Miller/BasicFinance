@@ -1,4 +1,6 @@
 using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Clients;
+using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(ServiceDiscoveryNames.BasicFinanceDb)));
 builder.EnrichNpgsqlDbContext<AppDbContext>();
+
+builder.Services.AddGoogleServiceAccountCredentials();
+builder.Services.AddSingleton<GoogleServiceAccountClient>();
 
 builder.Host.UseWolverine(x =>
 {

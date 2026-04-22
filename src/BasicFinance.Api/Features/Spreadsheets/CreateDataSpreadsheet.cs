@@ -48,6 +48,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// <param name="googleUserClient">Client used to call Google APIs on behalf of the user.</param>
         /// <param name="dbContext">Application <see cref="AppDbContext"/> for persisting the entity.</param>
         /// <param name="bus">Message bus used to publish synchronization commands.</param>
+        /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
         /// Returns <see cref="Created"/> when a new <see cref="DataSpreadsheet"/> was created or already exists,
         /// or <see cref="BadRequest"/> when the supplied Google Spreadsheet could not be retrieved.
@@ -60,9 +61,10 @@ namespace BasicFinance.Api.Features.Spreadsheets
             AuthenticatedUser user,
             GoogleUserClient googleUserClient,
             AppDbContext dbContext,
-            IMessageBus bus)
+            IMessageBus bus,
+            CancellationToken cancellationToken = default)
         {
-            var googleSpreadsheet = await googleUserClient.GetSpreadsheetAsync(request.GoogleSpreadsheetId, googleApiToken);
+            var googleSpreadsheet = await googleUserClient.GetSpreadsheetAsync(request.GoogleSpreadsheetId, googleApiToken, cancellationToken);
             if (googleSpreadsheet == null)
             {
                 return TypedResults.BadRequest();
@@ -73,7 +75,8 @@ namespace BasicFinance.Api.Features.Spreadsheets
                 .SingleOrDefaultAsync(s =>
                     s.GoogleSheetId == request.GoogleSpreadsheetId &&
                     s.UserId == user.Id &&
-                    s.IsActive);
+                    s.IsActive,
+                    cancellationToken);
 
             if (dataSpreadsheet != null)
             {
@@ -93,7 +96,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
             dbContext.DataSpreadsheets.Add(dataSpreadsheetEntity);
             await googleUserClient.GrantSpreadSheetAccessAsync(request.GoogleSpreadsheetId, googleApiToken);
             await dbContext.SaveChangesAsync();
-            await bus.PublishAsync(new SyncFinancialData(user.Id));
+            await bus.PublishAsync(new SyncFinancialData(user.Id, request.GoogleSpreadsheetId));
 
             return TypedResults.Created();
         }
