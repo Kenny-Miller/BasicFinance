@@ -12,10 +12,12 @@ namespace BasicFinance.DataProcessor.Handlers
 
         public async Task Handle(SyncFinancialData message, GoogleServiceAccountClient googleClient, AppDbContext dbContext, ILogger<SyncFinancialDataHandler> logger)
         {
-            var subsheets = await googleClient.GetSubSpreadsheetsAsync(message.GoogleSheetId, _subSpreadSheetNames);
+            var userSpreadsheet = await dbContext.UserGoogleSpreadsheets.SingleAsync(x => x.UserGoogleSpreadsheetId == message.UserGoogleSpreadsheetId);
+
+            var subsheets = await googleClient.GetSubSpreadsheetsAsync(userSpreadsheet.GoogleSheetId, _subSpreadSheetNames);
             if (subsheets == null)
             {
-                logger.LogWarning("Google shee for user {UserId} was not found during data process", message.UserId);
+                logger.LogWarning("Google sheet for user {UserId} was not found during data process", userSpreadsheet.UserId);
                 return;
             }
 
@@ -24,17 +26,45 @@ namespace BasicFinance.DataProcessor.Handlers
             {
                 await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-                // Preform a total refresh. Finatable sheet will remain the source of true in the event of data loss.
-                // Ensure we delete any additional processed data assocaiated with the user to keep things clean.
-                await dbContext.Accounts.Where(x => x.UserId == message.UserId).ExecuteDeleteAsync();
-                await dbContext.Transactions.Where(x => x.UserId == message.UserId).ExecuteDeleteAsync();
+                // Wipe transactions as transaction sheet will act as source of truth
+                await dbContext.Transactions.Where(x => x.UserId == userSpreadsheet.UserId).ExecuteDeleteAsync();
 
-                var mappedAccounts = MapToAccounts(message.UserId, subsheets.ValueRanges[0].Values);
-                dbContext.Accounts.AddRange(mappedAccounts);
+                // Determine if we need to create, update and add history, or delete as account sheet contains the current balance of the account and not previous values.                
+                var existingAccounts = await dbContext.Accounts
+                    .Where(x => x.UserGoogleSpreadsheetId == userSpreadsheet.UserGoogleSpreadsheetId)
+                    .Where(x => x.IsActive)
+                    .ToListAsync();
+
+                var spreadsheetAccountDict = MapToAccounts(userSpreadsheet, subsheets.ValueRanges[0].Values)
+                    .ToDictionary(x => x.AccountName);
+
+                var accountsToDelete = new List<Guid>();
+                foreach (var account in existingAccounts)
+                {
+                    if (spreadsheetAccountDict.TryGetValue(account.AccountName, out var mappedAccount))
+                    {
+                        if (account.Balance != mappedAccount.Balance || account.BalanceRecordedDate < mappedAccount.BalanceRecordedDate)
+                        {
+                            dbContext.AccountBalanceHistories.Add(new(account));
+                            account.UpdateBalance(mappedAccount.Balance, mappedAccount.BalanceRecordedDate);
+                        }
+                        spreadsheetAccountDict.Remove(account.AccountName);
+                    }
+                    else
+                    {
+                        accountsToDelete.Add(account.AccountId);
+                    }
+                }
+
+                await dbContext.AccountBalanceHistories.Where(x => accountsToDelete.Contains(x.AccountId)).ExecuteDeleteAsync();
+                await dbContext.Accounts.Where(x => accountsToDelete.Contains(x.AccountId)).ExecuteDeleteAsync();
+
+                var accountsToCreate = spreadsheetAccountDict.Values.ToList();
+                dbContext.Accounts.AddRange(accountsToCreate);
                 await dbContext.SaveChangesAsync();
 
-                var mappedAccountDict = mappedAccounts.ToDictionary(x => x.AccountName);
-                var mappedTransactions = MapToTransactions(message.UserId, subsheets.ValueRanges[1].Values, mappedAccountDict);
+                var mappedAccountDict = accountsToCreate.ToDictionary(x => x.AccountName);
+                var mappedTransactions = MapToTransactions(userSpreadsheet.UserId, subsheets.ValueRanges[1].Values, mappedAccountDict);
                 dbContext.Transactions.AddRange(mappedTransactions);
                 await dbContext.SaveChangesAsync();
 
@@ -45,24 +75,26 @@ namespace BasicFinance.DataProcessor.Handlers
         /// <summary>
         /// Maps the untyped rows retrieved from the Google Spreadsheet's Account subsheet to a list of <see cref="Account"/> entities.
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userGoogleSpreadSheet"></param>
         /// <param name="untypedAccountRows"></param>
         /// <returns></returns>
-        private static List<Account> MapToAccounts(string userId, IList<IList<object>> untypedAccountRows)
+        private static List<Account> MapToAccounts(UserGoogleSpreadsheet userGoogleSpreadSheet, IList<IList<object>> untypedAccountRows)
         {
             return [.. untypedAccountRows
                 .Skip(1)
                 .Select( x=> new{ AccountName = x[0], Balance = x[1], Currency = x[2], Notes = x[3], LastUpdateDated = x[4], Institution = x[5], FinancialAccountId = x[6]})
                 .Select(x => new Account
             {
-                UserId = userId,
+                UserGoogleSpreadsheetId = userGoogleSpreadSheet.UserGoogleSpreadsheetId,
+                UserId = userGoogleSpreadSheet.UserId,
                 AccountName = (string)x.AccountName,
                 Balance = decimal.Parse((string)x.Balance),
                 Currency = (string)x.Currency,
                 Notes = (string?)x.Notes,
-                LastUpdatedDate = DateTime.SpecifyKind((DateTime)x.LastUpdateDated, DateTimeKind.Utc),
+                BalanceRecordedDate = DateTime.SpecifyKind((DateTime)x.LastUpdateDated, DateTimeKind.Utc),
                 Institution = (string)x.Institution,
-                FinancialAccountId = Guid.Parse((string)x.FinancialAccountId)
+                FinancialAccountId = Guid.Parse((string)x.FinancialAccountId),
+                IsActive = true,
             })];
         }
 
@@ -86,6 +118,7 @@ namespace BasicFinance.DataProcessor.Handlers
                 AccountId = mappedAccountDict[(string)x.Account].AccountId,
                 Description = (string)x.Description,
                 Category = (string)x.Category,
+                IsActive = true
             })];
         }
     }

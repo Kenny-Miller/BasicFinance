@@ -9,12 +9,12 @@ using Wolverine.Http;
 namespace BasicFinance.Api.Features.Spreadsheets
 {
     /// <summary>
-    /// Contains all logic associated with the Delete Data Spreadsheet endpoint.
+    /// Contains all logic associated with the Delete User Google Spreadsheet endpoint.
     /// </summary>
     public static class DeleteDataSpreadsheet
     {
         /// <summary>
-        /// Soft-deletes (deactivates) a data spreadsheet owned by the authenticated user.
+        /// Soft-deletes (deactivates) a user google spreadsheet owned by the authenticated user.
         /// </summary>
         /// <param name="spreadsheetId">The identifier of the data spreadsheet to delete.</param>
         /// <param name="user">The authenticated user performing the request.</param>
@@ -30,18 +30,18 @@ namespace BasicFinance.Api.Features.Spreadsheets
            [NotBody] AuthenticatedUser user,
            [FromServices] AppDbContext dbContext)
         {
-            var dataSpreadsheet = await dbContext.DataSpreadsheets.SingleOrDefaultAsync(s =>
-                s.Id == spreadsheetId &&
+            var sheet = await dbContext.UserGoogleSpreadsheets.SingleOrDefaultAsync(s =>
+                s.UserGoogleSpreadsheetId == spreadsheetId &&
                 s.UserId == user.Id &&
                 s.IsActive);
 
-            if (dataSpreadsheet == null)
+            if (sheet == null)
             {
                 return TypedResults.BadRequest();
             }
 
-            dataSpreadsheet.IsActive = false;
-            dataSpreadsheet.SystemModifiedDate = DateTime.UtcNow;
+            sheet.IsActive = false;
+            sheet.SystemModifiedDate = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
 
             return TypedResults.Ok();

@@ -12,42 +12,73 @@ namespace BasicFinance.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "UserGoogleSpreadsheets",
+                columns: table => new
+                {
+                    UserGoogleSpreadsheetId = table.Column<Guid>(type: "uuid", nullable: false),
+                    GoogleSheetId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    GoogleSheetName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    LastSyncedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserGoogleSpreadsheets", x => x.UserGoogleSpreadsheetId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGoogleSpreadsheetId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     AccountName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    LastUpdatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Institution = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FinancialAccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.AccountId);
+                    table.ForeignKey(
+                        name: "FK_Accounts_UserGoogleSpreadsheets_UserGoogleSpreadsheetId",
+                        column: x => x.UserGoogleSpreadsheetId,
+                        principalTable: "UserGoogleSpreadsheets",
+                        principalColumn: "UserGoogleSpreadsheetId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DataSpreadsheets",
+                name: "AccountBalanceHistories",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    GoogleSheetId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    GoogleSheetName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AccountBalanceHistoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DataSpreadsheets", x => x.Id);
+                    table.PrimaryKey("PK_AccountBalanceHistories", x => x.AccountBalanceHistoryId);
+                    table.ForeignKey(
+                        name: "FK_AccountBalanceHistories_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "AccountId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,7 +93,7 @@ namespace BasicFinance.Infrastructure.Migrations
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Category = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -77,6 +108,16 @@ namespace BasicFinance.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AccountBalanceHistories_AccountId",
+                table: "AccountBalanceHistories",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Accounts_UserGoogleSpreadsheetId",
+                table: "Accounts",
+                column: "UserGoogleSpreadsheetId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_AccountId",
                 table: "Transactions",
                 column: "AccountId");
@@ -86,13 +127,16 @@ namespace BasicFinance.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "DataSpreadsheets");
+                name: "AccountBalanceHistories");
 
             migrationBuilder.DropTable(
                 name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "UserGoogleSpreadsheets");
         }
     }
 }

@@ -7,7 +7,8 @@ namespace BasicFinance.Infrastructure
     public class AppDbContext : DbContext
     {
         public DbSet<Account> Accounts { get; init; }
-        public DbSet<DataSpreadsheet> DataSpreadsheets { get; init; }
+        public DbSet<UserGoogleSpreadsheet> UserGoogleSpreadsheets { get; init; }
+        public DbSet<AccountBalanceHistory> AccountBalanceHistories { get; init; }
         public DbSet<Transaction> Transactions { get; init; }
 
         /// <summary>

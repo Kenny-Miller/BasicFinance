@@ -37,6 +37,9 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<DateTimeOffset>("BalanceRecordedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -53,9 +56,6 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("LastUpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Notes")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -63,8 +63,11 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("SystemCreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("SystemModifiedDate")
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserGoogleSpreadsheetId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -73,24 +76,26 @@ namespace BasicFinance.Infrastructure.Migrations
 
                     b.HasKey("AccountId");
 
+                    b.HasIndex("UserGoogleSpreadsheetId");
+
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.DataSpreadsheet", b =>
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountBalanceHistory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("AccountBalanceHistoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("GoogleSheetId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("GoogleSheetName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset>("BalanceRecordedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -98,17 +103,14 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("SystemCreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("SystemModifiedDate")
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("character varying(36)");
+                    b.HasKey("AccountBalanceHistoryId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("AccountId");
 
-                    b.ToTable("DataSpreadsheets");
+                    b.ToTable("AccountBalanceHistories");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Transaction", b =>
@@ -143,7 +145,7 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("SystemCreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("SystemModifiedDate")
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
@@ -156,6 +158,66 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", b =>
+                {
+                    b.Property<Guid>("UserGoogleSpreadsheetId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("GoogleSheetId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("GoogleSheetName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastSyncedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("SystemCreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasKey("UserGoogleSpreadsheetId");
+
+                    b.ToTable("UserGoogleSpreadsheets");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
+                {
+                    b.HasOne("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", "UserGoogleSpreadsheet")
+                        .WithMany("Accounts")
+                        .HasForeignKey("UserGoogleSpreadsheetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserGoogleSpreadsheet");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountBalanceHistory", b =>
+                {
+                    b.HasOne("BasicFinance.Infrastructure.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Transaction", b =>
@@ -172,6 +234,11 @@ namespace BasicFinance.Infrastructure.Migrations
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", b =>
+                {
+                    b.Navigation("Accounts");
                 });
 #pragma warning restore 612, 618
         }

@@ -40,7 +40,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         }
 
         /// <summary>
-        /// Creates a new <see cref="DataSpreadsheet"/> for the authenticated user and the specified Google Spreadsheet.
+        /// Creates a new <see cref="UserGoogleSpreadsheet"/> for the authenticated user and the specified Google Spreadsheet.
         /// </summary>
         /// <param name="googleApiToken">Google API token supplied via the <c>x-google-auth-token</c> header.</param>
         /// <param name="request">Request body containing the target Google Spreadsheet Id.</param>
@@ -50,7 +50,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// <param name="bus">Message bus used to publish synchronization commands.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
-        /// Returns <see cref="Created"/> when a new <see cref="DataSpreadsheet"/> was created or already exists,
+        /// Returns <see cref="Created"/> when a new <see cref="UserGoogleSpreadsheet"/> was created or already exists,
         /// or <see cref="BadRequest"/> when the supplied Google Spreadsheet could not be retrieved.
         /// </returns>
         [Authorize]
@@ -70,7 +70,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
                 return TypedResults.BadRequest();
             }
 
-            var dataSpreadsheet = await dbContext.DataSpreadsheets
+            var dataSpreadsheet = await dbContext.UserGoogleSpreadsheets
                 .AsNoTracking()
                 .SingleOrDefaultAsync(s =>
                     s.GoogleSheetId == request.GoogleSpreadsheetId &&
@@ -83,7 +83,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
                 return TypedResults.Created();
             }
 
-            var dataSpreadsheetEntity = new DataSpreadsheet
+            var userGoogleSpreadsheet = new UserGoogleSpreadsheet
             {
                 GoogleSheetId = request.GoogleSpreadsheetId,
                 GoogleSheetName = googleSpreadsheet.Properties.Title,
@@ -92,11 +92,10 @@ namespace BasicFinance.Api.Features.Spreadsheets
                 SystemModifiedDate = DateTime.UtcNow,
                 IsActive = true
             };
-
-            dbContext.DataSpreadsheets.Add(dataSpreadsheetEntity);
+            dbContext.UserGoogleSpreadsheets.Add(userGoogleSpreadsheet);
             await googleUserClient.GrantSpreadSheetAccessAsync(request.GoogleSpreadsheetId, googleApiToken);
             await dbContext.SaveChangesAsync();
-            await bus.PublishAsync(new SyncFinancialData(user.Id, request.GoogleSpreadsheetId));
+            await bus.PublishAsync(new SyncFinancialData(userGoogleSpreadsheet.UserGoogleSpreadsheetId));
 
             return TypedResults.Created();
         }
