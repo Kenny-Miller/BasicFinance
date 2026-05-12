@@ -19,7 +19,7 @@ namespace BasicFinance.Infrastructure.Extensions
                         decimal.Parse((string)x[1]),
                         (string)x[2],
                         (string)x[3],
-                        DateTime.SpecifyKind(DateTime.Parse((string)x[4]), DateTimeKind.Utc),
+                        DateTime.SpecifyKind((DateTime)x[4], DateTimeKind.Utc),
                         (string)x[5],
                         Guid.Parse((string)x[6])))
                 ];
@@ -34,7 +34,7 @@ namespace BasicFinance.Infrastructure.Extensions
                 [.. source
                     .Where(x => x.Count >= 5)
                     .Select(x => new TransactionGoogleSpreadsheetRow(
-                        DateTime.Parse((string)x[0]),
+                        DateTime.SpecifyKind(DateTime.Parse((string)x[0]), DateTimeKind.Utc),
                         decimal.Parse((string)x[1]),
                         (string)x[2],
                         (string)x[3],

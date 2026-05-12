@@ -1,14 +1,14 @@
 <section hlmCard class="rounded-sm">
   <div hlmCardHeader>
-    <h3 hlmCardTitle>Mange Spreadsheets ({{ spreadsheets.hasValue() ? spreadsheets.value().length : 0 }})</h3>
+    <h3 hlmCardTitle>Mange Spreadsheets ({{ spreadsheetResource.hasValue() ? spreadsheetResource.value().totalCount : 0 }})</h3>
     <p hlmCardDescription>
       Add or remove the spreadsheets that the application will source financial data from
     </p>
   </div>
   <div hlmCardContent>
     <div hlmItemGroup class="gap-2">
-      @if(spreadsheets.hasValue()){
-        @for (spreadsheet of spreadsheets.value(); track spreadsheet.id) {
+      @if(spreadsheetResource.hasValue()){
+        @for (spreadsheet of spreadsheetResource.value().items; track spreadsheet.id) {
           <div hlmItem variant="outline">
             <div hlmItemContent>
               <div hlmItemTitle>{{ spreadsheet.googleSheetName }}</div>
@@ -28,7 +28,14 @@
             </div>
           </div>
         }
-      }      
+      }
+      @if(spreadsheetResource.error()){
+        <div hlmAlert variant="destructive">
+          <div hlmAlertContent>
+            <p>Error loading spreadsheets</p>
+          </div>
+        </div>
+      }
     </div>
   </div>
   <div hlmCardFooter class="justify-end">

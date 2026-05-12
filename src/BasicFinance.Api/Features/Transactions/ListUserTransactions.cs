@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
-using static BasicFinance.Api.Features.Spreadsheets.ListUserGoogleSpreadsheets;
 
 namespace BasicFinance.Api.Features.Transactions
 {
@@ -26,28 +25,13 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="PageSize"></param>
         /// <param name="SortField"></param>
         /// <param name="SortDirection"></param>
-        public record Request(int Page, int PageSize, string? SortField, string? SortDirection) : IPagedQuery, ISortedQuery;
-
-        /// <summary>
-        /// Validator for <see cref="Request"/>.
-        /// </summary>
-        public class RequestValidator : AbstractValidator<Request>
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="RequestValidator"/> class.
-            /// </summary>
-            public RequestValidator()
-            {
-                RuleFor(x => x.Page).GreaterThan(0).WithMessage("Page must be greater than 0.");
-                RuleFor(x => x.PageSize).GreaterThan(0).WithMessage("PageSize must be greater than 0.");
-            }
-        }
+        public record Request(int? Page, int? PageSize, string? SortField, string? SortDirection) : IPagedQuery, ISortedQuery;
 
         /// <summary>
         /// Dto containing <see cref="Transaction"/> data.
         /// </summary>
         /// <param name="TransactionId"></param>
-        /// <param name="AccountId"></param>
+        /// <param name="AccountName"></param>
         /// <param name="Date"></param>
         /// <param name="Amount"></param>
         /// <param name="Description"></param>
@@ -67,7 +51,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// </returns>
         [Authorize]
         [WolverineGet("api/transactions/")]
-        public static async Task<Ok<PagedResponse<TransactionDto>>> HandleAsync(
+        public static async Task<Ok<ListResult<TransactionDto>>> HandleAsync(
             Request request,
             AuthenticatedUser user,
             AppDbContext dbContext,
@@ -83,22 +67,22 @@ namespace BasicFinance.Api.Features.Transactions
 
             var totalCount = await baseQuery.CountAsync(cancellationToken);
             var userSpreadSheets = await baseQuery
-                .Select(x => new TransactionDto(x.TransactionId, x.Account.AccountName, x.Date, x.Amount, x.Description, x.Category))
                 .OrderBy(sortExpressionSelector, request)
                     .ThenBy(x => x.TransactionId, request)
                 .Paginate(request)
+                 .Select(x => new TransactionDto(x.TransactionId, x.Account.AccountName, x.Date, x.Amount, x.Description, x.Category))
                 .ToListAsync(cancellationToken);
 
-            return TypedResults.Ok(new PagedResponse<TransactionDto>(userSpreadSheets, request.Page, request.PageSize, totalCount));
+            return TypedResults.Ok(new ListResult<TransactionDto>(userSpreadSheets, request.Page, request.PageSize, totalCount));
         }
 
         /// <summary>
-        /// Reference dictionary mapping sortable field names to their corresponding selectors for the <see cref="UserGoogleSpreadSheetDto"/>.
+        /// Reference dictionary mapping sortable field names to their corresponding selectors for the <see cref="Transaction"/>.
         /// </summary>
-        private static readonly FrozenDictionary<string, Expression<Func<TransactionDto, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<TransactionDto, object>>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly FrozenDictionary<string, Expression<Func<Transaction, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Transaction, object>>>(StringComparer.OrdinalIgnoreCase)
         {
             [nameof(TransactionDto.TransactionId)] = x => x.TransactionId,
-            [nameof(TransactionDto.AccountName)] = x => x.AccountName,
+            [nameof(TransactionDto.AccountName)] = x => x.Account.AccountName,
             [nameof(TransactionDto.Date)] = x => x.Date,
             [nameof(TransactionDto.Amount)] = x => x.Amount,
             [nameof(TransactionDto.Description)] = x => x.Description,

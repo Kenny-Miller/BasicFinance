@@ -18,8 +18,8 @@ namespace BasicFinance.Infrastructure.Extensions
             /// <returns></returns>
             public IQueryable<T> Paginate(IPagedQuery query)
             {
-                var page = query.Page <= 0 ? QueryConstants.DefaultPage : query.Page;
-                var pageSize = query.PageSize <= 0 ? QueryConstants.DefaultPageSize : query.PageSize;
+                var page = !query.Page.HasValue || query.Page.Value <= 0 ? QueryConstants.DefaultPage : query.Page.Value;
+                var pageSize = !query.PageSize.HasValue || query.PageSize.Value <= 0 ? QueryConstants.DefaultPageSize : query.PageSize.Value;
 
                 return queryable
                     .Skip((page - 1) * pageSize)
