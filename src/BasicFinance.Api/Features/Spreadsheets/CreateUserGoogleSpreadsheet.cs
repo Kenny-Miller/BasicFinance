@@ -14,13 +14,13 @@ using Wolverine.Http;
 namespace BasicFinance.Api.Features.Spreadsheets
 {
     /// <summary>
-    /// The <see cref="CreateDataSpreadsheet"/> class contains
-    /// all logic associated with the Create Data Spreadsheet Endpoint.
+    /// The <see cref="CreateUserGoogleSpreadsheet"/> class contains
+    /// all logic associated with the Create User Google Spreadsheet Endpoint.
     /// </summary>
-    public static class CreateDataSpreadsheet
+    public static class CreateUserGoogleSpreadsheet
     {
         /// <summary>
-        /// Request Dto for the Create Data Spreadsheet endpoint.
+        /// Request Dto for the <see cref="CreateUserGoogleSpreadsheet"/> endpoint.
         /// </summary>
         /// <param name="GoogleSpreadsheetId">The Google Spreadsheet identifier to associate with the authenticated user.</param>
         public record Request(string GoogleSpreadsheetId);
@@ -35,9 +35,19 @@ namespace BasicFinance.Api.Features.Spreadsheets
             /// </summary>
             public RequestValidator()
             {
-                RuleFor(x => x.GoogleSpreadsheetId).NotEmpty().WithMessage("SpreadsheetId is required.");
+                RuleFor(x => x.GoogleSpreadsheetId).NotEmpty().WithMessage("GoogleSpreadsheetId is required.");
             }
         }
+
+        /// <summary>
+        /// Response Dto for the <see cref="CreateUserGoogleSpreadsheet"/> endpoint.
+        /// </summary>
+        /// <param name="UserGoogleSpreadsheetId"></param>
+        /// <param name="UserId"></param>
+        /// <param name="GoogleSpreadsheetId"></param>
+        /// <param name="GoogleSpreadsheetName"></param>
+        /// <param name="CreatedDate"></param>
+        public record Response(Guid UserGoogleSpreadsheetId, string UserId, string GoogleSpreadsheetId, string GoogleSpreadsheetName, DateTimeOffset CreatedDate);
 
         /// <summary>
         /// Creates a new <see cref="UserGoogleSpreadsheet"/> for the authenticated user and the specified Google Spreadsheet.
@@ -50,12 +60,13 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// <param name="bus">Message bus used to publish synchronization commands.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
-        /// Returns <see cref="Created"/> when a new <see cref="UserGoogleSpreadsheet"/> was created or already exists,
-        /// or <see cref="BadRequest"/> when the supplied Google Spreadsheet could not be retrieved.
+        /// Returns <see cref="Created"/> when a new <see cref="UserGoogleSpreadsheet"/> was created,
+        /// a <see cref="NotFound"/> when the specified Google Spreadsheet could not be found or accessed, or
+        /// a <see cref="Conflict"/> when the specified Google Spreadsheet is already associated with the authenticated user.
         /// </returns>
         [Authorize]
         [WolverinePost("api/spreadsheets")]
-        public static async Task<Results<Created, BadRequest>> HandleAsync(
+        public static async Task<Results<Created<Response>, NotFound<string>, Conflict<string>>> HandleAsync(
             [FromHeader(Name = "x-google-auth-token")] string googleApiToken,
             Request request,
             AuthenticatedUser user,
@@ -67,10 +78,10 @@ namespace BasicFinance.Api.Features.Spreadsheets
             var googleSpreadsheet = await googleUserClient.GetSpreadsheetAsync(request.GoogleSpreadsheetId, googleApiToken, cancellationToken);
             if (googleSpreadsheet == null)
             {
-                return TypedResults.BadRequest();
+                return TypedResults.NotFound("The specified Google Spreadsheet could not be found or accessed.");
             }
 
-            var dataSpreadsheet = await dbContext.UserGoogleSpreadsheets
+            var userGoogleSpreadSheet = await dbContext.UserGoogleSpreadsheets
                 .AsNoTracking()
                 .SingleOrDefaultAsync(s =>
                     s.GoogleSheetId == request.GoogleSpreadsheetId &&
@@ -78,26 +89,25 @@ namespace BasicFinance.Api.Features.Spreadsheets
                     s.IsActive,
                     cancellationToken);
 
-            if (dataSpreadsheet != null)
+            if (userGoogleSpreadSheet != null)
             {
-                return TypedResults.Created();
+                return TypedResults.Conflict("The specified Google Spreadsheet is already associated with the authenticated user.");
             }
 
-            var userGoogleSpreadsheet = new UserGoogleSpreadsheet
-            {
-                GoogleSheetId = request.GoogleSpreadsheetId,
-                GoogleSheetName = googleSpreadsheet.Properties.Title,
-                UserId = user.Id,
-                SystemCreatedDate = DateTime.UtcNow,
-                SystemModifiedDate = DateTime.UtcNow,
-                IsActive = true
-            };
+            var userGoogleSpreadsheet = new UserGoogleSpreadsheet(user.Id, request.GoogleSpreadsheetId, googleSpreadsheet.Properties.Title);
             dbContext.UserGoogleSpreadsheets.Add(userGoogleSpreadsheet);
-            await googleUserClient.GrantSpreadSheetAccessAsync(request.GoogleSpreadsheetId, googleApiToken);
-            await dbContext.SaveChangesAsync();
+            await googleUserClient.GrantSpreadSheetAccessAsync(request.GoogleSpreadsheetId, googleApiToken, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             await bus.PublishAsync(new SyncFinancialData(userGoogleSpreadsheet.UserGoogleSpreadsheetId));
 
-            return TypedResults.Created();
+            var response = new Response(
+                userGoogleSpreadsheet.UserGoogleSpreadsheetId,
+                userGoogleSpreadsheet.UserId,
+                userGoogleSpreadsheet.GoogleSheetId,
+                userGoogleSpreadsheet.GoogleSheetName,
+                userGoogleSpreadsheet.SystemCreatedDate);
+
+            return TypedResults.Created($"api/spreadsheets/{userGoogleSpreadsheet.UserGoogleSpreadsheetId}", response);
         }
     }
 }

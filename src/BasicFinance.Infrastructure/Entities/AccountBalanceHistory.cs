@@ -12,10 +12,10 @@ namespace BasicFinance.Infrastructure.Entities
         [NotMapped]
         public Guid Id => AccountBalanceHistoryId;
 
-        public Guid AccountId { get; set; }
-
         [ForeignKey(nameof(AccountId))]
+        [DeleteBehavior(DeleteBehavior.Cascade)]
         public Account Account { get; set; } = null!;
+        public Guid AccountId { get; set; }
 
         [Precision(18, 2)]
         public decimal Balance { get; set; }
@@ -23,10 +23,6 @@ namespace BasicFinance.Infrastructure.Entities
         public DateTimeOffset SystemCreatedDate { get; init; }
         public DateTimeOffset? SystemModifiedDate { get; set; }
         public bool IsActive { get; set; }
-
-        public AccountBalanceHistory()
-        {
-        }
 
         public AccountBalanceHistory(Account account)
         {
@@ -36,6 +32,11 @@ namespace BasicFinance.Infrastructure.Entities
             BalanceRecordedDate = account.BalanceRecordedDate;
             SystemCreatedDate = DateTimeOffset.UtcNow;
             IsActive = true;
+        }
+
+        private AccountBalanceHistory()
+        {
+            // For EF
         }
     }
 }

@@ -30,10 +30,10 @@ namespace BasicFinance.Infrastructure.Clients
         /// </summary>
         /// <param name="googleSheetId"></param>
         /// <returns></returns>
-        public async Task<BatchGetValuesResponse?> GetSubSpreadsheetsAsync(string googleSheetId, List<string> subsheetnames, CancellationToken cancellationToken = default)
+        public async Task<BatchGetValuesResponse?> GetSubSpreadsheetsAsync(string googleSheetId, IReadOnlyList<string> subsheetnames, CancellationToken cancellationToken = default)
         {
             var request = _sheetsService.Spreadsheets.Values.BatchGet(googleSheetId);
-            request.Ranges = subsheetnames;
+            request.Ranges = new(subsheetnames);
             var response = await request.ExecuteAsync(cancellationToken);
             return response;
         }
