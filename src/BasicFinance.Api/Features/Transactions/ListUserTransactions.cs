@@ -70,7 +70,7 @@ namespace BasicFinance.Api.Features.Transactions
                 .OrderBy(sortExpressionSelector, request)
                     .ThenBy(x => x.TransactionId, request)
                 .Paginate(request)
-                 .Select(x => new TransactionDto(x.TransactionId, x.Account.AccountName, x.Date, x.Amount, x.Description, x.Category))
+                .Select(x => new TransactionDto(x.TransactionId, x.Account.AccountName, x.Date, x.Amount, x.Description, x.Category))
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new ListResult<TransactionDto>(userSpreadSheets, request.Page, request.PageSize, totalCount));
