@@ -84,9 +84,11 @@ IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.BasicFinance
     .PublishAsDockerFile();
 
 IResourceBuilder<ProjectResource> dataProcessorService = builder.AddProject<Projects.BasicFinance_DataProcessor>("dataProcessor")
+    .WithChildRelationship(googleServiceAccountCredentialFile)
     .WithReference(basicFinanceDbServer)
     .WithReference(rabbitmq)
     .WaitFor(basicFinanceDbServer)
+    .WithEnvironment("GOOGLE-APPLICATION-CREDENTIALS", googleServiceAccountCredentialFile)
     .WaitFor(rabbitmq)
     .PublishAsDockerFile();
 

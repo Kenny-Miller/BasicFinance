@@ -44,7 +44,7 @@ export class ManageSpreadsheets {
   googleOAuthToken = signal<string | null>(null);
   isGoogleFilePickerOpen = signal<boolean>(false);
 
-  spreadsheets = this.settingsClient.spreadsheetResource;
+  spreadsheetResource = this.settingsClient.spreadsheetResource;
 
   public openGoogleFilePicker(): void {
     this.isGoogleFilePickerOpen.set(true);
@@ -68,7 +68,7 @@ export class ManageSpreadsheets {
 
     const googleSpreadsheetId = event.detail['docs'][0]['id'];
     this.settingsClient.addSpreadSheet(googleSpreadsheetId, googleOAuthToken).subscribe({
-      next: () => this.spreadsheets.reload(),
+      next: () => this.spreadsheetResource.reload(),
       error: (e) => {
         this.isGoogleFilePickerOpen.set(false);
       },
@@ -85,7 +85,7 @@ export class ManageSpreadsheets {
 
   public deleteGoogleSpreadsheet(spreadsheetId: string) {
     this.settingsClient.deleteSpreadSheet(spreadsheetId).subscribe({
-      next: () => this.spreadsheets.reload(),
+      next: () => this.spreadsheetResource.reload(),
     });
   }
 }
