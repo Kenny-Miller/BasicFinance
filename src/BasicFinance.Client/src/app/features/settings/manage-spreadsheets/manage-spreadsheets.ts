@@ -38,13 +38,13 @@ import { SettingsClient } from '../settings-client';
   styleUrl: './manage-spreadsheets.css',
 })
 export class ManageSpreadsheets {
-  environmnetConfig = inject(ENVIRONMENT_CONFIG);
-  settingsClient = inject(SettingsClient);
+  private readonly settingsClient = inject(SettingsClient);
+  readonly environmnetConfig = inject(ENVIRONMENT_CONFIG);
 
-  googleOAuthToken = signal<string | null>(null);
-  isGoogleFilePickerOpen = signal<boolean>(false);
+  readonly spreadsheetResource = this.settingsClient.spreadsheetResource;
 
-  spreadsheetResource = this.settingsClient.spreadsheetResource;
+  readonly googleOAuthToken = signal<string | null>(null);
+  readonly isGoogleFilePickerOpen = signal<boolean>(false);
 
   public openGoogleFilePicker(): void {
     this.isGoogleFilePickerOpen.set(true);

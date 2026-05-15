@@ -12,6 +12,22 @@ namespace BasicFinance.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AccountTypes",
+                columns: table => new
+                {
+                    AccountTypeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountTypeName = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountTypes", x => x.AccountTypeId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserGoogleSpreadsheets",
                 columns: table => new
                 {
@@ -35,6 +51,7 @@ namespace BasicFinance.Infrastructure.Migrations
                 {
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserGoogleSpreadsheetId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountTypeId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     AccountName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
@@ -50,6 +67,12 @@ namespace BasicFinance.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.AccountId);
+                    table.ForeignKey(
+                        name: "FK_Accounts_AccountTypes_AccountTypeId",
+                        column: x => x.AccountTypeId,
+                        principalTable: "AccountTypes",
+                        principalColumn: "AccountTypeId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Accounts_UserGoogleSpreadsheets_UserGoogleSpreadsheetId",
                         column: x => x.UserGoogleSpreadsheetId,
@@ -113,6 +136,11 @@ namespace BasicFinance.Infrastructure.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Accounts_AccountTypeId",
+                table: "Accounts",
+                column: "AccountTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Accounts_UserGoogleSpreadsheetId",
                 table: "Accounts",
                 column: "UserGoogleSpreadsheetId");
@@ -134,6 +162,9 @@ namespace BasicFinance.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "AccountTypes");
 
             migrationBuilder.DropTable(
                 name: "UserGoogleSpreadsheets");

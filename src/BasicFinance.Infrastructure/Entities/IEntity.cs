@@ -3,11 +3,6 @@
     public interface IEntity
     {
         /// <summary>
-        /// Gets a value indicating the unique identifier of the entity.
-        /// </summary>
-        public Guid Id { get; }
-
-        /// <summary>
         /// Gets a value indicating when the entity was created in the system.
         /// </summary>
         public DateTimeOffset SystemCreatedDate { get; init; }

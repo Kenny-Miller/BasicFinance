@@ -13,10 +13,6 @@ namespace BasicFinance.Infrastructure.Entities
         [Key]
         public Guid TransactionId { get; set; }
 
-        /// <inheritdoc />
-        [NotMapped]
-        public Guid Id => TransactionId;
-
         /// <summary>
         /// Gets a value indicating the unique identifier of the user who owns the transaction.
         /// </summary>
@@ -34,6 +30,28 @@ namespace BasicFinance.Infrastructure.Entities
         /// Gets a value indicating the unique identifier of the associated <see cref="Account"/> for the transaction.
         /// </summary>
         public Guid AccountId { get; init; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the associated <see cref="TransactionType"/> for the transaction.
+        /// </summary>
+        [ForeignKey(nameof(TransactionTypeId))]
+        public TransactionType TransactionType { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets a value indicating the id of the associated <see cref="TransactionType"/> for the transaction.
+        /// </summary>
+        public int TransactionTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the associated <see cref="TransactionCategory"/> for the transaction.
+        /// </summary>
+        [ForeignKey(nameof(TransactionCategoryId))]
+        public TransactionCategory TransactionCategory { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets a value indicating the id of the associated <see cref="TransactionCategory"/> for the transaction.
+        /// </summary>
+        public int TransactionCategoryId { get; set; }
 
         /// <summary>
         /// Gets a value indicating the date and time when the transaction occurred.
@@ -71,16 +89,20 @@ namespace BasicFinance.Infrastructure.Entities
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="accountId"></param>
+        /// <param name="transactionType"></param>
+        /// <param name="transactionCategory"></param>
         /// <param name="date"></param>
         /// <param name="amount"></param>
         /// <param name="description"></param>
         /// <param name="category"></param>
         [SetsRequiredMembers]
-        public Transaction(string userId, Guid accountId, DateTimeOffset date, decimal amount, string description, string category)
+        public Transaction(string userId, Guid accountId, Enums.TransactionType transactionType, Enums.TransactionCategory transactionCategory, DateTimeOffset date, decimal amount, string description, string category)
         {
             TransactionId = Guid.NewGuid();
             UserId = userId;
             AccountId = accountId;
+            TransactionTypeId = (int)transactionType;
+            TransactionCategoryId = (int)transactionCategory;
             Date = date;
             Amount = amount;
             Description = description;

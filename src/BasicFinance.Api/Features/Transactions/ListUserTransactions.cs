@@ -8,6 +8,7 @@ using BasicFinance.Infrastructure.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
 
@@ -30,13 +31,13 @@ namespace BasicFinance.Api.Features.Transactions
         /// <summary>
         /// Dto containing <see cref="Transaction"/> data.
         /// </summary>
-        /// <param name="TransactionId"></param>
+        /// <param name="Id"></param>
         /// <param name="AccountName"></param>
         /// <param name="Date"></param>
         /// <param name="Amount"></param>
         /// <param name="Description"></param>
         /// <param name="Category"></param>
-        public record TransactionDto(Guid TransactionId, string AccountName, DateTimeOffset Date, decimal Amount, string Description, string Category);
+        public record TransactionDto(Guid Id, string AccountName, DateTimeOffset Date, decimal Amount, string Description, string Category);
 
         /// <summary>
         /// Lists <see cref="Transaction"/>s associated with the authenticated user.
@@ -52,7 +53,7 @@ namespace BasicFinance.Api.Features.Transactions
         [Authorize]
         [WolverineGet("api/transactions/")]
         public static async Task<Ok<ListResult<TransactionDto>>> HandleAsync(
-            Request request,
+            [FromQuery] Request request,
             AuthenticatedUser user,
             AppDbContext dbContext,
             CancellationToken cancellationToken)
@@ -81,7 +82,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// </summary>
         private static readonly FrozenDictionary<string, Expression<Func<Transaction, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Transaction, object>>>(StringComparer.OrdinalIgnoreCase)
         {
-            [nameof(TransactionDto.TransactionId)] = x => x.TransactionId,
+            [nameof(TransactionDto.Id)] = x => x.TransactionId,
             [nameof(TransactionDto.AccountName)] = x => x.Account.AccountName,
             [nameof(TransactionDto.Date)] = x => x.Date,
             [nameof(TransactionDto.Amount)] = x => x.Amount,

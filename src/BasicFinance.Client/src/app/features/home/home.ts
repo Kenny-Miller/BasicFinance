@@ -15,10 +15,23 @@ import 'chartjs-adapter-date-fns';
 import ChartDeferred from 'chartjs-plugin-deferred';
 import { BaseChartDirective } from 'ng2-charts';
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
+import { HomeClient } from './home-client';
+import { TransactionsList } from '../../shared/ui/transactions-list/transactions-list';
+import { TransactionsListSkeleton } from '../../shared/ui/transactions-list-skeleton/transactions-list-skeleton';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, HlmCardImports, BaseChartDirective],
+  imports: [
+    RouterLink,
+    CommonModule,
+    HlmCardImports,
+    BaseChartDirective,
+    TransactionsList,
+    TransactionsListSkeleton,
+    HlmButtonImports,
+  ],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -26,6 +39,11 @@ export class Home implements OnInit, AfterViewInit {
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   private readonly oauthService = inject(OAuthService);
+  private readonly homeClient = inject(HomeClient);
+
+  readonly accountsResource = this.homeClient.accountsResource;
+  readonly transactionsResource = this.homeClient.transactionsResource;
+
   readonly user = signal<AuthUserProfile | null>(null);
   readonly displayChart = signal(false);
   readonly currentDate = new Date();

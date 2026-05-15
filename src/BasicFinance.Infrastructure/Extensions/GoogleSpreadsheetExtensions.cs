@@ -10,10 +10,12 @@ namespace BasicFinance.Infrastructure.Extensions
             /// Maps the untyped rows retrieved from the Google Spreadsheet's Account subsheet to a list of <see cref="AccountGoogleSpreadsheetRow"/> objects.
             /// </summary>
             /// <remarks>
-            /// Expects the following column order: Account Name, Balance, Currency, Notes, LastUpdatedDate, Institution, and FinancialAccountId.
+            /// Expects the following column order: Account Name, Balance, Currency, Notes, LastUpdatedDate, Institution, FinancialAccountId, Raw Data, and Available Balance.
+            /// Avaiable Balance is generally blank so skip mapping.
+            /// </remarks>
             public List<AccountGoogleSpreadsheetRow> MapToAccountRows() =>
                 [.. source
-                    .Where(x => x.Count >= 7)
+                    .Where(x => x.Count >= 8)
                     .Select(x => new AccountGoogleSpreadsheetRow(
                         (string)x[0],
                         decimal.Parse((string)x[1]),
@@ -21,24 +23,28 @@ namespace BasicFinance.Infrastructure.Extensions
                         (string)x[3],
                         DateTime.SpecifyKind((DateTime)x[4], DateTimeKind.Utc),
                         (string)x[5],
-                        Guid.Parse((string)x[6])))
+                        Guid.Parse((string)x[6]),
+                        (string)x[7]
+                    ))
                 ];
 
             /// <summary>
             /// Maps the untyped rows retrieved from the Google Spreadsheet's Transaction subsheet to a list of <see cref="TransactionGoogleSpreadsheetRow"/> objects.
             /// </summary>
             /// <remarks>
-            /// Expects the following column order in the Transactions subsheet: Date, Amount, Description, and Category.
+            /// Expects the following column order in the Transactions subsheet: Date, Amount, Description, Category, Attachment, Raw Data.
+            /// Attachment is generally blank so skip mapping.
             /// </remarks>
             public List<TransactionGoogleSpreadsheetRow> MapToTransactionRows() =>
                 [.. source
-                    .Where(x => x.Count >= 5)
+                    .Where(x => x.Count >= 7)
                     .Select(x => new TransactionGoogleSpreadsheetRow(
                         DateTime.SpecifyKind(DateTime.Parse((string)x[0]), DateTimeKind.Utc),
                         decimal.Parse((string)x[1]),
                         (string)x[2],
                         (string)x[3],
-                        (string)x[4]))
+                        (string)x[4],
+                        (string)x[6]))
                  ];
         }
     }

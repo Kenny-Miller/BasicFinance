@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BasicFinance.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260430025131_InitialCreate")]
+    [Migration("20260514042114_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -35,6 +35,9 @@ namespace BasicFinance.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("AccountTypeId")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Balance")
                         .HasPrecision(18, 2)
@@ -79,6 +82,8 @@ namespace BasicFinance.Infrastructure.Migrations
 
                     b.HasKey("AccountId");
 
+                    b.HasIndex("AccountTypeId");
+
                     b.HasIndex("UserGoogleSpreadsheetId");
 
                     b.ToTable("Accounts");
@@ -114,6 +119,34 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("AccountBalanceHistories");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
+                {
+                    b.Property<Guid>("AccountTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccountTypeName")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("SystemCreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("AccountTypeId");
+
+                    b.ToTable("AccountTypes");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Transaction", b =>
@@ -203,11 +236,19 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
                 {
+                    b.HasOne("BasicFinance.Infrastructure.Entities.AccountType", "AccountType")
+                        .WithMany("Accounts")
+                        .HasForeignKey("AccountTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", "UserGoogleSpreadsheet")
                         .WithMany("Accounts")
                         .HasForeignKey("UserGoogleSpreadsheetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AccountType");
 
                     b.Navigation("UserGoogleSpreadsheet");
                 });
@@ -215,7 +256,7 @@ namespace BasicFinance.Infrastructure.Migrations
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountBalanceHistory", b =>
                 {
                     b.HasOne("BasicFinance.Infrastructure.Entities.Account", "Account")
-                        .WithMany()
+                        .WithMany("AccountBalanceHistory")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -236,7 +277,14 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
                 {
+                    b.Navigation("AccountBalanceHistory");
+
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
+                {
+                    b.Navigation("Accounts");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", b =>

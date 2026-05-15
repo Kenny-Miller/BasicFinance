@@ -14,7 +14,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmNavigationMenuImports } from '@spartan-ng/helm/navigation-menu';
-import { NavMenuItem } from '../../shared/menu/nav-menu-item';
+import { NavMenuItem } from '../../shared/models/nav-menu-item';
 
 @Component({
   selector: 'app-settings',
