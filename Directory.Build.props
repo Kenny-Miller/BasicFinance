@@ -1,0 +1,7 @@
+<PropertyGroup>
+  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+  <!-- Optional: Treat all style warnings as errors to break the build -->
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+</PropertyGroup>
