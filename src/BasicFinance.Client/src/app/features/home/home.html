@@ -117,31 +117,35 @@
     </div>
   </section>
 
-  <section hlmCard class="col-span-4 lg:col-span-2 gap-2 row-span-2 rounded-sm">
+  <section hlmCard class="col-span-4 lg:col-span-2 gap-2 rounded-sm">
     <div hlmCardHeader>
-      <h3 hlmCardTitle>Recent Transactions</h3>
+      <h3 hlmCardTitle>Accounts</h3>
     </div>
     <div hlmCardContent class="flex-1">
-      @if (transactionsResource.hasValue()) {
-        <app-transactions-list [transactionsResult]="transactionsResource.value()" />
-      } @else if (transactionsResource.isLoading()) {
-        <app-transactions-list-skeleton />
-      }
-
-      <div class="flex justify-center mt-2">
-        <button
-          routerLink="/transactions"
-          hlmBtn
-          [disabled]="transactionsResource.isLoading()"
-          class="w-full lg:w-80"
-        >
-          View More
-        </button>
-      </div>
+      <app-account-group-accordion
+        accountGroupTitle="Checking"
+        accountGroupIcon="lucideDollarSign"
+        [accountGroupData]="checkingAccountsDisplay()"
+      ></app-account-group-accordion>
+      <app-account-group-accordion
+        accountGroupTitle="Savings"
+        accountGroupIcon="lucideLandmark"
+        [accountGroupData]="savingsAccountsDisplay()"
+      ></app-account-group-accordion>
+      <app-account-group-accordion
+        accountGroupTitle="Credit Cards"
+        accountGroupIcon="lucideCreditCard"
+        [accountGroupData]="creditCardAccountsDisplay()"
+      ></app-account-group-accordion>
+      <app-account-group-accordion
+        accountGroupTitle="Investments"
+        accountGroupIcon="lucideChartNoAxesCombined"
+        [accountGroupData]="investmentAccountsDisplay()"
+      ></app-account-group-accordion>
     </div>
   </section>
 
-  <section hlmCard class="ccol-span-4 lg:col-span-2 gap-2 row-span-2 rounded-sm">
+  <section hlmCard class="col-span-4 lg:col-span-2 gap-2 row-span-2 rounded-sm">
     <div hlmCardHeader>
       <h3 hlmCardTitle>Recent Transactions</h3>
     </div>

@@ -15,14 +15,14 @@ namespace BasicFinance.Infrastructure.Entities
         /// Gets a value indicating the transaction type code.
         /// </summary>
         [Required]
-        [MaxLength(10)]
+        [MaxLength(25)]
         public required string TransactionTypeCode { get; set; }
 
         /// <summary>
         /// Gets a value indicating the transaction type name.
         /// </summary>
         [Required]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public required string TransactionTypeName { get; init; }
 
         /// <inheritdoc />

@@ -3,7 +3,7 @@ using BasicFinance.Domain.Commands;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.Infrastructure.Entities;
-using BasicFinance.Infrastructure.Extensions;
+using BasicFinance.Infrastructure.Helpers;
 using BasicFinance.Infrastructure.VendorModels;
 using BasicFinance.Infrastructure.VendorModels.Exports;
 using Microsoft.EntityFrameworkCore;
@@ -50,24 +50,12 @@ namespace BasicFinance.DataProcessor.Handlers
             {
                 await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-                // Wipe transactions whose account is associated with the specified Google Spreadsheet as the transaction sheet will act as the source of truth
-                await dbContext.Transactions
-                   .Where(x => x.UserId == userSpreadsheet.UserId)
-                   .Where(x => x.Account.UserGoogleSpreadsheet.UserGoogleSpreadsheetId == userSpreadsheet.UserGoogleSpreadsheetId)
-                   .ExecuteDeleteAsync();
+                var accountRows = MapToAccountRows(subsheets.ValueRanges[0].Values.Skip(1));
+                await SyncAccounts(dbContext, logger, userSpreadsheet.UserId, userSpreadsheet.UserGoogleSpreadsheetId, accountRows);
 
-                var accountDictionary = subsheets.ValueRanges[0].Values
-                    .Skip(1)
-                    .MapToAccountRows()
-                    .ToDictionary(x => x.AccountName);
+                var transactionRows = MapToTransactionRows(subsheets.ValueRanges[1].Values.Skip(1));
+                await SyncTransactionsAsync(dbContext, logger, userSpreadsheet.UserId, userSpreadsheet.UserGoogleSpreadsheetId, transactionRows);
 
-                await SyncAccounts(dbContext, logger, userSpreadsheet.UserId, userSpreadsheet.UserGoogleSpreadsheetId, accountDictionary);
-
-                var transactionRows = subsheets.ValueRanges[1].Values
-                   .Skip(1)
-                   .MapToTransactionRows();
-
-                await CreateTransactionsAsync(dbContext, logger, userSpreadsheet.UserId, userSpreadsheet.UserGoogleSpreadsheetId, transactionRows);
                 await transaction.CommitAsync();
             });
         }
@@ -79,46 +67,62 @@ namespace BasicFinance.DataProcessor.Handlers
         /// <param name="logger"></param>
         /// <param name="userId"></param>
         /// <param name="userGoogleSpreadsheetId"></param>
-        /// <param name="accountRowDictionary"></param>
+        /// <param name="accountRows"></param>
         /// <returns></returns>
-        private static async Task SyncAccounts(AppDbContext dbContext, ILogger logger, string userId, Guid userGoogleSpreadsheetId, Dictionary<string, AccountGoogleSpreadsheetRow> accountRowDictionary)
+        private static async Task SyncAccounts(AppDbContext dbContext, ILogger logger, string userId, Guid userGoogleSpreadsheetId, List<AccountGoogleSpreadsheetRow> accountRows)
         {
-            var existingAccounts = await dbContext.Accounts
+            var existingAccountsDict = await dbContext.Accounts
                    .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
+                   .Where(x => x.UserId == userId)
                    .Where(x => x.IsActive)
-                   .ToListAsync();
+                   .ToDictionaryAsync(x => new { x.FinancialAccountId, x.Institution });
 
-            foreach (var account in existingAccounts)
+            var accountRowDict = accountRows.ToDictionary(x => new { x.FinancialAccountId, x.Institution });
+
+            // Update existing accounts and remove accounts that no longer exist in the spreadsheet
+            foreach (var (key, existingAccount) in existingAccountsDict)
             {
-                if (accountRowDictionary.TryGetValue(account.AccountName, out var accountRow))
+                if (accountRowDict.TryGetValue(key, out var accountRow))
                 {
-                    if (accountRow.Balance != account.Balance)
+                    if (accountRow.Balance != existingAccount.Balance)
                     {
-                        dbContext.AccountBalanceHistories.Add(new(account));
-                        account.UpdateBalance(accountRow.Balance, accountRow.LastUpdateDated);
+                        dbContext.AccountBalanceHistories.Add(new(existingAccount));
+                        existingAccount.UpdateBalance(accountRow.Balance, accountRow.LastUpdateDated);
                     }
                 }
                 else
                 {
-                    dbContext.Remove(account);
+                    dbContext.Remove(existingAccount);
                 }
 
-                accountRowDictionary.Remove(account.AccountName);
+                accountRowDict.Remove(key);
             }
 
-            foreach (var account in accountRowDictionary.Values)
+            // Add new accounts that exist in the spreadsheet but not in the database
+            var newAccounts = new List<Account>();
+            foreach (var accountRow in accountRowDict.Values)
             {
-                var accountExportType = _accountExportToTypeDict.TryGetValue(account.Institution, out var exportType) ? exportType : null;
+                var accountExportType = _accountExportToTypeDict.TryGetValue(accountRow.Institution, out var exportType) ? exportType : null;
                 if (accountExportType == null)
                 {
-                    logger.LogError("No export type found for institution {Institution} for user {UserId}. Account {AccountName} will be skipped.", account.Institution, userId, account.AccountName);
+                    logger.LogError(
+                        "No export type found for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.",
+                        accountRow.Institution,
+                        userId,
+                        accountRow.Institution,
+                        accountRow.AccountName);
                     continue;
                 }
 
-                var deserializedAccountJson = JsonConvert.DeserializeObject(account.RawDataJson, accountExportType);
+                var deserializedAccountJson = JsonConvert.DeserializeObject(accountRow.RawDataJson, accountExportType);
                 if (deserializedAccountJson is not IAccountExport export)
                 {
-                    logger.LogError("Failed to deserialize account export for institution {Institution} for user {UserId}. Account {AccountName} will be skipped.", account.Institution, userId, account.AccountName);
+                    logger.LogError(
+                        "Failed to deserialize account export for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.",
+                        accountRow.Institution,
+                        userId,
+                        accountRow.Institution,
+                        accountRow.AccountName);
                     continue;
                 }
 
@@ -135,16 +139,17 @@ namespace BasicFinance.DataProcessor.Handlers
                    userGoogleSpreadsheetId,
                    accountType,
                    userId,
-                   account.AccountName,
-                   account.Balance,
-                   account.Currency,
-                   account.Notes,
-                   account.Institution,
-                   account.FinancialAccountId,
-                   account.LastUpdateDated);
-                dbContext.Accounts.Add(accountToCreate);
+                   accountRow.AccountName,
+                   accountRow.Balance,
+                   accountRow.Currency,
+                   accountRow.Notes,
+                   accountRow.Institution,
+                   accountRow.FinancialAccountId,
+                   accountRow.LastUpdateDated);
+                newAccounts.Add(accountToCreate);
             }
 
+            dbContext.Accounts.AddRange(newAccounts);
             await dbContext.SaveChangesAsync();
         }
 
@@ -157,34 +162,58 @@ namespace BasicFinance.DataProcessor.Handlers
         /// <param name="userGoogleSpreadsheetId"></param>
         /// <param name="transactionRows"></param>
         /// <returns></returns>
-        private static async Task CreateTransactionsAsync(AppDbContext dbContext, ILogger logger, string userId, Guid userGoogleSpreadsheetId, List<TransactionGoogleSpreadsheetRow> transactionRows)
+        private static async Task SyncTransactionsAsync(AppDbContext dbContext, ILogger logger, string userId, Guid userGoogleSpreadsheetId, List<TransactionGoogleSpreadsheetRow> transactionRows)
         {
-            var accountDict = await dbContext.Accounts
+            var existingAccountsDict = await dbContext.Accounts
                 .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
                 .Where(x => x.UserId == userId)
                 .Where(x => x.IsActive)
-                .ToDictionaryAsync(x => x.AccountName, x => x);
+                .ToDictionaryAsync(x => x.AccountName);
 
-            foreach (var transaction in transactionRows)
+            var existingTransactionsDict = await dbContext.Transactions
+                .Where(x => x.UserId == userId)
+                .Where(x => x.IsActive)
+                .ToDictionaryAsync(x => new { x.Account.FinancialAccountId, x.FinancialTransactionId });
+
+            // Add new transactions that exist in the spreadsheet but not in the database
+            var newTransactions = new List<Transaction>();
+            foreach (var transactionRow in transactionRows)
             {
-                var account = accountDict.TryGetValue(transaction.Account, out var accountMatch) ? accountMatch : null;
+                var account = existingAccountsDict.TryGetValue(transactionRow.Account, out var accountMatch) ? accountMatch : null;
                 if (account == null)
                 {
-                    logger.LogError("No account found for transaction {Transaction} for user {UserId}. Transaction will be skipped.", transaction.Account + transaction.Description, userId);
+                    logger.LogError("No account found for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
+                        transactionRow.Account,
+                        transactionRow.Description,
+                        transactionRow.Date,
+                        transactionRow.Account,
+                        userId);
                     continue;
                 }
 
                 var transactionExportType = _accountExportToTransactionExportDict.TryGetValue(account.Institution, out var exportType) ? exportType : null;
                 if (transactionExportType == null)
                 {
-                    logger.LogError("No export type found for institution {Institution} for user {UserId}. Transaction {Transaction} will be skipped.", account.Institution, userId, transaction.Account + transaction.Description);
+                    logger.LogError("No export type found for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
+                       account.Institution,
+                       transactionRow.Account,
+                       transactionRow.Description,
+                       transactionRow.Date,
+                       transactionRow.Account,
+                       userId);
                     continue;
                 }
 
-                var deserializedAccountJson = JsonConvert.DeserializeObject(transaction.RawDataJson, transactionExportType);
+                var deserializedAccountJson = JsonConvert.DeserializeObject(transactionRow.RawDataJson, transactionExportType);
                 if (deserializedAccountJson is not ITransactionExport export)
                 {
-                    logger.LogError("Failed to deserialize transaction export for institution {Institution} for user {UserId}. Account {AccountName} will be skipped.", account.Institution, userId, account.AccountName);
+                    logger.LogError("Failed to deserialize transaction export for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
+                      account.Institution,
+                      transactionRow.Account,
+                      transactionRow.Description,
+                      transactionRow.Date,
+                      transactionRow.Account,
+                      userId);
                     continue;
                 }
 
@@ -193,12 +222,13 @@ namespace BasicFinance.DataProcessor.Handlers
                     "debit" => TransactionType.Debit,
                     "posdebit" => TransactionType.Debit,
                     "deposit" => TransactionType.Credit,
-                    "directedeposit" => TransactionType.Credit,
+                    "directdeposit" => TransactionType.Credit,
                     "credit" => TransactionType.Credit,
+                    "interest" => TransactionType.Credit,
                     _ => throw new InvalidOperationException("Unknown transaction type")
                 };
 
-                var transactionCategory = (export.Category.ToLower(), export.SubCategory.ToLower()) switch
+                var transactionCategory = (export.Category?.ToLower(), export.SubCategory?.ToLower()) switch
                 {
                     (_, "card payments (non-wf)") => TransactionCategory.CreditCardPayment,
                     (_, "direct deposits") => TransactionCategory.Income,
@@ -221,18 +251,81 @@ namespace BasicFinance.DataProcessor.Handlers
                     _ => TransactionCategory.Uncategorized
                 };
 
+                var normalizedDescription = StringHelper.NormalizeWhiteSpace(transactionRow.Description);
                 var transactionToCreate = new Transaction(
                     userId,
-                    accountDict[transaction.Account].AccountId,
+                    existingAccountsDict[transactionRow.Account].AccountId,
+                    export.TransactionId,
                     transactionType,
                     transactionCategory,
-                    transaction.Date,
-                    transaction.Amount,
-                    transaction.Description,
-                    transaction.Category);
-                dbContext.Transactions.Add(transactionToCreate);
+                    transactionRow.Date,
+                    transactionRow.Amount,
+                    normalizedDescription)
+                {
+                    // Load account so that we can use below when removing transactions that are not found
+                    Account = existingAccountsDict[transactionRow.Account]
+                };
+
+                newTransactions.Add(transactionToCreate);
             }
+
+            // Remove transactions that no longer exist in the spreadsheet
+            var transactionRowGroupDict = newTransactions.ToDictionary(x => new { x.Account.FinancialAccountId, x.FinancialTransactionId });
+            foreach (var (key, transaction) in existingTransactionsDict)
+            {
+                if (!transactionRowGroupDict.ContainsKey(key))
+                {
+                    dbContext.Remove(transaction);
+                }
+            }
+
+            dbContext.Transactions.AddRange(newTransactions);
             await dbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Maps the untyped rows retrieved from the Google Spreadsheet's Account subsheet to a list of <see cref="AccountGoogleSpreadsheetRow"/> objects.
+        /// </summary>
+        /// <remarks>
+        /// Expects the following column order: Account Name, Balance, Currency, Notes, LastUpdatedDate, Institution, FinancialAccountId, Raw Data, and Available Balance.
+        /// Avaiable Balance is generally blank so skip mapping.
+        /// </remarks>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        private static List<AccountGoogleSpreadsheetRow> MapToAccountRows(IEnumerable<IList<object>> source) =>
+            [.. source
+                    .Where(x => x.Count >= 8)
+                    .Select(x => new AccountGoogleSpreadsheetRow(
+                        (string)x[0],
+                        decimal.Parse((string)x[1]),
+                        (string)x[2],
+                        (string)x[3],
+                        DateTime.SpecifyKind((DateTime)x[4], DateTimeKind.Utc),
+                        (string)x[5],
+                        Guid.Parse((string)x[6]),
+                        (string)x[7]
+                    ))
+            ];
+
+        /// <summary>
+        /// Maps the untyped rows retrieved from the Google Spreadsheet's Transaction subsheet to a list of <see cref="TransactionGoogleSpreadsheetRow"/> objects.
+        /// </summary>
+        /// <remarks>
+        /// Expects the following column order in the Transactions subsheet: Date, Amount, Description, Category, Account, Attachment, Raw Data.
+        /// Attachment is generally blank so skip mapping.
+        /// </remarks>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        private static List<TransactionGoogleSpreadsheetRow> MapToTransactionRows(IEnumerable<IList<object>> source) =>
+            [.. source
+                    .Where(x => x.Count >= 7)
+                    .Select(x => new TransactionGoogleSpreadsheetRow(
+                        DateTime.SpecifyKind(DateTime.Parse((string)x[0]), DateTimeKind.Utc),
+                        decimal.Parse((string)x[1]),
+                        (string)x[2],
+                        (string)x[3],
+                        (string)x[4],
+                        (string)x[7]))
+             ];
     }
 }

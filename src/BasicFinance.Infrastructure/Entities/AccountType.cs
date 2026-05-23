@@ -14,14 +14,14 @@ namespace BasicFinance.Infrastructure.Entities
         /// Gets a value indicating the account type code.
         /// </summary>
         [Required]
-        [MaxLength(10)]
+        [MaxLength(25)]
         public required string AccountTypeCode { get; set; }
 
         /// <summary>
         /// Gets a value indicating the account type name.
         /// </summary>
         [Required]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public required string AccountTypeName { get; init; }
 
         /// <inheritdoc />

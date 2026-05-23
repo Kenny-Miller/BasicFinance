@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
+using AccountType = BasicFinance.Infrastructure.Entities.AccountType;
 
 namespace BasicFinance.Api.Features.Accounts
 {
@@ -16,13 +17,12 @@ namespace BasicFinance.Api.Features.Accounts
     public static class ListUserAccountsByType
     {
         /// <summary>
-        /// 
+        /// Dto containing a list of <see cref="Account"/>s grouped by <see cref="AccountType"/>.
         /// </summary>
-        /// <param name="AccountTypeId"></param>
-        /// <param name="AccountTypeName"></param>
-        /// <param name="DisplayOrder"></param>
+        /// <param name="AccountTypeCode"></param>
+        /// <param name="TotalBalance"></param>
         /// <param name="Accounts"></param>
-        public record AccountsByTypeDto(Guid AccountTypeId, string AccountTypeName, int DisplayOrder, List<AccountDto> Accounts);
+        public record AccountsByTypeDto(string AccountTypeCode, decimal TotalBalance, List<AccountDto> Accounts);
 
         /// <summary>
         /// Dto containing <see cref="Account"/> data.
@@ -34,9 +34,8 @@ namespace BasicFinance.Api.Features.Accounts
         public record AccountDto(Guid Id, string Institution, string AccountName, decimal Balance);
 
         /// <summary>
-        /// Lists <see cref="Account"/>s associated with the authenticated user.
+        /// Lists <see cref="Account"/> grouped by thier <see cref="AccountType"/> associated with the authenticated user.
         /// </summary>
-        /// <param name="request">The request query parameters.</param>
         /// <param name="user">The authenticated user performing the request.</param>
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
@@ -45,7 +44,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/accounts")]
+        [WolverineGet("api/accounts/byType")]
         public static async Task<Ok<ListResult<AccountsByTypeDto>>> HandleAsync(
             AuthenticatedUser user,
             AppDbContext dbContext,
@@ -59,17 +58,15 @@ namespace BasicFinance.Api.Features.Accounts
                .ToListAsync(cancellationToken);
 
             var mapped = accountsByType
-                .OrderBy(group => group.Key.DisplayOrder)
                 .Select(group => new AccountsByTypeDto(
-                 group.Key.AccountTypeId,
-                 group.Key.AccountTypeName,
+                 group.Key.AccountTypeCode,
+                 group.Sum(x => x.Balance),
                  [.. group.Select(account => new AccountDto(
                      account.AccountId,
                      account.Institution,
                      account.AccountName,
                      account.Balance))
                     .OrderBy(x => x.AccountName)]))
-                .OrderBy(x => x.d)
                 .ToList();
 
             return TypedResults.Ok(new ListResult<AccountsByTypeDto>(mapped, 1, mapped.Count, mapped.Count));

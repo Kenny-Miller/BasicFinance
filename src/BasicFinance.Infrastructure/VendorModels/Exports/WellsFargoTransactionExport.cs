@@ -2,7 +2,7 @@
 {
     public record WellsFargoTransactionExport(
         Guid AccountId,
-        string TransactionId,
+        long TransactionId,
         string PostedTimestamp,
         string TransactionTimestamp,
         string Description,

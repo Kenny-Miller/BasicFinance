@@ -64,6 +64,9 @@
       ],
       "@spartan-ng/helm/select": [
         "./libs/ui/select/src/index.ts"
+      ],
+      "@spartan-ng/helm/accordion": [
+        "./libs/ui/accordion/src/index.ts"
       ]
     }
   },

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,9 +16,10 @@ namespace BasicFinance.Infrastructure.Migrations
                 name: "AccountTypes",
                 columns: table => new
                 {
-                    AccountTypeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AccountTypeName = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    AccountTypeId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountTypeCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
+                    AccountTypeName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -25,6 +27,40 @@ namespace BasicFinance.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AccountTypes", x => x.AccountTypeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TransactionCategories",
+                columns: table => new
+                {
+                    TransactionCategoryId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TransactionCategoryCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
+                    TransactionCategoryName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionCategories", x => x.TransactionCategoryId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TransactionTypes",
+                columns: table => new
+                {
+                    TransactionTypeId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TransactionTypeCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
+                    TransactionTypeName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionTypes", x => x.TransactionTypeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -51,7 +87,7 @@ namespace BasicFinance.Infrastructure.Migrations
                 {
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserGoogleSpreadsheetId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AccountTypeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountTypeId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     AccountName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
@@ -111,10 +147,12 @@ namespace BasicFinance.Infrastructure.Migrations
                     TransactionId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TransactionTypeId = table.Column<int>(type: "integer", nullable: false),
+                    TransactionCategoryId = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Category = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    FinancialTransactionId = table.Column<long>(type: "bigint", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -127,6 +165,18 @@ namespace BasicFinance.Infrastructure.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "AccountId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_TransactionCategories_TransactionCategoryId",
+                        column: x => x.TransactionCategoryId,
+                        principalTable: "TransactionCategories",
+                        principalColumn: "TransactionCategoryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_TransactionTypes_TransactionTypeId",
+                        column: x => x.TransactionTypeId,
+                        principalTable: "TransactionTypes",
+                        principalColumn: "TransactionTypeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -149,6 +199,16 @@ namespace BasicFinance.Infrastructure.Migrations
                 name: "IX_Transactions_AccountId",
                 table: "Transactions",
                 column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_TransactionCategoryId",
+                table: "Transactions",
+                column: "TransactionCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_TransactionTypeId",
+                table: "Transactions",
+                column: "TransactionTypeId");
         }
 
         /// <inheritdoc />
@@ -162,6 +222,12 @@ namespace BasicFinance.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "TransactionCategories");
+
+            migrationBuilder.DropTable(
+                name: "TransactionTypes");
 
             migrationBuilder.DropTable(
                 name: "AccountTypes");

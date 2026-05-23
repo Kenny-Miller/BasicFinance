@@ -69,11 +69,9 @@ namespace BasicFinance.Infrastructure.Entities
         public required string Description { get; init; }
 
         /// <summary>
-        /// Gets a value indicating the category of the transaction (e.g., "Groceries", "Utilities", "Entertainment").
+        /// Gets a value indicating the fanicial institution's id of the transaction.
         /// </summary>
-        [Required]
-        [MaxLength(255)]
-        public required string Category { get; init; }
+        public long FinancialTransactionId { get; init; }
 
         /// <inheritdoc />
         public DateTimeOffset SystemCreatedDate { get; init; } = DateTimeOffset.UtcNow;
@@ -89,6 +87,7 @@ namespace BasicFinance.Infrastructure.Entities
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="accountId"></param>
+        /// <param name="financialTransactionId"></param>
         /// <param name="transactionType"></param>
         /// <param name="transactionCategory"></param>
         /// <param name="date"></param>
@@ -96,17 +95,25 @@ namespace BasicFinance.Infrastructure.Entities
         /// <param name="description"></param>
         /// <param name="category"></param>
         [SetsRequiredMembers]
-        public Transaction(string userId, Guid accountId, Enums.TransactionType transactionType, Enums.TransactionCategory transactionCategory, DateTimeOffset date, decimal amount, string description, string category)
+        public Transaction(
+            string userId,
+            Guid accountId,
+            long financialTransactionId,
+            Enums.TransactionType transactionType,
+            Enums.TransactionCategory transactionCategory,
+            DateTimeOffset date,
+            decimal amount,
+            string description)
         {
             TransactionId = Guid.NewGuid();
             UserId = userId;
             AccountId = accountId;
+            FinancialTransactionId = financialTransactionId;
             TransactionTypeId = (int)transactionType;
             TransactionCategoryId = (int)transactionCategory;
             Date = date;
             Amount = amount;
             Description = description;
-            Category = category;
         }
 
         /// <summary>

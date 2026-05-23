@@ -1,3 +1,4 @@
+import { ListResult } from './../../shared/api/list-result';
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
@@ -8,6 +9,8 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
+
+import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -15,22 +18,38 @@ import 'chartjs-adapter-date-fns';
 import ChartDeferred from 'chartjs-plugin-deferred';
 import { BaseChartDirective } from 'ng2-charts';
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
-import { HomeClient } from './home-client';
+import { HomeClient } from './data/home-client';
 import { TransactionsList } from '../../shared/ui/transactions-list/transactions-list';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions-list-skeleton/transactions-list-skeleton';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { RouterLink } from '@angular/router';
+import {
+  lucideChartNoAxesCombined,
+  lucideCreditCard,
+  lucideDollarSign,
+  lucideLandmark,
+} from '@ng-icons/lucide';
+import { provideIcons } from '@ng-icons/core';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
+import { AccountGroupAccordion } from './components/account-group-accordion/account-group-accordion';
+import { AccountTypeGroup } from '../../shared/api/accounts/accountByType';
 
 @Component({
   selector: 'app-home',
+  providers: [
+    provideIcons({ lucideChartNoAxesCombined, lucideCreditCard, lucideLandmark, lucideDollarSign }),
+  ],
   imports: [
     RouterLink,
     CommonModule,
     HlmCardImports,
+    HlmIconImports,
+    HlmAccordionImports,
     BaseChartDirective,
     TransactionsList,
     TransactionsListSkeleton,
     HlmButtonImports,
+    AccountGroupAccordion,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -41,8 +60,21 @@ export class Home implements OnInit, AfterViewInit {
   private readonly oauthService = inject(OAuthService);
   private readonly homeClient = inject(HomeClient);
 
-  readonly accountsResource = this.homeClient.accountsResource;
+  readonly accountsByTypeResource = this.homeClient.accountsByTypeResource;
   readonly transactionsResource = this.homeClient.transactionsResource;
+
+  readonly checkingAccountsDisplay = computed(() =>
+    this.processAccounts(this.accountsByTypeResource.value(), 'CHK'),
+  );
+  readonly savingsAccountsDisplay = computed(() =>
+    this.processAccounts(this.accountsByTypeResource.value(), 'SAV'),
+  );
+  readonly creditCardAccountsDisplay = computed(() =>
+    this.processAccounts(this.accountsByTypeResource.value(), 'CRD'),
+  );
+  readonly investmentAccountsDisplay = computed(() =>
+    this.processAccounts(this.accountsByTypeResource.value(), 'INV'),
+  );
 
   readonly user = signal<AuthUserProfile | null>(null);
   readonly displayChart = signal(false);
@@ -63,6 +95,16 @@ export class Home implements OnInit, AfterViewInit {
     // This in conjuction with the deferred plugin still allows a nice loading
     this.chart?.chart?.resize();
     this.displayChart.set(true);
+  }
+
+  private processAccounts(
+    accountResourceResult: ListResult<AccountTypeGroup> | undefined,
+    accountCode: string,
+  ) {
+    const accountsOfType = accountResourceResult?.items.find(
+      (group) => group.accountTypeCode === accountCode,
+    );
+    return accountsOfType ?? { accounts: [], totalBalance: 0 };
   }
 
   spendActivityChartData: ChartData<'line'> = {

@@ -33,8 +33,8 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<Guid>("AccountTypeId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("AccountTypeId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Balance")
                         .HasPrecision(18, 2)
@@ -120,17 +120,21 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
                 {
-                    b.Property<Guid>("AccountTypeId")
+                    b.Property<int>("AccountTypeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AccountTypeId"));
+
+                    b.Property<string>("AccountTypeCode")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
 
                     b.Property<string>("AccountTypeName")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -159,11 +163,6 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamp with time zone");
 
@@ -171,6 +170,9 @@ namespace BasicFinance.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<long>("FinancialTransactionId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -181,6 +183,12 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("SystemModifiedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("TransactionCategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransactionTypeId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(36)
@@ -190,7 +198,75 @@ namespace BasicFinance.Infrastructure.Migrations
 
                     b.HasIndex("AccountId");
 
+                    b.HasIndex("TransactionCategoryId");
+
+                    b.HasIndex("TransactionTypeId");
+
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.TransactionCategory", b =>
+                {
+                    b.Property<int>("TransactionCategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransactionCategoryId"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("SystemCreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TransactionCategoryCode")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<string>("TransactionCategoryName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("TransactionCategoryId");
+
+                    b.ToTable("TransactionCategories");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.TransactionType", b =>
+                {
+                    b.Property<int>("TransactionTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransactionTypeId"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("SystemCreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TransactionTypeCode")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<string>("TransactionTypeName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("TransactionTypeId");
+
+                    b.ToTable("TransactionTypes");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", b =>
@@ -269,7 +345,23 @@ namespace BasicFinance.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BasicFinance.Infrastructure.Entities.TransactionCategory", "TransactionCategory")
+                        .WithMany("Transactions")
+                        .HasForeignKey("TransactionCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BasicFinance.Infrastructure.Entities.TransactionType", "TransactionType")
+                        .WithMany("Transactions")
+                        .HasForeignKey("TransactionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Account");
+
+                    b.Navigation("TransactionCategory");
+
+                    b.Navigation("TransactionType");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
@@ -282,6 +374,16 @@ namespace BasicFinance.Infrastructure.Migrations
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.TransactionCategory", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.TransactionType", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", b =>
