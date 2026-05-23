@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Spreadsheet } from '../../core/spreadsheets/spreadsheet';
-import { ListResult } from '../../shared/result/list-result';
+import { Spreadsheet } from '../../shared/api/spreadsheets/spreadsheet';
+import { ListResult } from '../../shared/api/list-result';
 
 @Injectable({
   providedIn: 'root',

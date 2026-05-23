@@ -9,9 +9,6 @@ namespace BasicFinance.Infrastructure.Entities
         [Key]
         public Guid AccountBalanceHistoryId { get; set; }
 
-        [NotMapped]
-        public Guid Id => AccountBalanceHistoryId;
-
         [ForeignKey(nameof(AccountId))]
         [DeleteBehavior(DeleteBehavior.Cascade)]
         public Account Account { get; set; } = null!;

@@ -13,10 +13,6 @@ namespace BasicFinance.Infrastructure.Entities
         [Key]
         public Guid AccountId { get; set; }
 
-        /// <inheritdoc />
-        [NotMapped]
-        public Guid Id => AccountId;
-
         /// <summary>
         /// Gets a value indicating the unique identifier of the associated <see cref="UserGoogleSpreadsheet"/>.
         /// </summary>
@@ -27,6 +23,17 @@ namespace BasicFinance.Infrastructure.Entities
         /// </summary>
         [ForeignKey(nameof(UserGoogleSpreadsheetId))]
         public UserGoogleSpreadsheet UserGoogleSpreadsheet { get; init; } = null!;
+
+        /// <summary>
+        /// Gets or sets a value indicating the assocaited <see cref="AccountType"/> for the account.
+        /// </summary>
+        [ForeignKey(nameof(AccountTypeId))]
+        public AccountType AccountType { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets a value indicating the unique indentifier of the associated <see cref="AccountType"/>.
+        /// </summary>
+        public int AccountTypeId { get; set; }
 
         /// <summary>
         /// Gets a value indicating the unique identifier of the user who owns the account.
@@ -98,11 +105,12 @@ namespace BasicFinance.Infrastructure.Entities
         public ICollection<Transaction> Transactions { get; set; } = [];
 
         /// <summary>
-        ///  Initializes a new instance of the <see cref="Account"/> class.
+        /// Initializes a new instance of the <see cref="Account"/> class.
         /// </summary>
         /// <param name="userGoogleSpreadsheetId"></param>
+        /// <param name="accountType"></param>
         /// <param name="userId"></param>
-        /// <param name="accountName></param>
+        /// <param name="accountName"></param>
         /// <param name="balance"></param>
         /// <param name="currency"></param>
         /// <param name="notes"></param>
@@ -112,6 +120,7 @@ namespace BasicFinance.Infrastructure.Entities
         [SetsRequiredMembers]
         public Account(
             Guid userGoogleSpreadsheetId,
+            Enums.AccountType accountType,
             string userId,
             string accountName,
             decimal balance,
@@ -122,6 +131,7 @@ namespace BasicFinance.Infrastructure.Entities
             DateTimeOffset balanceRecordedDate)
         {
             UserGoogleSpreadsheetId = userGoogleSpreadsheetId;
+            AccountTypeId = (int)accountType;
             UserId = userId;
             AccountName = accountName;
             Balance = balance;

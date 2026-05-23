@@ -8,6 +8,7 @@ using BasicFinance.Infrastructure.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
 
@@ -30,13 +31,14 @@ namespace BasicFinance.Api.Features.Transactions
         /// <summary>
         /// Dto containing <see cref="Transaction"/> data.
         /// </summary>
-        /// <param name="TransactionId"></param>
+        /// <param name="Id"></param>
+        /// <param name="TransactionTypeId"></param>
+        /// <param name="TransactionCategoryId"></param>
         /// <param name="AccountName"></param>
         /// <param name="Date"></param>
         /// <param name="Amount"></param>
         /// <param name="Description"></param>
-        /// <param name="Category"></param>
-        public record TransactionDto(Guid TransactionId, string AccountName, DateTimeOffset Date, decimal Amount, string Description, string Category);
+        public record TransactionDto(Guid Id, int TransactionTypeId, int TransactionCategoryId, string AccountName, DateTimeOffset Date, decimal Amount, string Description);
 
         /// <summary>
         /// Lists <see cref="Transaction"/>s associated with the authenticated user.
@@ -52,7 +54,7 @@ namespace BasicFinance.Api.Features.Transactions
         [Authorize]
         [WolverineGet("api/transactions/")]
         public static async Task<Ok<ListResult<TransactionDto>>> HandleAsync(
-            Request request,
+            [FromQuery] Request request,
             AuthenticatedUser user,
             AppDbContext dbContext,
             CancellationToken cancellationToken)
@@ -70,7 +72,7 @@ namespace BasicFinance.Api.Features.Transactions
                 .OrderBy(sortExpressionSelector, request)
                     .ThenBy(x => x.TransactionId, request)
                 .Paginate(request)
-                .Select(x => new TransactionDto(x.TransactionId, x.Account.AccountName, x.Date, x.Amount, x.Description, x.Category))
+                .Select(x => new TransactionDto(x.TransactionId, x.TransactionTypeId, x.TransactionCategoryId, x.Account.AccountName, x.Date, x.Amount, x.Description))
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new ListResult<TransactionDto>(userSpreadSheets, request.Page, request.PageSize, totalCount));
@@ -81,12 +83,13 @@ namespace BasicFinance.Api.Features.Transactions
         /// </summary>
         private static readonly FrozenDictionary<string, Expression<Func<Transaction, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Transaction, object>>>(StringComparer.OrdinalIgnoreCase)
         {
-            [nameof(TransactionDto.TransactionId)] = x => x.TransactionId,
+            [nameof(TransactionDto.Id)] = x => x.TransactionId,
+            [nameof(TransactionDto.TransactionTypeId)] = x => x.TransactionType.TransactionTypeCode,
+            [nameof(TransactionDto.TransactionCategoryId)] = x => x.TransactionCategory.TransactionCategoryCode,
             [nameof(TransactionDto.AccountName)] = x => x.Account.AccountName,
             [nameof(TransactionDto.Date)] = x => x.Date,
             [nameof(TransactionDto.Amount)] = x => x.Amount,
             [nameof(TransactionDto.Description)] = x => x.Description,
-            [nameof(TransactionDto.Category)] = x => x.Category,
         }.ToFrozenDictionary();
     }
 }

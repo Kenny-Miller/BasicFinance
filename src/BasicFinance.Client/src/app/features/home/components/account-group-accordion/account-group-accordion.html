@@ -1,0 +1,47 @@
+<hlm-accordion class="rounded-lg" type="multiple">
+  <hlm-accordion-item>
+    <h3>
+      <button hlmAccordionTrigger>
+        <span class="flex items-center gap-2">
+          <ng-icon hlm size="base" [name]="accountGroupIcon()" />
+          {{ accountGroupTitle() }}
+        </span>
+        <span>
+          {{ accountGroupData().totalBalance | currency }}
+          <ng-icon hlmAccordionIcon name="lucideChevronDown" />
+        </span>
+      </button>
+    </h3>
+    <hlm-accordion-content>
+      @for (account of accountGroupData().accounts; track $index; let last = $last) {
+        <div class="flex flex-col gap-2">
+          <div hlmItem>
+            <hlm-item-media variant="icon" class="size-8">
+              <ng-icon name="lucideReceiptText" />
+            </hlm-item-media>
+
+            <hlm-item-content class="gap-1">
+              <hlm-item-title>{{ account.accountName | truncate: 25 }}</hlm-item-title>
+              <p hlmItemDescription>{{ account.institution }}</p>
+            </hlm-item-content>
+
+            <hlm-item-content class="flex-none text-center">
+              <p>{{ account.balance | currency }}</p>
+            </hlm-item-content>
+          </div>
+        </div>
+        @if (!last) {
+          <hlm-separator />
+        }
+      } @empty {
+        <div class="flex flex-col gap-2">
+          <div hlmItem>
+            <hlm-item-content class="gap-1">
+              <hlm-item-title>No accounts found</hlm-item-title>
+            </hlm-item-content>
+          </div>
+        </div>
+      }
+    </hlm-accordion-content>
+  </hlm-accordion-item>
+</hlm-accordion>

@@ -16,7 +16,7 @@ import {
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
-import { NavMenuItem } from './shared/menu/nav-menu-item';
+import { NavMenuItem } from './shared/models/nav-menu-item';
 
 @Component({
   selector: 'app-root',

@@ -7,12 +7,13 @@
   "trailingComma": "all",
   "bracketSpacing": true,
   "arrowParens": "avoid",
-  "tailwindFunctions": [
-    "hlm",
-    "cva"
-  ],
+  "tailwindFunctions": ["hlm", "cva"],
   "tailwindStylesheet": "./src/styles.css",
-  "plugins": [
-    "prettier-plugin-tailwindcss"
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": { "parser": "angular" }
+    }
   ]
 }
