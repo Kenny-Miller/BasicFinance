@@ -2,7 +2,6 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ListResult } from '../../../shared/api/list-result';
 import { Transaction } from '../../../shared/api/transactions/transactions';
-import { Account } from '../../../shared/api/accounts/account';
 import { AccountTypeGroup } from '../../../shared/api/accounts/accountByType';
 
 @Injectable({
@@ -11,7 +10,9 @@ import { AccountTypeGroup } from '../../../shared/api/accounts/accountByType';
 export class HomeClient {
   client = inject(HttpClient);
 
-  accountsByTypeResource = httpResource<ListResult<AccountTypeGroup>>(() => 'api/accounts/byType');
+  accountsByTypeResource = httpResource<ListResult<AccountTypeGroup>>(
+    () => 'api/accounts/byType',
+  );
 
   transactionsResource = httpResource<ListResult<Transaction>>(() => ({
     url: 'api/transactions',
