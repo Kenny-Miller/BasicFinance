@@ -9,11 +9,11 @@
         Currency Currency,
         float CurrentBalance,
         string Description,
-        FiAttribute[] FiAttributes,
+        IReadOnlyCollection<FinancialAccountMetadata> FinancialAccountMetadata,
         string LineOfBusiness,
         string Nickname,
         string ProductName,
         string Status) : IAccountExport;
     public record Currency(string CurrencyCode);
-    public record FiAttribute(string Name, string Value);
+    public record FinancialAccountMetadata(string Name, string Value);
 }

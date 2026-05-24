@@ -12,7 +12,7 @@ namespace BasicFinance.Infrastructure.Clients
     /// perform operations against google api/sdk's using
     /// a pre-authenticated user.
     /// </summary>
-    public class GoogleUserClient
+    public partial class GoogleUserClient
     {
         private readonly ServiceAccountCredential _googleServiceAccountCredential;
         private readonly ILogger _logger;
@@ -34,7 +34,7 @@ namespace BasicFinance.Infrastructure.Clients
         public async Task<Spreadsheet?> GetSpreadsheetAsync(string googleSpreadsheetId, string accessToken, CancellationToken cancellationToken = default)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
-            var sheetsService = new SheetsService(new BaseClientService.Initializer
+            using var sheetsService = new SheetsService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
                 ApplicationName = "Basic Finance"
@@ -42,6 +42,11 @@ namespace BasicFinance.Infrastructure.Clients
 
             var request = sheetsService.Spreadsheets.Get(googleSpreadsheetId);
             var response = await request.ExecuteAsync(cancellationToken);
+            if (response == null)
+            {
+                LogSpreadsheetNotFound(_logger, googleSpreadsheetId);
+            }
+
             return response;
         }
 
@@ -56,7 +61,7 @@ namespace BasicFinance.Infrastructure.Clients
         public async Task GrantSpreadSheetAccessAsync(string googleSpreadsheetId, string accessToken, CancellationToken cancellationToken = default)
         {
             var credential = GoogleCredential.FromAccessToken(accessToken);
-            var driveService = new DriveService(new BaseClientService.Initializer
+            using var driveService = new DriveService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
                 ApplicationName = "Basic Finance"
@@ -69,10 +74,23 @@ namespace BasicFinance.Infrastructure.Clients
                 EmailAddress = _googleServiceAccountCredential.Id
             };
 
-            _logger.LogDebug("Granting read access to Google SpreadSheet: {GoogleSpreadheetId}", googleSpreadsheetId);
+            LogGrantingSpreadsheetAccess(_logger, googleSpreadsheetId);
             var request = driveService.Permissions.Create(permission, googleSpreadsheetId);
             request.SendNotificationEmail = false;
             await request.ExecuteAsync(cancellationToken);
         }
+
+
+        [LoggerMessage(
+          EventName = nameof(LogSpreadsheetNotFound),
+          Level = LogLevel.Error,
+          Message = "Unable to retrive Google SpreadSheet: {GoogleSpreadsheetId}")]
+        private static partial void LogSpreadsheetNotFound(ILogger logger, string googleSpreadsheetId);
+
+        [LoggerMessage(
+          EventName = nameof(LogGrantingSpreadsheetAccess),
+          Level = LogLevel.Information,
+          Message = "Granting read access to Google SpreadSheet: {GoogleSpreadsheetId}")]
+        private static partial void LogGrantingSpreadsheetAccess(ILogger logger, string googleSpreadsheetId);
     }
 }

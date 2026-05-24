@@ -125,12 +125,14 @@ namespace BasicFinance.Api.Features.Spending
                 {
                     var categoryTotalAmount = resultCategoryDict.TryGetValue(categoryCode, out var totalAmount) ? totalAmount : 0m;
                     var percentOfSpend = result.TotalAmount == 0 ? 0 : (int)(categoryTotalAmount / result.TotalAmount * 100);
-                    var change = 0;
+                    var change = 0d;
 
                     if (previousPeriodCategoryDict != null)
                     {
-                        var previousAmount = previousPeriodCategoryDict.TryGetValue(categoryCode, out var prevAmount) ? prevAmount : 0m;
-                        change = previousAmount == 0 ? 100 : (int)((categoryTotalAmount - previousAmount) / (previousAmount == 0 ? 1 : previousAmount) * 100);
+                        var previousAmount = previousPeriodCategoryDict.TryGetValue(categoryCode, out var prevAmount) ? prevAmount : 0;
+                        change = previousAmount != 0
+                            ? (double)((categoryTotalAmount - previousAmount) / previousAmount * 100)
+                            : 0;
                     }
 
                     spendingActivityByCategory[categoryCode] = new SpendingActivity(categoryTotalAmount, percentOfSpend, change);

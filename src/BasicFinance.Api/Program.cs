@@ -82,4 +82,4 @@ app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPri
 })
 .RequireAuthorization();
 
-app.Run();
+await app.RunAsync();

@@ -22,7 +22,6 @@ _ = builder.AddProject<Projects.BasicFinance_MigrationWorker>("migration")
        .WithReference(basicFinanceDbServer);
 
 // Configure database for Identity Management
-// Todo: Move to seperate repo so that additional repos/projects can use instance
 var keycloakDbUsername = builder.AddParameter("keycloak-db-username", secret: true);
 var keycloakDbPassword = builder.AddParameter("keycloak-db-password", secret: true);
 var keycloakDbServer = builder.AddPostgres(
@@ -58,7 +57,6 @@ var keycloak = builder.AddKeycloak(
     .WithExternalHttpEndpoints();
 
 // Configure RabbitMq server to handle message queue functionality
-// Todo: Move to seperate repo so that additional repos/projects can use the same instance
 var rabbitmqAdminUsername = builder.AddParameter("rabbitmq-admin-username", secret: true);
 var rabbitmqAdminPassword = builder.AddParameter("rabbitmq-admin-password", secret: true);
 var rabbitmq = builder.AddRabbitMQ(ServiceDiscoveryNames.RabbitMq, rabbitmqAdminUsername, rabbitmqAdminPassword)

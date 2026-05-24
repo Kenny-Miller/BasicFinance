@@ -308,45 +308,39 @@ namespace BasicFinance.DataProcessor.Handlers
              ];
 
         [LoggerMessage(
-            EventId = 0,
             EventName = nameof(LogGoogleSheetNotFound),
             Level = LogLevel.Error,
             Message = "Google sheet for user {UserId} was not found during data process")]
-        public static partial void LogGoogleSheetNotFound(ILogger logger, string userId);
+        private static partial void LogGoogleSheetNotFound(ILogger logger, string userId);
 
         [LoggerMessage(
-            EventId = 2,
             EventName = nameof(LogExportTypeNotFound),
             Level = LogLevel.Error,
             Message = "No export type found for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
-        public static partial void LogExportTypeNotFound(ILogger logger, string userId, string institution, string accountName);
+        private static partial void LogExportTypeNotFound(ILogger logger, string userId, string institution, string accountName);
 
         [LoggerMessage(
-            EventId = 3,
             EventName = nameof(LogAccountExportTypeDeserialilzationFailed),
             Level = LogLevel.Error,
             Message = "Failed to deserialize account export for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
-        public static partial void LogAccountExportTypeDeserialilzationFailed(ILogger logger, string userId, string institution, string accountName);
+        private static partial void LogAccountExportTypeDeserialilzationFailed(ILogger logger, string userId, string institution, string accountName);
 
         [LoggerMessage(
-           EventId = 4,
            EventName = nameof(LogAccountForTransactionNotFound),
            Level = LogLevel.Error,
            Message = "No account found for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
-        public static partial void LogAccountForTransactionNotFound(ILogger logger, string userId, string account, string description, DateTimeOffset date, decimal amount);
+        private static partial void LogAccountForTransactionNotFound(ILogger logger, string userId, string account, string description, DateTimeOffset date, decimal amount);
 
         [LoggerMessage(
-            EventId = 5,
             EventName = nameof(LogTransactionExportTypeNotFound),
             Level = LogLevel.Error,
             Message = "No export type found for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
-        public static partial void LogTransactionExportTypeNotFound(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
+        private static partial void LogTransactionExportTypeNotFound(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
 
         [LoggerMessage(
-            EventId = 6,
             EventName = nameof(LogTransactionExportTypeDeserializationFailed),
             Level = LogLevel.Error,
             Message = "Failed to deserialize transaction export for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
-        public static partial void LogTransactionExportTypeDeserializationFailed(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
+        private static partial void LogTransactionExportTypeDeserializationFailed(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
     }
 }
