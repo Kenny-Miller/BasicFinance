@@ -34,6 +34,8 @@ namespace BasicFinance.Infrastructure.Extensions
             /// <returns></returns>
             public IOrderedQueryable<T> OrderBy(Expression<Func<T, object>> keySelector, ISortedQuery query)
             {
+                ArgumentNullException.ThrowIfNull(query);
+
                 return queryable.OrderBy(keySelector, query.TypedSortDirection);
             }
 

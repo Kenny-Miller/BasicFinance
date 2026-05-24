@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,6 +16,10 @@
     <PackageReference Include="Aspire.Hosting.Yarp" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Keycloak.Extensions" />
     <PackageReference Include="Scalar.Aspire" />
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

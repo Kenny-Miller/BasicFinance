@@ -1,14 +1,13 @@
-using Aspire.Hosting.JavaScript;
 using BasicFinance.SharedServiceDefaults;
 using Microsoft.Extensions.DependencyInjection;
 using Scalar.Aspire;
 
-IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
+var builder = DistributedApplication.CreateBuilder(args);
 
 // Configure database for application
-IResourceBuilder<ParameterResource> basicFinanceDbUsername = builder.AddParameter("basicfinance-db-username", secret: true);
-IResourceBuilder<ParameterResource> basicFinanceDbPassword = builder.AddParameter("basicfinance-db-password", secret: true);
-IResourceBuilder<PostgresDatabaseResource> basicFinanceDbServer = builder.AddPostgres(
+var basicFinanceDbUsername = builder.AddParameter("basicfinance-db-username", secret: true);
+var basicFinanceDbPassword = builder.AddParameter("basicfinance-db-password", secret: true);
+var basicFinanceDbServer = builder.AddPostgres(
     "basicfinancedbserver",
     basicFinanceDbUsername,
     basicFinanceDbPassword)
@@ -18,15 +17,15 @@ IResourceBuilder<PostgresDatabaseResource> basicFinanceDbServer = builder.AddPos
     .WithPgAdmin()
     .AddDatabase(ServiceDiscoveryNames.BasicFinanceDb);
 
-IResourceBuilder<ProjectResource> migrationWorker = builder.AddProject<Projects.BasicFinance_MigrationWorker>("migration")
+_ = builder.AddProject<Projects.BasicFinance_MigrationWorker>("migration")
        .WaitFor(basicFinanceDbServer)
        .WithReference(basicFinanceDbServer);
 
 // Configure database for Identity Management
 // Todo: Move to seperate repo so that additional repos/projects can use instance
-IResourceBuilder<ParameterResource> keycloakDbUsername = builder.AddParameter("keycloak-db-username", secret: true);
-IResourceBuilder<ParameterResource> keycloakDbPassword = builder.AddParameter("keycloak-db-password", secret: true);
-IResourceBuilder<PostgresDatabaseResource> keycloakDbServer = builder.AddPostgres(
+var keycloakDbUsername = builder.AddParameter("keycloak-db-username", secret: true);
+var keycloakDbPassword = builder.AddParameter("keycloak-db-password", secret: true);
+var keycloakDbServer = builder.AddPostgres(
     "keycloakdbserver",
     keycloakDbUsername,
     keycloakDbPassword)
@@ -36,11 +35,11 @@ IResourceBuilder<PostgresDatabaseResource> keycloakDbServer = builder.AddPostgre
     .WithPgAdmin()
     .AddDatabase("keycloakDb");
 
-IResourceBuilder<ParameterResource> keycloakAdminUsername = builder.AddParameter("keycloak-admin-username", secret: true);
-IResourceBuilder<ParameterResource> keycloakAdminPassword = builder.AddParameter("keycloak-admin-password", secret: true);
-IResourceBuilder<ParameterResource> keycloakGoogleClientId = builder.AddParameter("keycloak-google-clientid", secret: true);
-IResourceBuilder<ParameterResource> keycloakGoogleClientSecret = builder.AddParameter("keycloak-google-clientsecret", secret: true);
-IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
+var keycloakAdminUsername = builder.AddParameter("keycloak-admin-username", secret: true);
+var keycloakAdminPassword = builder.AddParameter("keycloak-admin-password", secret: true);
+var keycloakGoogleClientId = builder.AddParameter("keycloak-google-clientid", secret: true);
+var keycloakGoogleClientSecret = builder.AddParameter("keycloak-google-clientsecret", secret: true);
+var keycloak = builder.AddKeycloak(
     ServiceDiscoveryNames.Keycloak,
     8080,
     keycloakAdminUsername,
@@ -58,18 +57,18 @@ IResourceBuilder<KeycloakResource> keycloak = builder.AddKeycloak(
     .WithOtlpExporter()
     .WithExternalHttpEndpoints();
 
-// Configure RabbitMq server to handle message queue functionality 
+// Configure RabbitMq server to handle message queue functionality
 // Todo: Move to seperate repo so that additional repos/projects can use the same instance
-IResourceBuilder<ParameterResource> rabbitmqAdminUsername = builder.AddParameter("rabbitmq-admin-username", secret: true);
-IResourceBuilder<ParameterResource> rabbitmqAdminPassword = builder.AddParameter("rabbitmq-admin-password", secret: true);
-IResourceBuilder<RabbitMQServerResource> rabbitmq = builder.AddRabbitMQ(ServiceDiscoveryNames.RabbitMq, rabbitmqAdminUsername, rabbitmqAdminPassword)
+var rabbitmqAdminUsername = builder.AddParameter("rabbitmq-admin-username", secret: true);
+var rabbitmqAdminPassword = builder.AddParameter("rabbitmq-admin-password", secret: true);
+var rabbitmq = builder.AddRabbitMQ(ServiceDiscoveryNames.RabbitMq, rabbitmqAdminUsername, rabbitmqAdminPassword)
     .WithChildRelationship(rabbitmqAdminUsername)
     .WithChildRelationship(rabbitmqAdminPassword)
     .WithDataVolume()
     .WithManagementPlugin();
 
-IResourceBuilder<ParameterResource> googleServiceAccountCredentialFile = builder.AddParameter("google-service-account-credential-file");
-IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.BasicFinance_Api>("api")
+var googleServiceAccountCredentialFile = builder.AddParameter("google-service-account-credential-file");
+var api = builder.AddProject<Projects.BasicFinance_Api>("api")
     .WithChildRelationship(googleServiceAccountCredentialFile)
     .WithReference(keycloak)
     .WithReference(basicFinanceDbServer)
@@ -83,7 +82,7 @@ IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.BasicFinance
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-IResourceBuilder<ProjectResource> dataProcessorService = builder.AddProject<Projects.BasicFinance_DataProcessor>("dataProcessor")
+_ = builder.AddProject<Projects.BasicFinance_DataProcessor>("dataProcessor")
     .WithChildRelationship(googleServiceAccountCredentialFile)
     .WithReference(basicFinanceDbServer)
     .WithReference(rabbitmq)
@@ -92,9 +91,9 @@ IResourceBuilder<ProjectResource> dataProcessorService = builder.AddProject<Proj
     .WaitFor(rabbitmq)
     .PublishAsDockerFile();
 
-IResourceBuilder<ParameterResource> clientGoogleClientAuthority = builder.AddParameter("basicfinance-google-authority");
-IResourceBuilder<ParameterResource> clientGoogleClientId = builder.AddParameter("basicfinance-google-clientid");
-IResourceBuilder<JavaScriptAppResource> client = builder.AddJavaScriptApp("client", "../BasicFinance.Client", "start")
+var clientGoogleClientAuthority = builder.AddParameter("basicfinance-google-authority");
+var clientGoogleClientId = builder.AddParameter("basicfinance-google-clientid");
+_ = builder.AddJavaScriptApp("client", "../BasicFinance.Client", "start")
     .WithChildRelationship(clientGoogleClientAuthority)
     .WithChildRelationship(clientGoogleClientId)
     .WithReference(api)
@@ -105,19 +104,6 @@ IResourceBuilder<JavaScriptAppResource> client = builder.AddJavaScriptApp("clien
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-//IResourceBuilder<YarpResource> gateway = builder.AddYarp("gateway")
-//    .WaitFor(client)
-//    .WaitFor(dataProcessorService)
-//    .WithConfiguration(yarp =>
-//    {
-//        // Add catch-all route for frontend service 
-//        yarp.AddRoute(client);
-
-//        // Add specific path route with transforms
-//        yarp.AddRoute("/api/{**catch-all}", api);
-//    })
-//    .WithExternalHttpEndpoints();
-
 var scalar = builder.AddScalarApiReference(options =>
 {
     options.PreferHttpsEndpoint()
@@ -126,4 +112,4 @@ var scalar = builder.AddScalarApiReference(options =>
 
 scalar.WithApiReference(api);
 
-builder.Build().Run();
+await builder.Build().RunAsync();

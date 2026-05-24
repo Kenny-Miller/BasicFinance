@@ -8,7 +8,7 @@ using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.RabbitMQ;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 // Register Services
 builder.AddServiceDefaults();
@@ -28,7 +28,7 @@ builder.Host.UseWolverine(x =>
         .AutoProvision();
 });
 
-WebApplication app = builder.Build();
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -38,4 +38,4 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
 
-app.Run();
+await app.RunAsync();

@@ -10,6 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
     <PackageReference Include="WolverineFx.Http.FluentValidation" />
     <PackageReference Include="WolverineFx.RabbitMQ" />
     <PackageReference Include="Aspire.Keycloak.Authentication" />
@@ -20,6 +25,10 @@
     <ProjectReference Include="..\BasicFinance.Infrastructure\BasicFinance.Infrastructure.csproj" />
     <ProjectReference Include="..\BasicFinance.ServiceDefaults\BasicFinance.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BasicFinance.SharedServiceDefaults\BasicFinance.SharedServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Logging\" />
   </ItemGroup>
 
 </Project>

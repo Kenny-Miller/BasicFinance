@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Api.Core.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.Infrastructure.Extensions;
@@ -15,7 +15,7 @@ using Wolverine.Http.FluentValidation;
 using Wolverine.RabbitMQ;
 using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.Services.AddAuthorization();
@@ -55,8 +55,7 @@ builder.UseWolverine(x =>
     x.PublishAllMessages().ToRabbitRoutingKey("test-exchange", "test-exchangeTotest-queue");
 });
 
-
-WebApplication app = builder.Build();
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -75,7 +74,6 @@ app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {

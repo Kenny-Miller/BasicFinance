@@ -16,4 +16,4 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.EnrichNpgsqlDbContext<AppDbContext>();
 
 var host = builder.Build();
-host.Run();
+await host.RunAsync();
