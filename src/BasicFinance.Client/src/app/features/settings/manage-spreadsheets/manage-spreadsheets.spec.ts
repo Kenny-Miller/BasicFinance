@@ -8,9 +8,8 @@ describe('ManageSpreadsheets', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ManageSpreadsheets]
-    })
-    .compileComponents();
+      imports: [ManageSpreadsheets],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ManageSpreadsheets);
     component = fixture.componentInstance;

@@ -7,6 +7,7 @@ using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -17,7 +18,24 @@ using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        // Define and add the Bearer Security Scheme to components
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes?["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        };
+
+
+
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(ServiceDiscoveryNames.Keycloak, realm: "basic-hub", options =>
@@ -60,7 +78,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options => options.AddPreferredSecuritySchemes("Bearer"));
 }
 
 // Configure Wolvering HTTP

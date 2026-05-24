@@ -8,9 +8,8 @@ describe('AccountGroupAccordion', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AccountGroupAccordion]
-    })
-    .compileComponents();
+      imports: [AccountGroupAccordion],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AccountGroupAccordion);
     component = fixture.componentInstance;
