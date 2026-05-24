@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BasicFinance.Api.Core.Authentication;
+using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.Infrastructure.Extensions;
