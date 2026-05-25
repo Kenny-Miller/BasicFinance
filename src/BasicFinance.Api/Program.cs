@@ -6,6 +6,8 @@ using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -20,21 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
-    {
-        // Define and add the Bearer Security Scheme to components
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes?["Bearer"] = new OpenApiSecurityScheme
-        {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT"
-        };
-
-
-
-        return Task.CompletedTask;
-    });
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()
@@ -61,7 +49,10 @@ builder.Services.AddWolverineHttp();
 // Configure Wolvering Messaging
 builder.UseWolverine(x =>
 {
+    x.UseRuntimeCompilation();
     x.UseFluentValidation();
+    x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
+
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .DeclareExchange("test-exchange", exchange =>
         {
@@ -78,7 +69,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(options => options.AddPreferredSecuritySchemes("Bearer"));
+    app.MapScalarApiReference(options =>
+        options.AddPreferredSecuritySchemes("Bearer"));
 }
 
 // Configure Wolvering HTTP
@@ -101,3 +93,37 @@ app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPri
 .RequireAuthorization();
 
 await app.RunAsync();
+
+internal sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvider authenticationSchemeProvider) : IOpenApiDocumentTransformer
+{
+    public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        var authenticationSchemes = await authenticationSchemeProvider.GetAllSchemesAsync();
+        if (authenticationSchemes.Any(authScheme => authScheme.Name == "Bearer"))
+        {
+            // Add the security scheme at the document level
+            var securitySchemes = new Dictionary<string, IOpenApiSecurityScheme>
+            {
+                ["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer", // "bearer" refers to the header name here
+                    In = ParameterLocation.Header,
+                    BearerFormat = "Json Web Token"
+                }
+            };
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes = securitySchemes;
+
+            // Apply it as a requirement for all operations
+            foreach (var operation in document.Paths.Values.SelectMany(path => path.Operations))
+            {
+                operation.Value.Security ??= [];
+                operation.Value.Security.Add(new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
+            }
+        }
+    }
+}

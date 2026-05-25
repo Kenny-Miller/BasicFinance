@@ -13,10 +13,10 @@
     <PackageReference Include="SonarAnalyzer.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    
+    </PackageReference>    
     <PackageReference Include="WolverineFx.Http.FluentValidation" />
     <PackageReference Include="WolverineFx.RabbitMQ" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
     <PackageReference Include="Aspire.Keycloak.Authentication" />
   </ItemGroup>
 

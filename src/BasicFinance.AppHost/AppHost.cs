@@ -105,6 +105,7 @@ _ = builder.AddJavaScriptApp("client", "../BasicFinance.Client", "start")
 var scalar = builder.AddScalarApiReference(options =>
 {
     options.PreferHttpsEndpoint()
+        .AddPreferredSecuritySchemes("Bearer")
         .AllowSelfSignedCertificates();
 });
 

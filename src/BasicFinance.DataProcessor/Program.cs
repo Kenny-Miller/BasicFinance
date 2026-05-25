@@ -23,9 +23,11 @@ builder.Services.AddSingleton<GoogleServiceAccountClient>();
 
 builder.Host.UseWolverine(x =>
 {
+    x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
     x.ListenToRabbitQueue("test-queue");
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .AutoProvision();
+    x.UseRuntimeCompilation();
 });
 
 var app = builder.Build();
