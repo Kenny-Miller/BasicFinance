@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './recurring.html',
   styleUrl: './recurring.css',
 })
-export class Recurring {
-
-}
+export class Recurring {}

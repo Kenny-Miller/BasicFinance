@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BasicFinance.MigrationWorker
 {
-    public class Worker(
+    public partial class Worker(
         IServiceProvider serviceProvider,
         IHostApplicationLifetime hostApplicationLifetime,
         ILogger<Worker> logger) : BackgroundService
@@ -13,7 +13,7 @@ namespace BasicFinance.MigrationWorker
         private static readonly ActivitySource _activitySource = new(ActivitySourceName);
 
         /// <inheritdoc/>
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             using var activity = _activitySource.StartActivity("Migrating Database", ActivityKind.Client);
 
@@ -21,27 +21,27 @@ namespace BasicFinance.MigrationWorker
             {
                 using var scope = serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                logger.LogInformation("Starting database migration...");
+                LogMigrationStarted(logger);
 
-                var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+                var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(stoppingToken);
                 if (pendingMigrations.Any())
                 {
-                    await dbContext.Database.MigrateAsync(cancellationToken);
+                    await dbContext.Database.MigrateAsync(stoppingToken);
                 }
                 else
                 {
-                    logger.LogInformation("No pending migrations found");
+                    LogNoPendingMigrationsFound(logger);
                 }
 
-                await SeedAccountTypesAsync(dbContext, logger, cancellationToken);
-                await SeedTransactionCategoriesAsync(dbContext, logger, cancellationToken);
-                await SeedTransactionTypesAsync(dbContext, logger, cancellationToken);
+                await SeedAccountTypesAsync(dbContext, logger, stoppingToken);
+                await SeedTransactionCategoriesAsync(dbContext, logger, stoppingToken);
+                await SeedTransactionTypesAsync(dbContext, logger, stoppingToken);
 
-                logger.LogInformation("Database migration completed");
+                LogMigrationCompleted(logger);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Database migration failed");
+                LogMigrationErrored(logger, ex);
                 activity?.AddException(ex);
                 throw;
             }
@@ -55,7 +55,7 @@ namespace BasicFinance.MigrationWorker
             var accountTypesCount = await dbContext.AccountTypes.CountAsync(cancellationToken);
             if (accountTypesCount == 0)
             {
-                logger.LogInformation("Seeding account types...");
+                LogDbSetSeedingStarted(logger, nameof(dbContext.AccountTypes));
                 dbContext.AccountTypes.AddRange(
                     new("CHK", "Checking"),
                     new("SAV", "Savings"),
@@ -63,7 +63,7 @@ namespace BasicFinance.MigrationWorker
                     new("INV", "Investment"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);
-                logger.LogInformation("Account types seeding completed");
+                LogDbSetSeedingCompleted(logger, nameof(dbContext.AccountTypes));
             }
         }
 
@@ -73,13 +73,13 @@ namespace BasicFinance.MigrationWorker
             var transactionTypesCount = await dbContext.TransactionTypes.CountAsync(cancellationToken);
             if (transactionTypesCount == 0)
             {
-                logger.LogInformation("Seeding transaction types...");
+                LogDbSetSeedingStarted(logger, nameof(dbContext.TransactionTypes));
                 dbContext.TransactionTypes.AddRange(
                     new("CR", "Credit"),
                     new("DR", "Debit"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);
-                logger.LogInformation("Transaction types seeding completed");
+                LogDbSetSeedingCompleted(logger, nameof(dbContext.TransactionTypes));
             }
         }
 
@@ -89,7 +89,7 @@ namespace BasicFinance.MigrationWorker
             var transactionCategoriesCount = await dbContext.TransactionCategories.CountAsync(cancellationToken);
             if (transactionCategoriesCount == 0)
             {
-                logger.LogInformation("Seeding transaction categories...");
+                LogDbSetSeedingStarted(logger, nameof(dbContext.TransactionCategories));
                 dbContext.TransactionCategories.AddRange(
                     new("CR", "Credit"),
                     new("DR", "Debit"),
@@ -126,8 +126,44 @@ namespace BasicFinance.MigrationWorker
                     new("SAVINGS", "Savings Transfer"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);
-                logger.LogInformation("Transaction categories seeding completed");
+                LogDbSetSeedingCompleted(logger, nameof(dbContext.TransactionCategories));
             }
         }
+
+        [LoggerMessage(
+           EventName = nameof(LogMigrationStarted),
+           Level = LogLevel.Information,
+           Message = "Starting database migration...")]
+        private static partial void LogMigrationStarted(ILogger logger);
+
+        [LoggerMessage(
+           EventName = nameof(LogNoPendingMigrationsFound),
+           Level = LogLevel.Information,
+           Message = "No pending migrations found")]
+        private static partial void LogNoPendingMigrationsFound(ILogger logger);
+
+        [LoggerMessage(
+           EventName = nameof(LogMigrationCompleted),
+           Level = LogLevel.Information,
+           Message = "Database migration completed")]
+        private static partial void LogMigrationCompleted(ILogger logger);
+
+        [LoggerMessage(
+           EventName = nameof(LogMigrationErrored),
+           Level = LogLevel.Error,
+           Message = "Database migration failed")]
+        private static partial void LogMigrationErrored(ILogger logger, Exception ex);
+
+        [LoggerMessage(
+           EventName = nameof(LogDbSetSeedingStarted),
+           Level = LogLevel.Information,
+           Message = "Seeding {Dbset}...")]
+        private static partial void LogDbSetSeedingStarted(ILogger logger, string dbset);
+
+        [LoggerMessage(
+            EventName = nameof(LogDbSetSeedingCompleted),
+            Level = LogLevel.Information,
+            Message = "{Dbset} seeding completed")]
+        private static partial void LogDbSetSeedingCompleted(ILogger logger, string dbset);
     }
 }

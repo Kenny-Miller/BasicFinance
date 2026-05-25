@@ -6,7 +6,10 @@ using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using ImTools;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -15,9 +18,12 @@ using Wolverine.Http.FluentValidation;
 using Wolverine.RabbitMQ;
 using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(ServiceDiscoveryNames.Keycloak, realm: "basic-hub", options =>
@@ -43,7 +49,10 @@ builder.Services.AddWolverineHttp();
 // Configure Wolvering Messaging
 builder.UseWolverine(x =>
 {
+    x.UseRuntimeCompilation();
     x.UseFluentValidation();
+    x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
+
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .DeclareExchange("test-exchange", exchange =>
         {
@@ -55,13 +64,13 @@ builder.UseWolverine(x =>
     x.PublishAllMessages().ToRabbitRoutingKey("test-exchange", "test-exchangeTotest-queue");
 });
 
-
-WebApplication app = builder.Build();
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+        options.AddPreferredSecuritySchemes("Bearer"));
 }
 
 // Configure Wolvering HTTP
@@ -76,7 +85,6 @@ app.MapDefaultEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {
     var claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
@@ -84,4 +92,38 @@ app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPri
 })
 .RequireAuthorization();
 
-app.Run();
+await app.RunAsync();
+
+internal sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvider authenticationSchemeProvider) : IOpenApiDocumentTransformer
+{
+    public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        var authenticationSchemes = await authenticationSchemeProvider.GetAllSchemesAsync();
+        if (authenticationSchemes.Any(authScheme => authScheme.Name == "Bearer"))
+        {
+            // Add the security scheme at the document level
+            var securitySchemes = new Dictionary<string, IOpenApiSecurityScheme>
+            {
+                ["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer", // "bearer" refers to the header name here
+                    In = ParameterLocation.Header,
+                    BearerFormat = "Json Web Token"
+                }
+            };
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes = securitySchemes;
+
+            // Apply it as a requirement for all operations
+            foreach (var operation in document.Paths.Values.SelectMany(path => path.Operations))
+            {
+                operation.Value.Security ??= [];
+                operation.Value.Security.Add(new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
+            }
+        }
+    }
+}

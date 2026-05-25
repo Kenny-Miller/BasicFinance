@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BasicFinance.Infrastructure.Interceptors
 {
-    internal class TrimWhitespaceInterceptor : SaveChangesInterceptor
+    internal sealed class TrimWhitespaceInterceptor : SaveChangesInterceptor
     {
         /// <inheritdoc />
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(

@@ -8,22 +8,55 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
 
-namespace BasicFinance.Api.Features.Reports
+namespace BasicFinance.Api.Features.Spending
 {
+    /// <summary>
+    /// Retrieve the logged-in user's spending activity by time period.
+    /// </summary>
     public class ListSpendingByPeriod
     {
+        /// <summary>
+        /// Represents the query parameters used by the <see cref="ListSpendingByPeriod"/> endpoint.
+        /// </summary>
+        /// <param name="SpendingPeriod"></param>
         public record Request(SpendingPeriod SpendingPeriod = SpendingPeriod.Monthly);
 
+        /// <summary>
+        /// Defines time periods to group spending activity by.
+        /// </summary>
         public enum SpendingPeriod
         {
+            /// <summary>
+            /// Represents a weekly spending period.
+            /// </summary>
             Weekly,
+
+            /// <summary>
+            /// Represents a monthly spending period.
+            /// </summary>
             Monthly,
+
+            /// <summary>
+            /// Represents a yearly spending period.
+            /// </summary>
             Yearly
         }
 
+        /// <summary>
+        /// Represents the aggregated category spending activity for a given time period.
+        /// </summary>
+        /// <param name="PeriodStartDate"></param>
+        /// <param name="TotalSpend"></param>
+        /// <param name="SpendingActivityByCategory"></param>
         public record SpendingByPeriod(DateTime PeriodStartDate, decimal TotalSpend, Dictionary<string, SpendingActivity> SpendingActivityByCategory);
+
+        /// <summary>
+        /// Represents the amount specent, percent of total spend, and change in spend for a given category within a time period.
+        /// </summary>
+        /// <param name="Amount"></param>
+        /// <param name="PercentOfSpend"></param>
+        /// <param name="Change"></param>
         public record SpendingActivity(decimal Amount, double PercentOfSpend = 0, double Change = 0);
-        private record TranscationData(decimal Amount, DateTimeOffset Date, int TransactionCategoryId);
 
         /// <summary>
         /// Lists <see cref="Account"/> grouped by thier <see cref="AccountType"/> associated with the authenticated user.
@@ -51,10 +84,10 @@ namespace BasicFinance.Api.Features.Reports
 
             var groupedTranascations = request.SpendingPeriod switch
             {
-                SpendingPeriod.Weekly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, 1, 1).AddDays((x.Date.DayOfYear - 1) / 7 + 1)),
-                SpendingPeriod.Monthly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, 1)),
-                SpendingPeriod.Yearly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, 1, 1)),
-                _ => throw new ArgumentException("Invalid spending period", nameof(request.SpendingPeriod))
+                SpendingPeriod.Weekly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays((x.Date.DayOfYear - 1) / 7 + 1)),
+                SpendingPeriod.Monthly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, 1, 0, 0, 0, DateTimeKind.Utc)),
+                SpendingPeriod.Yearly => userTransactions.GroupBy(x => new DateTime(x.Date.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
+                _ => throw new ArgumentException("Invalid spending period", nameof(request))
             };
 
             var spendingByPeriodResults = await groupedTranascations
@@ -92,12 +125,14 @@ namespace BasicFinance.Api.Features.Reports
                 {
                     var categoryTotalAmount = resultCategoryDict.TryGetValue(categoryCode, out var totalAmount) ? totalAmount : 0m;
                     var percentOfSpend = result.TotalAmount == 0 ? 0 : (int)(categoryTotalAmount / result.TotalAmount * 100);
-                    var change = 0;
+                    var change = 0d;
 
                     if (previousPeriodCategoryDict != null)
                     {
-                        var previousAmount = previousPeriodCategoryDict.TryGetValue(categoryCode, out var prevAmount) ? prevAmount : 0m;
-                        change = previousAmount == 0 ? 100 : (int)((categoryTotalAmount - previousAmount) / (previousAmount == 0 ? 1 : previousAmount) * 100);
+                        var previousAmount = previousPeriodCategoryDict.TryGetValue(categoryCode, out var prevAmount) ? prevAmount : 0;
+                        change = previousAmount != 0
+                            ? (double)((categoryTotalAmount - previousAmount) / previousAmount * 100)
+                            : 0;
                     }
 
                     spendingActivityByCategory[categoryCode] = new SpendingActivity(categoryTotalAmount, percentOfSpend, change);
@@ -107,34 +142,5 @@ namespace BasicFinance.Api.Features.Reports
 
             return TypedResults.Ok(new ListResult<SpendingByPeriod>(spendingByPeriod, 1, spendingByPeriod.Count, spendingByPeriod.Count));
         }
-
-        //private static SpendingActivity CalculateChange(SpendingActivity previous, SpendingActivity current, decimal totalSpend)
-        //{
-        //    // Calculate percentage of spend for current category
-        //    var percentOfSpend = totalSpend == 0 ? 0 : (int)(current.Amount / totalSpend * 100);
-
-        //    // Calculate change percentage
-        //    var change = previous.Amount == 0 ? 100 : (int)((current.Amount - previous.Amount) / previous.Amount * 100);
-
-        //    return current with { PercentOfSpend = percentOfSpend, Change = change };
-        //}
-
-        //private static IQueryable<TransactionsByPeriod> TransactionsByWeeklyPeriod(IQueryable<Infrastructure.Entities.Transaction> transactions)
-        //{
-        //    return transactions.GroupBy(x => new DateTime(x.Date.Year, 1, x.Date.DayOfYear / 7))
-        //        .Select(x => new TransactionsByPeriod(x.Key, x.ToList()));
-        //}
-
-        //private static IQueryable<TransactionsByPeriod> TransactionsByMonthlyPeriod(IQueryable<Transaction> transactions)
-        //{
-        //    return transactions.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, 1))
-        //        .Select(x => new TransactionsByPeriod(x.Key, x.ToList()));
-        //}
-
-        //private static IQueryable<TransactionsByPeriod> TransactionsByYearlyPeriod(IQueryable<TranscationData> transactions)
-        //{
-        //    return transactions.GroupBy(x => new DateTime(x.Date.Year, 1, 1))
-        //        .Select(x => new TransactionsByPeriod(x.Key, x.ToList()));
-        //}
     }
 }

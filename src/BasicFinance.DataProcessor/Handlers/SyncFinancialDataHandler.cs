@@ -1,4 +1,5 @@
 ﻿using System.Collections.Frozen;
+using System.Globalization;
 using BasicFinance.Domain.Commands;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
@@ -14,7 +15,7 @@ using TransactionType = BasicFinance.Infrastructure.Enums.TransactionType;
 
 namespace BasicFinance.DataProcessor.Handlers
 {
-    public static class SyncFinancialDataHandler
+    public static partial class SyncFinancialDataHandler
     {
         private static readonly IReadOnlyList<string> _subSpreadSheetNames = ["Accounts", "Transactions"];
 
@@ -41,7 +42,7 @@ namespace BasicFinance.DataProcessor.Handlers
             var subsheets = await googleClient.GetSubSpreadsheetsAsync(userSpreadsheet.GoogleSheetId, _subSpreadSheetNames);
             if (subsheets == null)
             {
-                logger.LogWarning("Google sheet for user {UserId} was not found during data process", userSpreadsheet.UserId);
+                LogGoogleSheetNotFound(logger, userSpreadsheet.UserId);
                 return;
             }
 
@@ -105,39 +106,34 @@ namespace BasicFinance.DataProcessor.Handlers
                 var accountExportType = _accountExportToTypeDict.TryGetValue(accountRow.Institution, out var exportType) ? exportType : null;
                 if (accountExportType == null)
                 {
-                    logger.LogError(
-                        "No export type found for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.",
-                        accountRow.Institution,
-                        userId,
-                        accountRow.Institution,
-                        accountRow.AccountName);
+                    LogExportTypeNotFound(logger, userId, accountRow.Institution, accountRow.AccountName);
                     continue;
                 }
 
                 var deserializedAccountJson = JsonConvert.DeserializeObject(accountRow.RawDataJson, accountExportType);
                 if (deserializedAccountJson is not IAccountExport export)
                 {
-                    logger.LogError(
-                        "Failed to deserialize account export for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.",
-                        accountRow.Institution,
-                        userId,
-                        accountRow.Institution,
-                        accountRow.AccountName);
+                    LogAccountExportTypeDeserialilzationFailed(logger, userId, accountRow.Institution, accountRow.AccountName);
                     continue;
                 }
 
-                var accountType = export.AccountType.ToLower() switch
+                var accountType = export.AccountType.ToLowerInvariant() switch
                 {
                     "checking" => AccountType.Checking,
                     "savings" => AccountType.Savings,
                     "credit" => AccountType.CreditCard,
                     "investment" => AccountType.Investment,
-                    _ => throw new InvalidOperationException("Unknown account type")
+                    _ => (AccountType?)null
                 };
+
+                if (accountType == null)
+                {
+                    continue;
+                }
 
                 var accountToCreate = new Account(
                    userGoogleSpreadsheetId,
-                   accountType,
+                   accountType.Value,
                    userId,
                    accountRow.AccountName,
                    accountRow.Balance,
@@ -182,42 +178,25 @@ namespace BasicFinance.DataProcessor.Handlers
                 var account = existingAccountsDict.TryGetValue(transactionRow.Account, out var accountMatch) ? accountMatch : null;
                 if (account == null)
                 {
-                    logger.LogError("No account found for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
-                        transactionRow.Account,
-                        transactionRow.Description,
-                        transactionRow.Date,
-                        transactionRow.Account,
-                        userId);
+                    LogAccountForTransactionNotFound(logger, userId, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
                     continue;
                 }
 
                 var transactionExportType = _accountExportToTransactionExportDict.TryGetValue(account.Institution, out var exportType) ? exportType : null;
                 if (transactionExportType == null)
                 {
-                    logger.LogError("No export type found for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
-                       account.Institution,
-                       transactionRow.Account,
-                       transactionRow.Description,
-                       transactionRow.Date,
-                       transactionRow.Account,
-                       userId);
+                    LogTransactionExportTypeNotFound(logger, userId, account.Institution, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
                     continue;
                 }
 
                 var deserializedAccountJson = JsonConvert.DeserializeObject(transactionRow.RawDataJson, transactionExportType);
                 if (deserializedAccountJson is not ITransactionExport export)
                 {
-                    logger.LogError("Failed to deserialize transaction export for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.",
-                      account.Institution,
-                      transactionRow.Account,
-                      transactionRow.Description,
-                      transactionRow.Date,
-                      transactionRow.Account,
-                      userId);
+                    LogTransactionExportTypeDeserializationFailed(logger, userId, account.Institution, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
                     continue;
                 }
 
-                var transactionType = export.TransactionType.ToLower() switch
+                var transactionType = export.TransactionType.ToLower(System.Globalization.CultureInfo.CurrentCulture) switch
                 {
                     "debit" => TransactionType.Debit,
                     "posdebit" => TransactionType.Debit,
@@ -228,7 +207,7 @@ namespace BasicFinance.DataProcessor.Handlers
                     _ => throw new InvalidOperationException("Unknown transaction type")
                 };
 
-                var transactionCategory = (export.Category?.ToLower(), export.SubCategory?.ToLower()) switch
+                var transactionCategory = (export.Category?.ToLower(System.Globalization.CultureInfo.CurrentCulture), export.SubCategory?.ToLower(System.Globalization.CultureInfo.CurrentCulture)) switch
                 {
                     (_, "card payments (non-wf)") => TransactionCategory.CreditCardPayment,
                     (_, "direct deposits") => TransactionCategory.Income,
@@ -297,7 +276,7 @@ namespace BasicFinance.DataProcessor.Handlers
                     .Where(x => x.Count >= 8)
                     .Select(x => new AccountGoogleSpreadsheetRow(
                         (string)x[0],
-                        decimal.Parse((string)x[1]),
+                        decimal.Parse((string)x[1], CultureInfo.InvariantCulture),
                         (string)x[2],
                         (string)x[3],
                         DateTime.SpecifyKind((DateTime)x[4], DateTimeKind.Utc),
@@ -320,12 +299,48 @@ namespace BasicFinance.DataProcessor.Handlers
             [.. source
                     .Where(x => x.Count >= 7)
                     .Select(x => new TransactionGoogleSpreadsheetRow(
-                        DateTime.SpecifyKind(DateTime.Parse((string)x[0]), DateTimeKind.Utc),
-                        decimal.Parse((string)x[1]),
+                        DateTime.SpecifyKind(DateTime.Parse((string)x[0], CultureInfo.InvariantCulture), DateTimeKind.Utc),
+                        decimal.Parse((string)x[1],CultureInfo.InvariantCulture),
                         (string)x[2],
                         (string)x[3],
                         (string)x[4],
                         (string)x[7]))
              ];
+
+        [LoggerMessage(
+            EventName = nameof(LogGoogleSheetNotFound),
+            Level = LogLevel.Error,
+            Message = "Google sheet for user {UserId} was not found during data process")]
+        private static partial void LogGoogleSheetNotFound(ILogger logger, string userId);
+
+        [LoggerMessage(
+            EventName = nameof(LogExportTypeNotFound),
+            Level = LogLevel.Error,
+            Message = "No export type found for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
+        private static partial void LogExportTypeNotFound(ILogger logger, string userId, string institution, string accountName);
+
+        [LoggerMessage(
+            EventName = nameof(LogAccountExportTypeDeserialilzationFailed),
+            Level = LogLevel.Error,
+            Message = "Failed to deserialize account export for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
+        private static partial void LogAccountExportTypeDeserialilzationFailed(ILogger logger, string userId, string institution, string accountName);
+
+        [LoggerMessage(
+           EventName = nameof(LogAccountForTransactionNotFound),
+           Level = LogLevel.Error,
+           Message = "No account found for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
+        private static partial void LogAccountForTransactionNotFound(ILogger logger, string userId, string account, string description, DateTimeOffset date, decimal amount);
+
+        [LoggerMessage(
+            EventName = nameof(LogTransactionExportTypeNotFound),
+            Level = LogLevel.Error,
+            Message = "No export type found for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
+        private static partial void LogTransactionExportTypeNotFound(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
+
+        [LoggerMessage(
+            EventName = nameof(LogTransactionExportTypeDeserializationFailed),
+            Level = LogLevel.Error,
+            Message = "Failed to deserialize transaction export for institution {Institution} for transaction {Account}-{Description}-{Date}-{Amount} for user {UserId}. Transaction will be skipped.")]
+        private static partial void LogTransactionExportTypeDeserializationFailed(ILogger logger, string userId, string institution, string account, string description, DateTimeOffset date, decimal amount);
     }
 }

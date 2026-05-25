@@ -1,4 +1,3 @@
-import { ListResult } from './../../shared/api/list-result';
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
@@ -9,30 +8,31 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
+import { ListResult } from './../../shared/api/list-result';
 
-import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { OAuthService } from 'angular-oauth2-oidc';
-import { ChartData, ChartOptions } from 'chart.js';
-import 'chartjs-adapter-date-fns';
-import ChartDeferred from 'chartjs-plugin-deferred';
-import { BaseChartDirective } from 'ng2-charts';
-import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
-import { HomeClient } from './data/home-client';
-import { TransactionsList } from '../../shared/ui/transactions-list/transactions-list';
-import { TransactionsListSkeleton } from '../../shared/ui/transactions-list-skeleton/transactions-list-skeleton';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { RouterLink } from '@angular/router';
+import { provideIcons } from '@ng-icons/core';
 import {
   lucideChartNoAxesCombined,
   lucideCreditCard,
   lucideDollarSign,
   lucideLandmark,
 } from '@ng-icons/lucide';
-import { provideIcons } from '@ng-icons/core';
+import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
-import { AccountGroupAccordion } from './components/account-group-accordion/account-group-accordion';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { ChartData, ChartOptions } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+import ChartDeferred from 'chartjs-plugin-deferred';
+import { BaseChartDirective } from 'ng2-charts';
+import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { AccountTypeGroup } from '../../shared/api/accounts/accountByType';
+import { TransactionsListSkeleton } from '../../shared/ui/transactions-list-skeleton/transactions-list-skeleton';
+import { TransactionsList } from '../../shared/ui/transactions-list/transactions-list';
+import { AccountGroupAccordion } from './components/account-group-accordion/account-group-accordion';
+import { HomeClient } from './data/home-client';
 
 @Component({
   selector: 'app-home',

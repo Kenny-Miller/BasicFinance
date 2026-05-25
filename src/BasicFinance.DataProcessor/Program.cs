@@ -8,7 +8,7 @@ using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.RabbitMQ;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 // Register Services
 builder.AddServiceDefaults();
@@ -23,12 +23,14 @@ builder.Services.AddSingleton<GoogleServiceAccountClient>();
 
 builder.Host.UseWolverine(x =>
 {
+    x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
     x.ListenToRabbitQueue("test-queue");
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .AutoProvision();
+    x.UseRuntimeCompilation();
 });
 
-WebApplication app = builder.Build();
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -38,4 +40,4 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
 
-app.Run();
+await app.RunAsync();

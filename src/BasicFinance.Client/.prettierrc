@@ -4,16 +4,29 @@
   "useTabs": false,
   "semi": true,
   "singleQuote": true,
-  "trailingComma": "all",
+  "trailingComma": "es5",
   "bracketSpacing": true,
   "arrowParens": "avoid",
   "tailwindFunctions": ["hlm", "cva"],
   "tailwindStylesheet": "./src/styles.css",
-  "plugins": ["prettier-plugin-tailwindcss"],
+  "plugins": ["prettier-plugin-tailwindcss", "@trivago/prettier-plugin-sort-imports"],
   "overrides": [
     {
       "files": "*.html",
       "options": { "parser": "angular" }
     }
-  ]
+  ],
+  "importOrder": [
+    "^@angular/(.*)$",
+    "^rxjs(.*)$",
+    "^@ngrx/(.*)$",
+    "<THIRD_PARTY_MODULES>",
+    "^@env/(.*)$",
+    "^@core/(.*)$",
+    "^@shared/(.*)$",
+    "^@features/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }
