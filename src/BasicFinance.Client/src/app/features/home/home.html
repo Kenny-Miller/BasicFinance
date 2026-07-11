@@ -5,117 +5,97 @@
       <div hlmCardAction>View</div>
     </div>
 
-    <div hlmCardContent class="flex-1">
-      @if (displayChart()) {
-        <canvas
-          baseChart
-          [data]="spendActivityChartData"
-          [options]="spendActivityChartOptions"
-          [plugins]="chartPlugins"
-          type="line"
-        ></canvas>
+    <div hlmCardContent>
+      @if (spendingOverTimeResource.hasValue()) {
+        <app-spend-activity-chart
+          [theme]="themeService.appTheme()"
+          [data]="spendingOverTimeResource.value()"
+        ></app-spend-activity-chart>
+      } @else if (spendingOverTimeResource.isLoading()) {
+        <div class="w-full h-64 animate-pulse bg-muted rounded"></div>
       }
     </div>
   </section>
 
-  <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Networth</h3>
-      <div hlmCardAction>View</div>
-    </div>
-    <div hlmCardContent>
-      <div class="font-semibold text-2xl">
-        {{ 50000 | currency }}
+  @if (netWorthSummaryResource.hasValue()) {
+    <app-summary-card
+      title="Networth"
+      [currentValue]="netWorthSummaryResource.value().currentNetWorth"
+      [lastMonthValue]="netWorthSummaryResource.value().lastMonthNetWorth"
+      variant="networth"
+    />
+    <app-summary-card
+      title="Checking"
+      [currentValue]="netWorthSummaryResource.value().currentChecking"
+      [lastMonthValue]="netWorthSummaryResource.value().lastMonthChecking"
+      variant="category"
+    />
+    <app-summary-card
+      title="Savings"
+      [currentValue]="netWorthSummaryResource.value().currentSavings"
+      [lastMonthValue]="netWorthSummaryResource.value().lastMonthSavings"
+      variant="category"
+    />
+    <app-summary-card
+      title="Investments"
+      [currentValue]="netWorthSummaryResource.value().currentInvestments"
+      [lastMonthValue]="netWorthSummaryResource.value().lastMonthInvestments"
+      variant="category"
+    />
+  } @else if (netWorthSummaryResource.isLoading()) {
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+      <div hlmCardHeader>
+        <div class="animate-pulse space-y-2">
+          <div class="h-5 bg-muted rounded w-20"></div>
+        </div>
       </div>
-      <div class="text-muted-foreground text-sm">
-        <p>
-          You've increased your networth by
-          <span class="text-emerald-500"> {{ 5000 | currency }} </span> this month
-        </p>
+      <div hlmCardContent>
+        <div class="animate-pulse space-y-2">
+          <div class="h-7 bg-muted rounded w-24"></div>
+          <div class="h-4 bg-muted rounded w-40"></div>
+        </div>
       </div>
-    </div>
-    <div hlmCardFooter>
-      <canvas
-        baseChart
-        [data]="incomeChartData"
-        [options]="incomeChartOptions"
-        [plugins]="chartPlugins"
-        type="line"
-      ></canvas>
-    </div>
-  </section>
-
-  <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Checking</h3>
-      <div hlmCardAction>View</div>
-    </div>
-    <div hlmCardContent class="flex-1">
-      <div class="font-semibold text-2xl">
-        {{ 50000 | currency }}
+    </section>
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+      <div hlmCardHeader>
+        <div class="animate-pulse space-y-2">
+          <div class="h-5 bg-muted rounded w-20"></div>
+        </div>
       </div>
-      <div class="text-muted-foreground text-sm">
-        <p><span class="text-emerald-500"> +3% </span> vs last month</p>
+      <div hlmCardContent>
+        <div class="animate-pulse space-y-2">
+          <div class="h-7 bg-muted rounded w-24"></div>
+          <div class="h-4 bg-muted rounded w-28"></div>
+        </div>
       </div>
-    </div>
-    <div hlmCardFooter>
-      <canvas
-        baseChart
-        [data]="incomeChartData"
-        [options]="incomeChartOptions"
-        [plugins]="chartPlugins"
-        type="line"
-      ></canvas>
-    </div>
-  </section>
-
-  <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Savings</h3>
-      <div hlmCardAction>View</div>
-    </div>
-    <div hlmCardContent class="flex-1">
-      <div class="font-semibold text-2xl">
-        {{ 50000 | currency }}
+    </section>
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+      <div hlmCardHeader>
+        <div class="animate-pulse space-y-2">
+          <div class="h-5 bg-muted rounded w-20"></div>
+        </div>
       </div>
-      <div class="text-muted-foreground text-sm">
-        <p><span class="text-emerald-500"> +5% </span> vs last month</p>
+      <div hlmCardContent>
+        <div class="animate-pulse space-y-2">
+          <div class="h-7 bg-muted rounded w-24"></div>
+          <div class="h-4 bg-muted rounded w-28"></div>
+        </div>
       </div>
-    </div>
-    <div hlmCardFooter>
-      <canvas
-        baseChart
-        [data]="incomeChartData"
-        [options]="incomeChartOptions"
-        [plugins]="chartPlugins"
-        type="line"
-      ></canvas>
-    </div>
-  </section>
-
-  <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Investments</h3>
-      <div hlmCardAction>View</div>
-    </div>
-    <div hlmCardContent class="flex-1">
-      <div class="font-semibold text-2xl">
-        {{ 50000 | currency }}
+    </section>
+    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+      <div hlmCardHeader>
+        <div class="animate-pulse space-y-2">
+          <div class="h-5 bg-muted rounded w-20"></div>
+        </div>
       </div>
-      <div class="text-muted-foreground text-sm">
-        <p><span class="text-red-500"> -3% </span> vs last month</p>
+      <div hlmCardContent>
+        <div class="animate-pulse space-y-2">
+          <div class="h-7 bg-muted rounded w-24"></div>
+          <div class="h-4 bg-muted rounded w-28"></div>
+        </div>
       </div>
-    </div>
-    <div hlmCardFooter>
-      <canvas
-        baseChart
-        [data]="incomeChartData"
-        [options]="incomeChartOptions"
-        [plugins]="chartPlugins"
-        type="line"
-      ></canvas>
-    </div>
-  </section>
+    </section>
+  }
 
   <section hlmCard class="col-span-4 lg:col-span-2 gap-2 rounded-sm">
     <div hlmCardHeader>

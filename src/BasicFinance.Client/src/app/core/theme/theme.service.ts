@@ -14,7 +14,6 @@ export class ThemeService {
   private readonly breakpointColorSchemePreference = '(prefers-color-scheme: dark)';
 
   private readonly document = inject(DOCUMENT);
-  private readonly rootStyles = window.getComputedStyle(this.document.documentElement);
 
   private readonly userSystemTheme = toSignal(
     this.breakpointObserver.observe(this.breakpointColorSchemePreference).pipe(
@@ -26,9 +25,13 @@ export class ThemeService {
 
   private readonly localStorageTheme = signal(this.getLocalStorageTheme());
 
-  private readonly currentTheme = linkedSignal({
+  private readonly currentTheme = linkedSignal<
+    { systemTheme: ColorTheme; localTheme: ColorTheme | null },
+    ColorTheme
+  >({
     source: () => ({ systemTheme: this.userSystemTheme(), localTheme: this.localStorageTheme() }),
-    computation: (systemTheme, localTheme) => (localTheme !== null ? localTheme : systemTheme),
+    computation: (themes, _) =>
+      themes.localTheme !== null ? themes.localTheme : themes.systemTheme,
   });
 
   readonly appTheme = computed(() => this.currentTheme());
@@ -39,7 +42,7 @@ export class ThemeService {
   }
 
   getAppColor(color: string): string {
-    return this.rootStyles.getPropertyValue(color).trim();
+    return window.getComputedStyle(this.document.documentElement).getPropertyValue(color).trim();
   }
 
   private getLocalStorageTheme(): ColorTheme | null {

@@ -50,23 +50,35 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var accountsByType = await dbContext.Accounts
-               .AsNoTracking()
-               .Where(x => x.UserId == user.Id)
-               .Where(x => x.IsActive)
-               .GroupBy(x => x.AccountType)
-               .ToListAsync(cancellationToken);
+            var userAccounts = dbContext.Accounts
+                .AsNoTracking()
+                .Where(x => x.UserId == user.Id)
+                .Where(x => x.IsActive);
 
-            var mapped = accountsByType
-                .Select(group => new AccountsByTypeDto(
-                 group.Key.AccountTypeCode,
-                 group.Sum(x => x.Balance),
-                 [.. group.Select(account => new AccountDto(
-                     account.AccountId,
-                     account.Institution,
-                     account.AccountName,
-                     account.Balance))
-                    .OrderBy(x => x.AccountName)]))
+            var joinedResults = await dbContext.AccountTypes
+                .AsNoTracking()
+                .Where(t => t.IsActive)
+                .GroupJoin(
+                    userAccounts,
+                    accountType => accountType.AccountTypeId,
+                    account => account.AccountTypeId,
+                    (accountType, accounts) => new
+                    {
+                        AccountTypeCode = accountType.AccountTypeCode,
+                        Accounts = accounts
+                    })
+                .ToListAsync(cancellationToken);
+
+            var mapped = joinedResults
+                .Select(x => new AccountsByTypeDto(
+                    x.AccountTypeCode,
+                    x.Accounts.Sum(a => a.Balance),
+                    [.. x.Accounts.OrderBy(a => a.AccountName)
+                        .Select(a => new AccountDto(
+                            a.AccountId,
+                            a.Institution,
+                            a.AccountName,
+                            a.Balance))]))
                 .ToList();
 
             return TypedResults.Ok(new ListResult<AccountsByTypeDto>(mapped, 1, mapped.Count, mapped.Count));

@@ -1,0 +1,36 @@
+<section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>{{ title() }}</h3>
+    <div hlmCardAction>View</div>
+  </div>
+  <div hlmCardContent class="flex-1">
+    <div class="font-semibold text-2xl">
+      {{ currentValue() | currency }}
+    </div>
+    <div class="text-muted-foreground text-sm">
+      @if (variant() === 'networth') {
+        @if (isIncrease) {
+          <p>
+            You've increased your networth by
+            <span class="text-emerald-500"> {{ dollarDifference | currency }} </span>
+            this month
+          </p>
+        } @else {
+          <p>
+            Your networth decreased by
+            <span class="text-red-500"> {{ dollarDifference | currency }} </span>
+            this month
+          </p>
+        }
+      } @else {
+        <p>
+          <span class="{{ changeClass }}">
+            {{ changeSign }}{{ percentChange | number: '1.1-1' }}%
+          </span>
+          vs last month
+        </p>
+      }
+    </div>
+  </div>
+  <div hlmCardFooter></div>
+</section>
