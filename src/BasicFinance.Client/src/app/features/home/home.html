@@ -72,27 +72,29 @@
     </div>
   </section>
 
-  <section hlmCard class="col-span-4 lg:col-span-2 gap-2 row-span-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Recent Transactions</h3>
-    </div>
-    <div hlmCardContent class="flex-1">
-      @if (transactionsResource.hasValue()) {
-        <app-transactions-list [transactionsResult]="transactionsResource.value()" />
-      } @else if (transactionsResource.isLoading()) {
-        <app-transactions-list-skeleton />
-      }
-
-      <div class="flex justify-center mt-2">
-        <button
-          routerLink="/transactions"
-          hlmBtn
-          [disabled]="transactionsResource.isLoading()"
-          class="w-full lg:w-80"
-        >
-          View More
-        </button>
+  <div class="col-span-4 lg:col-span-2 gap-2 row-span-2">
+    <section hlmCard class="rounded-sm">
+      <div hlmCardHeader>
+        <h3 hlmCardTitle>Recent Transactions</h3>
       </div>
-    </div>
-  </section>
+      <div hlmCardContent class="flex-1">
+        @if (transactionsResource.hasValue()) {
+          <app-transactions-list [transactions]="transactionsResource.value()" />
+        } @else if (transactionsResource.isLoading()) {
+          <app-transactions-list-skeleton />
+        }
+
+        <div class="flex justify-center mt-2">
+          <button
+            routerLink="/transactions"
+            hlmBtn
+            [disabled]="transactionsResource.isLoading()"
+            class="w-full lg:w-80"
+          >
+            View More
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>

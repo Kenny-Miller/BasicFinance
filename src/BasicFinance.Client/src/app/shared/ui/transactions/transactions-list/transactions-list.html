@@ -1,0 +1,9 @@
+<hlm-item-group>
+  @for (transaction of transactions(); track transaction.id; let last = $last) {
+    <app-transaction-item [transaction]="transaction" />
+
+    @if (!last) {
+      <hlm-separator />
+    }
+  }
+</hlm-item-group>

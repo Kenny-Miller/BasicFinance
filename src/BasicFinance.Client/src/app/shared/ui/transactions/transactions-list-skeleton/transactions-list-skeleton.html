@@ -1,0 +1,9 @@
+<hlm-item-group>
+  @for (item of skeletonList(); track $index; let last = $last) {
+    <app-transaction-item-skeleton />
+
+    @if (!last) {
+      <hlm-separator />
+    }
+  }
+</hlm-item-group>

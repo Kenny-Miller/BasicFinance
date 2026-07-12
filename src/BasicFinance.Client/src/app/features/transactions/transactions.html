@@ -1,78 +1,40 @@
-<section class="w-full gap-2 rounded-sm">
+<section>
   <div>
-    <div class="flex items-center justify-between">
-      <h3>Transactions</h3>
-      <p class="text-sm text-muted-foreground">{{ transactions().length }} loaded</p>
-    </div>
-
+    <h3>Transactions</h3>
     <hlm-separator />
+    <app-filter-bar (filtersChange)="onFiltersChange($event)" />
+  </div>
 
-    <div class="flex items-center gap-3">
-      <brn-select [(ngModel)]="sortFieldValue" (selectionChange)="onSortChange()">
-        <hlm-select-trigger class="w-40">
-          <hlm-select-value />
-        </hlm-select-trigger>
-        <hlm-select-content>
-          @for (option of sortOptions; track option.field) {
-            <hlm-option [value]="option.field">{{ option.label }}</hlm-option>
-          }
-        </hlm-select-content>
-      </brn-select>
-
-      <button hlmBtn variant="outline" (click)="toggleSortDirection()">
-        <ng-icon [name]="getSortIcon()" class="size-4" />
-      </button>
+  @if (resource.error()) {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">Failed to load transactions</p>
+      <button hlmBtn variant="outline" class="mt-2" (click)="page.set(1)">Retry</button>
     </div>
-  </div>
+  } @else if (transactions().length > 0) {
+    <hlm-item-group>
+      @for (transaction of transactions(); track transaction.id; let last = $last) {
+        <app-transaction-card [transaction]="transaction" />
 
-  <div class="flex-1">
-    @if (resource.error()) {
-      <div class="flex flex-col items-center justify-center py-8 text-destructive">
-        <p class="text-lg font-medium">Failed to load transactions</p>
-        <button hlmBtn variant="outline" class="mt-2" (click)="page.set(1)">Retry</button>
-      </div>
-    } @else if (transactions().length > 0) {
-      <hlm-item-group>
-        @for (transaction of transactions(); track transaction.id; let last = $last) {
-          <app-transaction-card [transaction]="transaction" />
-
-          @if (!last) {
-            <hlm-separator />
-          }
-        }
-
-        @if (resource.isLoading()) {
+        @if (!last) {
           <hlm-separator />
-          @for (item of [1, 2, 3]; track $index; let last = $last) {
-            <div hlmItem>
-              <hlm-item-media variant="icon" class="size-10">
-                <div hlmSkeleton class="size-10"></div>
-              </hlm-item-media>
-
-              <hlm-item-content class="gap-1">
-                <div hlmSkeleton class="h-6 w-full"></div>
-                <div hlmSkeleton class="h-4 w-24"></div>
-              </hlm-item-content>
-            </div>
-            @if (!last) {
-              <hlm-separator />
-            }
-          }
         }
-      </hlm-item-group>
-    } @else if (resource.isLoading()) {
-      <app-transactions-list-skeleton [skeletonListLength]="20" />
-    } @else {
-      <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
-        <p class="text-lg font-medium">No transactions found</p>
-        <p class="text-sm">Your transactions will appear here.</p>
-      </div>
+      }
+    </hlm-item-group>
+    @if (resource.isLoading()) {
+      <hlm-separator />
+      <app-transactions-list-skeleton [skeletonListLength]="3" />
     }
-
-    @if (hasMore() && !resource.isLoading()) {
-      <div class="flex justify-center mt-4">
-        <button hlmBtn class="w-full lg:w-80" (click)="loadMore()">Load More</button>
-      </div>
-    }
-  </div>
+  } @else if (resource.isLoading()) {
+    <app-transactions-list-skeleton [skeletonListLength]="20" />
+  } @else {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">No transactions found</p>
+      <p class="text-sm">Your transactions will appear here.</p>
+    </div>
+  }
+  @if (hasMore() && !resource.isLoading()) {
+    <div class="flex justify-center mt-4">
+      <button hlmBtn class="w-full lg:w-80" (click)="loadMore()">Load More</button>
+    </div>
+  }
 </section>

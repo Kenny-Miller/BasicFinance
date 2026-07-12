@@ -1,8 +1,9 @@
 export interface Transaction {
   id: string;
+  transactionTypeName: string;
+  transactionCategoryName: string;
   accountName: string;
   amount: number;
-  category: string;
   description: string;
   date: string;
 }

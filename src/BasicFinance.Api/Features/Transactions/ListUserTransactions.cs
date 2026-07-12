@@ -5,7 +5,6 @@ using BasicFinance.Domain.Queries;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Entities;
 using BasicFinance.Infrastructure.Extensions;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -26,19 +25,46 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="PageSize"></param>
         /// <param name="SortField"></param>
         /// <param name="SortDirection"></param>
-        public record Request(int? Page, int? PageSize, string? SortField, string? SortDirection) : IPagedQuery, ISortedQuery;
+        /// <param name="StartDate"></param>
+        /// <param name="EndDate"></param>
+        /// <param name="MinAmount"></param>
+        /// <param name="MaxAmount"></param>
+        /// <param name="TransactionTypeId"></param>
+        /// <param name="TransactionCategoryId"></param>
+        /// <param name="AccountId"></param>
+        /// <param name="Search"></param>
+        public record Request(
+            int? Page,
+            int? PageSize,
+            string? SortField,
+            string? SortDirection,
+            DateTime? StartDate,
+            DateTime? EndDate,
+            decimal? MinAmount,
+            decimal? MaxAmount,
+            int? TransactionTypeId,
+            int? TransactionCategoryId,
+            Guid? AccountId,
+            string? Search) : IPagedQuery, ISortedQuery;
 
         /// <summary>
         /// Dto containing <see cref="Transaction"/> data.
         /// </summary>
         /// <param name="Id"></param>
-        /// <param name="TransactionTypeId"></param>
-        /// <param name="TransactionCategoryId"></param>
+        /// <param name="TransactionTypeName"></param>
+        /// <param name="TransactionCategoryName"></param>
         /// <param name="AccountName"></param>
         /// <param name="Date"></param>
         /// <param name="Amount"></param>
         /// <param name="Description"></param>
-        public record TransactionDto(Guid Id, int TransactionTypeId, int TransactionCategoryId, string AccountName, DateTimeOffset Date, decimal Amount, string Description);
+        public record TransactionDto(
+            Guid Id,
+            string TransactionTypeName,
+            string TransactionCategoryName,
+            string AccountName,
+            DateTimeOffset Date,
+            decimal Amount,
+            string Description);
 
         /// <summary>
         /// Lists <see cref="Transaction"/>s associated with the authenticated user.
@@ -48,7 +74,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
-        /// Returns <see cref="Ok{TValue}"/> with a list of <see cref="TransactionDto"/> when successful,
+        /// Returns <see cref="Ok{TValue}"/> with a <see cref="ListResult{TValue}"/> of <see cref="TransactionDto"/> when successful,
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
@@ -67,15 +93,76 @@ namespace BasicFinance.Api.Features.Transactions
                 .Where(x => x.UserId == user.Id)
                 .Where(x => x.IsActive);
 
+            baseQuery = ApplyFilters(baseQuery, request);
+
             var totalCount = await baseQuery.CountAsync(cancellationToken);
-            var userSpreadSheets = await baseQuery
+
+            var transactions = await baseQuery
                 .OrderBy(sortExpressionSelector, request)
                     .ThenBy(x => x.TransactionId, request)
                 .Paginate(request)
-                .Select(x => new TransactionDto(x.TransactionId, x.TransactionTypeId, x.TransactionCategoryId, x.Account.AccountName, x.Date, x.Amount, x.Description))
+                .Select(x => new TransactionDto(
+                    x.TransactionId,
+                    x.TransactionType.TransactionTypeName,
+                    x.TransactionCategory.TransactionCategoryName,
+                    x.Account.AccountName,
+                    x.Date,
+                    x.Amount,
+                    x.Description))
                 .ToListAsync(cancellationToken);
 
-            return TypedResults.Ok(new ListResult<TransactionDto>(userSpreadSheets, request.Page, request.PageSize, totalCount));
+            return TypedResults.Ok(new ListResult<TransactionDto>(transactions, request.Page, request.PageSize, totalCount));
+        }
+
+        /// <summary>
+        /// Applies optional filter predicates to the base query.
+        /// </summary>
+        static IQueryable<Transaction> ApplyFilters(IQueryable<Transaction> query, Request request)
+        {
+            if (request.StartDate.HasValue)
+            {
+                var start = new DateTimeOffset(DateTime.SpecifyKind(request.StartDate.Value, DateTimeKind.Utc));
+                query = query.Where(x => x.Date >= start);
+            }
+
+            if (request.EndDate.HasValue)
+            {
+                var end = new DateTimeOffset(DateTime.SpecifyKind(request.EndDate.Value, DateTimeKind.Utc));
+                query = query.Where(x => x.Date <= end);
+            }
+
+            if (request.MinAmount.HasValue)
+            {
+                query = query.Where(x => x.Amount >= request.MinAmount.Value);
+            }
+
+            if (request.MaxAmount.HasValue)
+            {
+                query = query.Where(x => x.Amount <= request.MaxAmount.Value);
+            }
+
+            if (request.TransactionTypeId.HasValue)
+            {
+                query = query.Where(x => x.TransactionTypeId == request.TransactionTypeId.Value);
+            }
+
+            if (request.TransactionCategoryId.HasValue)
+            {
+                query = query.Where(x => x.TransactionCategoryId == request.TransactionCategoryId.Value);
+            }
+
+            if (request.AccountId.HasValue)
+            {
+                query = query.Where(x => x.AccountId == request.AccountId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                var searchTerm = request.Search!.Trim();
+                query = query.Where(x => x.Description.Contains(searchTerm));
+            }
+
+            return query;
         }
 
         /// <summary>
@@ -84,8 +171,8 @@ namespace BasicFinance.Api.Features.Transactions
         private static readonly FrozenDictionary<string, Expression<Func<Transaction, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Transaction, object>>>(StringComparer.OrdinalIgnoreCase)
         {
             [nameof(TransactionDto.Id)] = x => x.TransactionId,
-            [nameof(TransactionDto.TransactionTypeId)] = x => x.TransactionType.TransactionTypeCode,
-            [nameof(TransactionDto.TransactionCategoryId)] = x => x.TransactionCategory.TransactionCategoryCode,
+            [nameof(TransactionDto.TransactionTypeName)] = x => x.TransactionType.TransactionTypeCode,
+            [nameof(TransactionDto.TransactionCategoryName)] = x => x.TransactionCategory.TransactionCategoryCode,
             [nameof(TransactionDto.AccountName)] = x => x.Account.AccountName,
             [nameof(TransactionDto.Date)] = x => x.Date,
             [nameof(TransactionDto.Amount)] = x => x.Amount,

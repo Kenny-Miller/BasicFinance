@@ -1,0 +1,95 @@
+<form [formGroup]="form" (ngSubmit)="onApply()">
+  <hlm-field-group class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <hlm-field>
+      <label hlmFieldLabel for="filter-start-date">Start Date</label>
+      <input
+        id="filter-start-date"
+        type="date"
+        hlmInput
+        class="align-middle"
+        formControlName="startDate"
+      />
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-end-date">End Date</label>
+      <input
+        id="filter-end-date"
+        type="date"
+        hlmInput
+        class="align-middle"
+        formControlName="endDate"
+      />
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-min-amount">Min Amount</label>
+      <input
+        id="filter-min-amount"
+        type="number"
+        step="0.01"
+        hlmInput
+        placeholder="0.00"
+        formControlName="minAmount"
+      />
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-max-amount">Max Amount</label>
+      <input
+        id="filter-max-amount"
+        type="number"
+        step="0.01"
+        hlmInput
+        placeholder="99999.99"
+        formControlName="maxAmount"
+      />
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-type">Type</label>
+      <brn-select formControlName="transactionTypeId">
+        <hlm-select-trigger id="filter-type" class="w-full">
+          <hlm-select-value />
+        </hlm-select-trigger>
+        <hlm-select-content>
+          @for (option of typeOptions; track option.value) {
+            <hlm-option [value]="option.value">{{ option.label }}</hlm-option>
+          }
+        </hlm-select-content>
+      </brn-select>
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-category">Category</label>
+      <brn-select formControlName="transactionCategoryId">
+        <hlm-select-trigger id="filter-category" class="w-full">
+          <hlm-select-value />
+        </hlm-select-trigger>
+        <hlm-select-content>
+          @for (option of categoryOptions; track option.value) {
+            <hlm-option [value]="option.value">{{ option.label }}</hlm-option>
+          }
+        </hlm-select-content>
+      </brn-select>
+    </hlm-field>
+
+    <hlm-field>
+      <label hlmFieldLabel for="filter-search">Search</label>
+      <input
+        id="filter-search"
+        type="text"
+        hlmInput
+        placeholder="Description..."
+        formControlName="search"
+      />
+    </hlm-field>
+  </hlm-field-group>
+  <hlm-field-group class="flex items-center gap-2">
+    <label hlmFieldLabel></label>
+    <hlm-field orientation="horizontal">
+      <button hlmBtn type="submit">Apply</button>
+      <button hlmBtn variant="outline" type="button" (click)="onReset()">Reset</button>
+    </hlm-field></hlm-field-group
+  >
+</form>
