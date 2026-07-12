@@ -1,1 +1,27 @@
-<div echarts [options]="options()" [theme]="theme()" [autoResize]="true"></div>
+<section hlmCard class="flex flex-col gap-2 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Spend Activity</h3>
+  </div>
+  <div hlmCardContent class="flex-1 flex flex-col gap-1">
+    <div class="flex justify-between items-center">
+      <div class="text-muted-foreground text-sm">Current spend this month</div>
+      <div class="text-sm flex items-center gap-1">
+      @if (isSpendIncrease()) {
+        <ng-icon hlm name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
+        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> above last month
+      } @else {
+        <ng-icon hlm name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
+        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> below last month
+      }
+      </div>
+    </div>
+    <div class="font-semibold text-2xl">{{ totalSpend() | currency }}</div>
+    <div
+      echarts
+      [options]="options()"
+      [theme]="theme()"
+      [autoResize]="true"
+      class="w-full min-h-64"
+    ></div>
+  </div>
+</section>

@@ -1,4 +1,4 @@
-<section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
+<section hlmCard class="h-full flex flex-col gap-2 rounded-sm">
   <div hlmCardHeader>
     <h3 hlmCardTitle>{{ title() }}</h3>
     <div hlmCardAction>View</div>
@@ -7,6 +7,8 @@
     <div class="font-semibold text-2xl">
       {{ currentValue() | currency }}
     </div>
+  </div>
+  <div hlmCardFooter>
     <div class="text-muted-foreground text-sm">
       @if (variant() === 'networth') {
         @if (isIncrease) {
@@ -32,5 +34,4 @@
       }
     </div>
   </div>
-  <div hlmCardFooter></div>
 </section>

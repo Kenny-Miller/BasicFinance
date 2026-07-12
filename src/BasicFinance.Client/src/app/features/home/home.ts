@@ -22,7 +22,9 @@ import { TransactionsListSkeleton } from '../../shared/ui/transactions-list-skel
 import { TransactionsList } from '../../shared/ui/transactions-list/transactions-list';
 import { AccountGroupAccordion } from './components/account-group-accordion/account-group-accordion';
 import { SpendActivityChart } from './components/spend-activity-chart/spend-activity-chart';
+import { SpendActivityChartSkeleton } from './components/spend-activity-chart-skeleton/spend-activity-chart-skeleton';
 import { SummaryCard } from './components/summary-card/summary-card';
+import { SummaryCardSkeleton } from './components/summary-card-skeleton/summary-card-skeleton';
 import { HomeClient } from './data/home-client';
 
 @Component({
@@ -41,7 +43,9 @@ import { HomeClient } from './data/home-client';
     HlmButtonImports,
     AccountGroupAccordion,
     SpendActivityChart,
+    SpendActivityChartSkeleton,
     SummaryCard,
+    SummaryCardSkeleton,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',

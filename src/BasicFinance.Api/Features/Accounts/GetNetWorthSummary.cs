@@ -1,10 +1,10 @@
 using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Wolverine.Http;
-using AccountType = BasicFinance.Infrastructure.Enums.AccountType;
 
 namespace BasicFinance.Api.Features.Accounts
 {
@@ -13,21 +13,6 @@ namespace BasicFinance.Api.Features.Accounts
     /// </summary>
     public static class GetNetWorthSummary
     {
-        /// <summary>
-        /// Intermediate projection holding account and history balance data.
-        /// </summary>
-        /// <param name="AccountId">The unique account identifier.</param>
-        /// <param name="AccountTypeId">The account type identifier.</param>
-        /// <param name="HistoryBalance">The balance from the history record, or null if no history exists.</param>
-        /// <param name="HistoryBalanceRecordedDate">The date the history balance was recorded, or null if no history exists.</param>
-        /// <param name="AccountBalance">The account's current balance as of the last sync.</param>
-        private sealed record HistoryRow(
-            Guid AccountId,
-            int AccountTypeId,
-            decimal? HistoryBalance,
-            DateTimeOffset? HistoryBalanceRecordedDate,
-            decimal AccountBalance);
-
         /// <summary>
         /// Dto containing the net worth and category totals for current and previous months.
         /// </summary>
@@ -67,89 +52,68 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var now = timeProvider.GetUtcNow();
+            // var now = timeProvider.GetUtcNow();
+            var now = new DateTime(2025, 11, 25);
             var currentMonthStart = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero);
             var previousMonthStart = currentMonthStart.AddMonths(-1);
 
-            var joinedResults = await dbContext.Accounts
+            var accountTypeBalances = await dbContext.AccountTypes
                 .AsNoTracking()
-                .Where(a => a.UserId == user.Id)
                 .Where(a => a.IsActive)
-                .LeftJoin(
-                    dbContext.AccountBalanceHistories
+                .GroupJoin(
+                    dbContext.Accounts
                         .AsNoTracking()
                         .Where(h => h.IsActive)
-                        .Where(h => h.BalanceRecordedDate >= previousMonthStart)
-                        .Where(h => h.BalanceRecordedDate < currentMonthStart),
-                    a => a.AccountId,
-                    h => h.AccountId,
-                    (account, history) => new HistoryRow(
-                        account.AccountId,
-                        account.AccountTypeId,
-                        history != null ? (decimal?)history.Balance : null,
-                        history != null ? (DateTimeOffset?)history.BalanceRecordedDate : null,
-                        account.Balance))
+                        .Where(h => h.BalanceRecordedDate >= currentMonthStart),
+                    a => a.AccountTypeId,
+                    h => h.AccountTypeId,
+                    (accountType, accounts) => new
+                    {
+                        AccounTypeId = accountType.AccountTypeId,
+                        AccountData = accounts.Select(a => new
+                        {
+                            a.AccountId,
+                            a.Balance,
+                            a.BalanceRecordedDate,
+                            LastMonthEndBalance = a.AccountBalanceHistory
+                                .Where(ah => ah.IsActive)
+                                .Where(h => h.BalanceRecordedDate >= previousMonthStart)
+                                .Where(h => h.BalanceRecordedDate < currentMonthStart)
+                                .OrderByDescending(h => h.BalanceRecordedDate)
+                                .FirstOrDefault(),
+                        })
+                    })
                 .ToListAsync(cancellationToken);
 
-            var currentMonthTotals = CalculateCurrentMonthTotals(joinedResults);
-            var previousMonthTotals = CalculatePreviousMonthTotals(joinedResults);
+            var summedBalances = accountTypeBalances
+                .Select(x => new
+                {
+                    AccountType = (AccountType)x.AccounTypeId,
+                    CurrentBalance = x.AccountData.Sum(a => a.Balance),
+                    LastMonthBalance = x.AccountData.Sum(a => a.LastMonthEndBalance?.Balance ?? 0)
+                }).ToDictionary(x => x.AccountType);
 
-            var currentChecking = currentMonthTotals.GetValueOrDefault((int)AccountType.Checking, 0m);
-            var currentSavings = currentMonthTotals.GetValueOrDefault((int)AccountType.Savings, 0m);
-            var currentInvestments = currentMonthTotals.GetValueOrDefault((int)AccountType.Investment, 0m);
-            var currentCreditCards = currentMonthTotals.GetValueOrDefault((int)AccountType.CreditCard, 0m);
+            var checkingBalance = summedBalances.TryGetValue(AccountType.Checking, out var checking) ? checking : null;
+            var savingsBalance = summedBalances.TryGetValue(AccountType.Savings, out var savings) ? savings : null;
+            var investmentsBalance = summedBalances.TryGetValue(AccountType.Investment, out var investments) ? investments : null;
+            var creditBalance = summedBalances.TryGetValue(AccountType.CreditCard, out var credit) ? credit : null;
 
-            var lastMonthChecking = previousMonthTotals.GetValueOrDefault((int)AccountType.Checking, 0m);
-            var lastMonthSavings = previousMonthTotals.GetValueOrDefault((int)AccountType.Savings, 0m);
-            var lastMonthInvestments = previousMonthTotals.GetValueOrDefault((int)AccountType.Investment, 0m);
-            var lastMonthCreditCards = previousMonthTotals.GetValueOrDefault((int)AccountType.CreditCard, 0m);
-
-            var currentNetWorth = currentChecking + currentSavings + currentInvestments - currentCreditCards;
-            var lastMonthNetWorth = lastMonthChecking + lastMonthSavings + lastMonthInvestments - lastMonthCreditCards;
+            var netWorth = new
+            {
+                CurrentNetWorth = (checkingBalance?.CurrentBalance ?? 0) + (savingsBalance?.CurrentBalance ?? 0) + (investmentsBalance?.CurrentBalance ?? 0) - (creditBalance?.CurrentBalance ?? 0),
+                LastMonthNetWorth = (checkingBalance?.LastMonthBalance ?? 0) + (savingsBalance?.LastMonthBalance ?? 0) + (investmentsBalance?.LastMonthBalance ?? 0) - (creditBalance?.LastMonthBalance ?? 0)
+            };
 
             return TypedResults.Ok(new Response(
-                currentNetWorth,
-                lastMonthNetWorth,
-                currentChecking,
-                lastMonthChecking,
-                currentSavings,
-                lastMonthSavings,
-                currentInvestments,
-                lastMonthInvestments));
-        }
-
-        /// <summary>
-        /// Calculates the current month totals by summing each account's balance grouped by account type.
-        /// </summary>
-        /// <param name="results">The joined account and history results.</param>
-        /// <returns>A dictionary mapping account type IDs to their total current balance.</returns>
-        private static Dictionary<int, decimal> CalculateCurrentMonthTotals(List<HistoryRow> results)
-        {
-            return results
-                .GroupBy(r => r.AccountTypeId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(r => r.AccountBalance));
-        }
-
-        /// <summary>
-        /// Calculates the previous month totals by picking the latest history balance per account, then summing by account type.
-        /// </summary>
-        /// <param name="results">The joined account and history results.</param>
-        /// <returns>A dictionary mapping account type IDs to their total previous month balance.</returns>
-        private static Dictionary<int, decimal> CalculatePreviousMonthTotals(List<HistoryRow> results)
-        {
-            var latestHistoryPerAccount = results
-                .GroupBy(r => r.AccountId)
-                .Select(g => g.OrderByDescending(r => r.HistoryBalanceRecordedDate)
-                    .First())
-                .ToList();
-
-            return latestHistoryPerAccount
-                .GroupBy(r => r.AccountTypeId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(r => r.HistoryBalance ?? 0m));
+                netWorth.CurrentNetWorth,
+                netWorth.LastMonthNetWorth,
+                checkingBalance?.CurrentBalance ?? 0,
+                checkingBalance?.LastMonthBalance ?? 0,
+                savingsBalance?.CurrentBalance ?? 0,
+                savingsBalance?.LastMonthBalance ?? 0,
+                investmentsBalance?.CurrentBalance ?? 0,
+                investmentsBalance?.LastMonthBalance ?? 0
+            ));
         }
     }
 }

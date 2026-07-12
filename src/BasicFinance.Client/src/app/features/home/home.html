@@ -1,101 +1,48 @@
 <div class="grid grid-cols-4 gap-5 p-5">
-  <section hlmCard class="col-span-4 lg:col-span-2 lg:row-span-2 row-span-1 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Spend Activity</h3>
-      <div hlmCardAction>View</div>
-    </div>
+  <div class="col-span-4 lg:col-span-2 lg:row-span-1 row-span-1">
+    @if (spendingOverTimeResource.hasValue()) {
+      <app-spend-activity-chart
+        [theme]="themeService.appTheme()"
+        [data]="spendingOverTimeResource.value()"
+      />
+    } @else if (spendingOverTimeResource.isLoading()) {
+      <app-spend-activity-chart-skeleton />
+    }
+  </div>
 
-    <div hlmCardContent>
-      @if (spendingOverTimeResource.hasValue()) {
-        <app-spend-activity-chart
-          [theme]="themeService.appTheme()"
-          [data]="spendingOverTimeResource.value()"
-        ></app-spend-activity-chart>
-      } @else if (spendingOverTimeResource.isLoading()) {
-        <div class="w-full h-64 animate-pulse bg-muted rounded"></div>
-      }
-    </div>
-  </section>
-
-  @if (netWorthSummaryResource.hasValue()) {
-    <app-summary-card
-      title="Networth"
-      [currentValue]="netWorthSummaryResource.value().currentNetWorth"
-      [lastMonthValue]="netWorthSummaryResource.value().lastMonthNetWorth"
-      variant="networth"
-    />
-    <app-summary-card
-      title="Checking"
-      [currentValue]="netWorthSummaryResource.value().currentChecking"
-      [lastMonthValue]="netWorthSummaryResource.value().lastMonthChecking"
-      variant="category"
-    />
-    <app-summary-card
-      title="Savings"
-      [currentValue]="netWorthSummaryResource.value().currentSavings"
-      [lastMonthValue]="netWorthSummaryResource.value().lastMonthSavings"
-      variant="category"
-    />
-    <app-summary-card
-      title="Investments"
-      [currentValue]="netWorthSummaryResource.value().currentInvestments"
-      [lastMonthValue]="netWorthSummaryResource.value().lastMonthInvestments"
-      variant="category"
-    />
-  } @else if (netWorthSummaryResource.isLoading()) {
-    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-      <div hlmCardHeader>
-        <div class="animate-pulse space-y-2">
-          <div class="h-5 bg-muted rounded w-20"></div>
-        </div>
-      </div>
-      <div hlmCardContent>
-        <div class="animate-pulse space-y-2">
-          <div class="h-7 bg-muted rounded w-24"></div>
-          <div class="h-4 bg-muted rounded w-40"></div>
-        </div>
-      </div>
-    </section>
-    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-      <div hlmCardHeader>
-        <div class="animate-pulse space-y-2">
-          <div class="h-5 bg-muted rounded w-20"></div>
-        </div>
-      </div>
-      <div hlmCardContent>
-        <div class="animate-pulse space-y-2">
-          <div class="h-7 bg-muted rounded w-24"></div>
-          <div class="h-4 bg-muted rounded w-28"></div>
-        </div>
-      </div>
-    </section>
-    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-      <div hlmCardHeader>
-        <div class="animate-pulse space-y-2">
-          <div class="h-5 bg-muted rounded w-20"></div>
-        </div>
-      </div>
-      <div hlmCardContent>
-        <div class="animate-pulse space-y-2">
-          <div class="h-7 bg-muted rounded w-24"></div>
-          <div class="h-4 bg-muted rounded w-28"></div>
-        </div>
-      </div>
-    </section>
-    <section hlmCard class="col-span-2 lg:col-span-1 gap-2 rounded-sm">
-      <div hlmCardHeader>
-        <div class="animate-pulse space-y-2">
-          <div class="h-5 bg-muted rounded w-20"></div>
-        </div>
-      </div>
-      <div hlmCardContent>
-        <div class="animate-pulse space-y-2">
-          <div class="h-7 bg-muted rounded w-24"></div>
-          <div class="h-4 bg-muted rounded w-28"></div>
-        </div>
-      </div>
-    </section>
-  }
+  <div class="col-span-4 lg:col-span-2 lg:row-span-1 grid grid-cols-2 gap-3">
+    @if (netWorthSummaryResource.hasValue()) {
+      <app-summary-card
+        title="Networth"
+        [currentValue]="netWorthSummaryResource.value().currentNetWorth"
+        [lastMonthValue]="netWorthSummaryResource.value().lastMonthNetWorth"
+        variant="networth"
+      />
+      <app-summary-card
+        title="Checking"
+        [currentValue]="netWorthSummaryResource.value().currentChecking"
+        [lastMonthValue]="netWorthSummaryResource.value().lastMonthChecking"
+        variant="category"
+      />
+      <app-summary-card
+        title="Savings"
+        [currentValue]="netWorthSummaryResource.value().currentSavings"
+        [lastMonthValue]="netWorthSummaryResource.value().lastMonthSavings"
+        variant="category"
+      />
+      <app-summary-card
+        title="Investments"
+        [currentValue]="netWorthSummaryResource.value().currentInvestments"
+        [lastMonthValue]="netWorthSummaryResource.value().lastMonthInvestments"
+        variant="category"
+      />
+    } @else if (netWorthSummaryResource.isLoading()) {
+      <app-summary-card-skeleton />
+      <app-summary-card-skeleton />
+      <app-summary-card-skeleton />
+      <app-summary-card-skeleton />
+    }
+  </div>
 
   <section hlmCard class="col-span-4 lg:col-span-2 gap-2 rounded-sm">
     <div hlmCardHeader>

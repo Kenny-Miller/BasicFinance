@@ -1,5 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { ThemeService } from '../../../../core/theme/theme.service';
@@ -7,7 +11,8 @@ import { SpendingOverTimeSummary } from '../../../../shared/api/spending/spendin
 
 @Component({
   selector: 'app-spend-activity-chart',
-  imports: [CommonModule, NgxEchartsDirective],
+  providers: [provideIcons({ lucideArrowUpCircle, lucideArrowDownCircle })],
+  imports: [CommonModule, NgxEchartsDirective, HlmCardImports, HlmIconImports, NgIcon],
   templateUrl: './spend-activity-chart.html',
   styleUrl: './spend-activity-chart.css',
 })
@@ -17,21 +22,43 @@ export class SpendActivityChart {
   readonly theme = input.required<string>();
   readonly data = input<SpendingOverTimeSummary | undefined>();
 
+  readonly totalSpend = computed(() => this.data()?.totalMonthlySpend ?? 0);
+  readonly spendDifference = computed(() => Math.abs(this.data()?.monthlySpendDifference ?? 0));
+  readonly isSpendIncrease = computed(() => (this.data()?.monthlySpendDifference ?? 0) >= 0);
+  readonly changeClass = computed(() =>
+    this.isSpendIncrease() ? 'text-red-500' : 'text-emerald-500',
+  );
+
   readonly options = computed<EChartsCoreOption>(() => {
     const spendingData = this.data();
 
-    const primaryColor = '#22c55e';
-    const previousMonthColor = '#000000';
+    const primaryColor = '#000000';
+    const previousMonthColor = '#ef4444';
 
     const currentData = spendingData?.currentMonthActivity.map((item) => item.y) ?? [];
     const previousData = spendingData?.previousMonthActivity.map((item) => item.y) ?? [];
 
     return {
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any[]) => {
+          const current = params.find((p) => p.seriesIndex === 1);
+          const previous = params.find((p) => p.seriesIndex === 0);
+          if (!current || !previous) return '';
+          const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+          let result = '';
+          if (current)
+            result += `<div style="color:#000000;">Current: ${currency.format(current.value)}</div>`;
+          if (previous)
+            result += `<div style="color:#000000;">Previous: ${currency.format(previous.value)}</div>`;
+          return result;
+        },
+      },
       grid: {
-        top: 10,
-        right: 10,
-        bottom: 20,
-        left: 40,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
       },
       xAxis: {
         type: 'category',
@@ -42,23 +69,21 @@ export class SpendActivityChart {
       },
       yAxis: {
         type: 'value',
+        boundaryGap: false,
         axisLine: { show: false },
         axisTick: { show: false },
-        splitLine: {
-          lineStyle: {
-            type: 'dashed',
-          },
-        },
       },
       series: [
         {
-          data: currentData,
+          name: 'Previous',
+          data: previousData,
           type: 'line',
           smooth: true,
           symbol: 'none',
           lineStyle: {
-            color: primaryColor,
-            width: 2,
+            color: previousMonthColor,
+            width: 1.5,
+            type: 'dashed',
           },
           areaStyle: {
             color: {
@@ -68,21 +93,21 @@ export class SpendActivityChart {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: primaryColor },
-                { offset: 1, color: primaryColor },
+                { offset: 0, color: previousMonthColor },
+                { offset: 1, color: previousMonthColor },
               ],
             },
           },
         },
         {
-          data: previousData,
+          name: 'Current',
+          data: currentData,
           type: 'line',
           smooth: true,
           symbol: 'none',
           lineStyle: {
-            color: previousMonthColor,
-            width: 1.5,
-            type: 'dashed',
+            color: primaryColor,
+            width: 2,
           },
         },
       ],
