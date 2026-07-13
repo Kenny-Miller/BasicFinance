@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
-import { BarChart, LineChart } from 'echarts/charts';
-import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
+import { BarChart, LineChart, PieChart } from 'echarts/charts';
+import { GraphicComponent, GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
@@ -18,11 +18,13 @@ import { authInterceptor } from './core/auth/auth.interceptor';
 import { ENVIRONMENT_CONFIG, EnvironmentConfig } from './environment-config';
 echarts.use([
   BarChart,
+  GraphicComponent,
   GridComponent,
   LegendComponent,
   CanvasRenderer,
   TooltipComponent,
   LineChart,
+  PieChart,
 ]);
 
 export const createAppConfig = (config: EnvironmentConfig): ApplicationConfig => {

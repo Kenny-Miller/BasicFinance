@@ -1,9 +1,5 @@
 <section>
-  <div>
-    <h3>Transactions</h3>
-    <hlm-separator />
-    <app-filter-bar (filtersChange)="onFiltersChange($event)" />
-  </div>
+  <app-filter-bar (filtersChange)="onFiltersChange($event)" />
 
   @if (resource.error()) {
     <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">

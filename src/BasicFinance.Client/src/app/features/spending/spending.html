@@ -1,1 +1,31 @@
-<p>spending works!</p>
+<div class="flex flex-col gap-5">
+  <app-period-selector [activePeriod]="selectedPeriod()" (periodChange)="selectPeriod($event)" />
+
+  @if (spendingResource.error()) {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">Failed to load spending data</p>
+      <button hlmBtn variant="outline" class="mt-2" (click)="retry()">Retry</button>
+    </div>
+  } @else if (spendingResource.hasValue() && spendingResource.value().totalSpend > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <app-spending-summary-tile
+        [totalIncome]="spendingResource.value().totalIncome"
+        [totalSpend]="spendingResource.value().totalSpend"
+      />
+      <app-category-pie-chart [theme]="themeService.appTheme()" [data]="spendingResource.value()" />
+    </div>
+
+    <app-category-breakdown-list [data]="spendingResource.value()" />
+  } @else if (spendingResource.isLoading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <app-spending-summary-tile-skeleton />
+      <app-category-pie-chart-skeleton />
+    </div>
+    <app-category-breakdown-list-skeleton />
+  } @else {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">No spending data for this period</p>
+      <p class="text-sm">Your spending data will appear here.</p>
+    </div>
+  }
+</div>

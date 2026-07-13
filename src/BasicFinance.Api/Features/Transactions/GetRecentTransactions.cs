@@ -12,7 +12,7 @@ namespace BasicFinance.Api.Features.Transactions
     {
         [Authorize]
         [WolverineGet("api/transactions/recent")]
-        public static async Task<Ok<List<ListUserTransactions.TransactionDto>>> HandleAsync(
+        public static async Task<Ok<List<GetUserTransactions.TransactionDto>>> HandleAsync(
             AuthenticatedUser user,
             AppDbContext dbContext,
             CancellationToken cancellationToken)
@@ -23,7 +23,7 @@ namespace BasicFinance.Api.Features.Transactions
                 .Where(x => x.IsActive)
                 .OrderByDescending(x => x.Date)
                 .Take(5)
-                .Select(x => new ListUserTransactions.TransactionDto(
+                .Select(x => new GetUserTransactions.TransactionDto(
                     x.TransactionId,
                     x.TransactionType.TransactionTypeName,
                     x.TransactionCategory.TransactionCategoryName,

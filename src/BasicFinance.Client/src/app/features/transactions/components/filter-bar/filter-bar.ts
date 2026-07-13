@@ -2,6 +2,7 @@ import { Component, inject, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmItemImports } from '@spartan-ng/helm/item';
@@ -19,6 +20,7 @@ import { TransactionFilters } from '../../data/transactions-client';
     HlmButtonImports,
     HlmInputImports,
     BrnSelectImports,
+    HlmCardImports,
     HlmFieldImports,
     HlmSelectImports,
     HlmItemImports,

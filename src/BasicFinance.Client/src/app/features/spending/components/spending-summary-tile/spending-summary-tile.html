@@ -1,0 +1,19 @@
+<section hlmCard class="flex flex-col gap-4 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Spending Summary</h3>
+  </div>
+  <div hlmCardContent class="flex flex-col gap-4">
+    <div class="flex justify-between items-center">
+      <span class="text-muted-foreground">Income</span>
+      <span class="font-semibold text-lg">{{ totalIncome() | currency }}</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-muted-foreground">Total Spend</span>
+      <span class="font-semibold text-lg">{{ totalSpend() | currency }}</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t">
+      <span class="font-medium">Net Income</span>
+      <span class="font-semibold text-lg">{{ netIncome() | currency }}</span>
+    </div>
+  </div>
+</section>

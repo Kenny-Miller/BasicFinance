@@ -90,16 +90,16 @@ namespace BasicFinance.Api.Features.Spending
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            //var now = timeProvider.GetUtcNow().DateTime;
-            var now = new DateTime(2026, 5, 19);
-            var (periodStart, periodEnd) = GetPeriodBoundaries(request.StartDate, request.SpendingPeriod, now);
+            var startDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified);
+            var now = new DateTime(2025, 11, 25);
+            var (periodStart, periodEnd) = GetPeriodBoundaries(now, request.SpendingPeriod, now);
 
             var userTransactions = dbContext.Transactions
                 .AsNoTracking()
                 .Where(x => x.UserId == user.Id)
                 .Where(x => x.IsActive)
-                .Where(x => x.Date >= periodStart)
-                .Where(x => x.Date < periodEnd);
+                .Where(x => x.Date.Date >= periodStart)
+                .Where(x => x.Date.Date < periodEnd);
 
             var joinedResults = await dbContext.TransactionCategories
                 .AsNoTracking()

@@ -1,0 +1,14 @@
+<section hlmCard class="flex flex-col gap-2 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Spending by Category</h3>
+  </div>
+  <div hlmCardContent>
+    <div
+      echarts
+      [options]="options()"
+      [theme]="theme()"
+      [autoResize]="true"
+      class="w-full min-h-64"
+    ></div>
+  </div>
+</section>

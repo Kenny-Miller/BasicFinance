@@ -1,0 +1,13 @@
+<section hlmCard class="rounded-sm">
+  <div hlmCardContent>
+    @for (period of periods; track period) {
+      <button
+        hlmBtn
+        [variant]="activePeriod() === period ? 'default' : 'secondary'"
+        (click)="selectPeriod(period)"
+      >
+        {{ period }}
+      </button>
+    }
+  </div>
+</section>

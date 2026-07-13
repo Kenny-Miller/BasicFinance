@@ -1,0 +1,32 @@
+<section hlmCard class="flex flex-col gap-2 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Category Breakdown</h3>
+  </div>
+  <div hlmCardContent>
+    <div class="space-y-1">
+      @for (row of rows(); track row.code) {
+        <div class="flex items-center gap-4 py-2 px-3 rounded hover:bg-muted/50">
+          <span class="flex-1 font-medium truncate">{{ row.name }}</span>
+          <span class="font-mono text-sm w-28 text-right">{{ row.amount | currency }}</span>
+          <span class="text-muted-foreground text-sm w-16 text-right">{{
+            row.percentOfSpend | percent: '1.1-1'
+          }}</span>
+          <div class="w-32 h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              class="h-full bg-primary rounded-full"
+              [style.width.%]="row.percentOfSpend"
+            ></div>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="flex items-center gap-4 py-3 px-3 border-t mt-2">
+      <span class="flex-1 font-semibold">Total Spend</span>
+      <span class="font-mono text-sm w-28 text-right font-semibold">{{
+        totalSpend() | currency
+      }}</span>
+      <span class="text-sm w-16 text-right font-semibold">100%</span>
+      <div class="w-32"></div>
+    </div>
+  </div>
+</section>
