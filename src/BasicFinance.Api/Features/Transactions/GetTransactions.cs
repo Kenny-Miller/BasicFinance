@@ -14,12 +14,12 @@ using Wolverine.Http;
 namespace BasicFinance.Api.Features.Transactions
 {
     /// <summary>
-    /// Contains all logic associated with the List Recent Transactions Endpoint.
+    /// Contains all logic associated with the Get Recent Transactions Endpoint.
     /// </summary>
-    public static class ListUserTransactions
+    public static class GetUserTransactions
     {
         /// <summary>
-        /// Request Dto for the <see cref="ListUserTransactions"/> endpoint.
+        /// Request Dto for the <see cref="GetUserTransactions"/> endpoint.
         /// </summary>
         /// <param name="Page"></param>
         /// <param name="PageSize"></param>
@@ -117,7 +117,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// <summary>
         /// Applies optional filter predicates to the base query.
         /// </summary>
-        static IQueryable<Transaction> ApplyFilters(IQueryable<Transaction> query, Request request)
+        private static IQueryable<Transaction> ApplyFilters(IQueryable<Transaction> query, Request request)
         {
             if (request.StartDate.HasValue)
             {

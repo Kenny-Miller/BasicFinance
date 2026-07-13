@@ -55,8 +55,6 @@ export class App {
 
   readonly navigationItems: NavMenuItem[] = [
     { label: 'Home', icon: 'lucideLayoutDashboard', routerLink: '' },
-    { label: 'Accounts', icon: 'lucideLandmark', routerLink: 'accounts' },
-    { label: 'Recurring', icon: 'lucideRepeat', routerLink: 'recurring' },
     { label: 'Transactions', icon: 'lucideReceiptText', routerLink: 'transactions' },
     { label: 'Spending', icon: 'lucideWallet', routerLink: 'spending' },
   ];
