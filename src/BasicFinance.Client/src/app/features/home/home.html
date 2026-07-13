@@ -81,7 +81,7 @@
         @if (transactionsResource.hasValue()) {
           <app-transactions-list [transactions]="transactionsResource.value()" />
         } @else if (transactionsResource.isLoading()) {
-          <app-transactions-list-skeleton />
+          <app-transactions-list-skeleton [skeletonListLength]="5" />
         }
 
         <div class="flex justify-center mt-2">

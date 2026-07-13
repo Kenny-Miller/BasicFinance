@@ -1,13 +1,18 @@
 <section hlmCard class="rounded-sm">
   <div hlmCardContent>
-    @for (period of periods; track period) {
-      <button
-        hlmBtn
-        [variant]="activePeriod() === period ? 'default' : 'secondary'"
-        (click)="selectPeriod(period)"
-      >
-        {{ period }}
-      </button>
-    }
+    <form>
+      <div hlmField>
+        <label hlmFieldLabel for="payment-type">Period</label>
+        <hlm-toggle-group
+          type="single"
+          [(value)]="selectedPeriod"
+          (valueChange)="selectPeriod($event)"
+        >
+          @for (period of periods; track period) {
+            <button hlmToggleGroupItem [value]="period">{{ period }}</button>
+          }
+        </hlm-toggle-group>
+      </div>
+    </form>
   </div>
 </section>

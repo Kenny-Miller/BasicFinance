@@ -3,9 +3,9 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmDatePicker } from '@spartan-ng/helm/date-picker';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
-import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import {
   TRANSACTION_CATEGORY_OPTIONS,
@@ -19,11 +19,11 @@ import { TransactionFilters } from '../../data/transactions-client';
     ReactiveFormsModule,
     HlmButtonImports,
     HlmInputImports,
-    BrnSelectImports,
+    HlmDatePicker,
     HlmCardImports,
     HlmFieldImports,
     HlmSelectImports,
-    HlmItemImports,
+    BrnSelectImports,
   ],
   templateUrl: './filter-bar.html',
   styleUrl: './filter-bar.css',
@@ -47,13 +47,24 @@ export class FilterBar {
   });
 
   onApply(): void {
-    this.filtersChange.emit(this.form.value as TransactionFilters);
+    const v = this.form.value;
+    const _toDate = (val: unknown): string =>
+      val instanceof Date ? val.toISOString().split('T')[0] : (val as string) || '';
+    this.filtersChange.emit({
+      startDate: _toDate(v.startDate),
+      endDate: _toDate(v.endDate),
+      minAmount: v.minAmount || '',
+      maxAmount: v.maxAmount || '',
+      transactionTypeId: v.transactionTypeId || '',
+      transactionCategoryId: v.transactionCategoryId || '',
+      search: v.search || '',
+    });
   }
 
   onReset(): void {
     this.form.reset({
-      startDate: '',
-      endDate: '',
+      startDate: null,
+      endDate: null,
       minAmount: '',
       maxAmount: '',
       transactionTypeId: '',
