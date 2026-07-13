@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
+import { provideIcons } from '@ng-icons/core';
 import {
   lucideChartLine,
   lucideChevronLeft,
@@ -13,7 +13,7 @@ import {
   lucideSettings,
   lucideWallet,
 } from '@ng-icons/lucide';
-import { HlmIcon } from '@spartan-ng/helm/icon';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { NavMenuItem } from './shared/models/nav-menu-item';
@@ -24,8 +24,7 @@ import { NavMenuItem } from './shared/models/nav-menu-item';
     RouterOutlet,
     CommonModule,
     HlmSidebarImports,
-    NgIcon,
-    HlmIcon,
+    HlmIconImports,
     HlmSeparatorImports,
     RouterLink,
     RouterLinkActive,

@@ -18,7 +18,5 @@ export class HomeClient {
     () => 'api/Spending/SpendingOverTimeSummary',
   );
 
-  netWorthSummaryResource = httpResource<NetWorthSummary>(
-    () => 'api/accounts/netWorthSummary',
-  );
+  netWorthSummaryResource = httpResource<NetWorthSummary>(() => 'api/accounts/netWorthSummary');
 }

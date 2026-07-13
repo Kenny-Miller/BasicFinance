@@ -4,18 +4,16 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div hlmField>
           <label hlmFieldLabel for="filter-start-date">Start Date</label>
-          <hlm-date-picker
-            id="filter-start-date"
-            formControlName="startDate"
-          >Select start date</hlm-date-picker>
+          <hlm-date-picker id="filter-start-date" formControlName="startDate"
+            >Select start date</hlm-date-picker
+          >
         </div>
 
         <div hlmField>
           <label hlmFieldLabel for="filter-end-date">End Date</label>
-          <hlm-date-picker
-            id="filter-end-date"
-            formControlName="endDate"
-          >Select end date</hlm-date-picker>
+          <hlm-date-picker id="filter-end-date" formControlName="endDate"
+            >Select end date</hlm-date-picker
+          >
         </div>
 
         <div hlmField>
@@ -44,33 +42,37 @@
 
         <div hlmField>
           <label hlmFieldLabel for="filter-type">Type</label>
-          <hlm-select>
-            <brn-select formControlName="transactionTypeId">
-              <hlm-select-trigger id="filter-type" class="w-full">
-                <hlm-select-value />
-              </hlm-select-trigger>
-              <hlm-select-content>
+          <hlm-select id="filter-type" class="inline-block" formControlName="transactionTypeId">
+            <hlm-select-trigger class="w-full">
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content *hlmSelectPortal>
+              <hlm-select-group>
                 @for (option of typeOptions; track option.value) {
-                  <hlm-option [value]="option.value">{{ option.label }}</hlm-option>
+                  <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
                 }
-              </hlm-select-content>
-            </brn-select>
+              </hlm-select-group>
+            </hlm-select-content>
           </hlm-select>
         </div>
 
         <div hlmField>
           <label hlmFieldLabel for="filter-category">Category</label>
-          <hlm-select>
-            <brn-select formControlName="transactionCategoryId">
-              <hlm-select-trigger id="filter-category" class="w-full">
-                <hlm-select-value />
-              </hlm-select-trigger>
-              <hlm-select-content>
+          <hlm-select
+            id="filter-category"
+            class="inline-block"
+            formControlName="transactionCategoryId"
+          >
+            <hlm-select-trigger class="w-full">
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content *hlmSelectPortal>
+              <hlm-select-group>
                 @for (option of categoryOptions; track option.value) {
-                  <hlm-option [value]="option.value">{{ option.label }}</hlm-option>
+                  <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
                 }
-              </hlm-select-content>
-            </brn-select>
+              </hlm-select-group>
+            </hlm-select-content>
           </hlm-select>
         </div>
 

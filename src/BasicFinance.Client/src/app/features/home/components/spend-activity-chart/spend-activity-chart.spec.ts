@@ -8,9 +8,8 @@ describe('SpendActivityChart', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SpendActivityChart]
-    })
-    .compileComponents();
+      imports: [SpendActivityChart],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SpendActivityChart);
     component = fixture.componentInstance;

@@ -9,13 +9,7 @@ import { TruncatePipe } from '../../../../shared/pipes/truncate-pipe';
 
 @Component({
   selector: 'app-transaction-card',
-  imports: [
-    HlmItemImports,
-    CurrencyPipe,
-    DatePipe,
-    HlmIconImports,
-    TruncatePipe,
-  ],
+  imports: [HlmItemImports, CurrencyPipe, DatePipe, HlmIconImports, TruncatePipe],
   templateUrl: './transaction-card.html',
   styleUrl: './transaction-card.css',
   providers: [

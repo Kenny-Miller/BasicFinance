@@ -1,9 +1,6 @@
 import { Component, input } from '@angular/core';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { lucideChevronDown } from '@ng-icons/lucide';
-import { provideIcons } from '@ng-icons/core';
-import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { CurrencyPipe } from '@angular/common';
 import { Account } from '../../../../shared/api/accounts/account';
 import { HlmItemImports } from '@spartan-ng/helm/item';
@@ -12,15 +9,11 @@ import { TruncatePipe } from '../../../../shared/pipes/truncate-pipe';
 
 @Component({
   selector: 'app-account-group-accordion',
-  providers: [provideIcons({ lucideChevronDown })],
   imports: [
     HlmAccordionImports,
     HlmIconImports,
-    HlmButtonImports,
     CurrencyPipe,
     HlmItemImports,
-    CurrencyPipe,
-    HlmIconImports,
     HlmSeparatorImports,
     TruncatePipe,
   ],

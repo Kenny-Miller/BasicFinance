@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
 import { lucideArrowDownAZ, lucideArrowUpAZ } from '@ng-icons/lucide';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
@@ -33,7 +32,6 @@ const SORT_OPTIONS: SortOption[] = [
     HlmButtonImports,
     HlmSelectImports,
     HlmItemImports,
-    BrnSelectImports,
     FormsModule,
     TransactionCard,
     TransactionsListSkeleton,

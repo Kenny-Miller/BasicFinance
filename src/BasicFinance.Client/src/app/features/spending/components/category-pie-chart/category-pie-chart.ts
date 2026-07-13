@@ -43,7 +43,10 @@ export class CategoryPieChart {
         formatter: (params: unknown) => {
           const p = params as { name: string; value: number; percent: number };
           const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-          const percent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+          const percent = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          });
           return `${p.name}<br/>${currency.format(p.value)} (${percent.format(p.percent)}%)`;
         },
       },

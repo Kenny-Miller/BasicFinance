@@ -6,7 +6,7 @@ import {
   PickerCanceledEvent,
   PickerPickedEvent,
 } from '@googleworkspace/drive-picker-element';
-import { NgIcon, provideIcons } from '@ng-icons/core';
+import { provideIcons } from '@ng-icons/core';
 import {
   lucideChevronRight,
   lucideFileSpreadsheet,
@@ -16,7 +16,7 @@ import {
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmIcon } from '@spartan-ng/helm/icon';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { ENVIRONMENT_CONFIG } from '../../../environment-config';
 import { SettingsClient } from '../settings-client';
@@ -33,7 +33,7 @@ import { SettingsClient } from '../settings-client';
     }),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [HlmIcon, HlmButtonImports, HlmItemImports, NgIcon, HlmCardImports],
+  imports: [HlmIconImports, HlmButtonImports, HlmItemImports, HlmCardImports],
   templateUrl: './manage-spreadsheets.html',
   styleUrl: './manage-spreadsheets.css',
 })

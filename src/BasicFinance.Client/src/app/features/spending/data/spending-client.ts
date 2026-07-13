@@ -8,10 +8,7 @@ export type SpendingPeriod = 'Weekly' | 'Monthly' | 'Quarterly' | 'Yearly';
   providedIn: 'root',
 })
 export class SpendingClient {
-  createResource(
-    periodSignal: Signal<SpendingPeriod>,
-    startDateSignal: Signal<string>,
-  ) {
+  createResource(periodSignal: Signal<SpendingPeriod>, startDateSignal: Signal<string>) {
     return httpResource<SpendingByPeriod>(() => {
       const params = new URLSearchParams();
       params.set('startDate', startDateSignal());

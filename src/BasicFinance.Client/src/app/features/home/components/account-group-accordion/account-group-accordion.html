@@ -1,17 +1,14 @@
 <hlm-accordion class="rounded-lg" type="multiple">
   <hlm-accordion-item>
-    <h3>
-      <button hlmAccordionTrigger>
-        <span class="flex items-center gap-2">
-          <ng-icon hlm size="base" [name]="accountGroupIcon()" />
-          {{ accountGroupTitle() }}
-        </span>
-        <span>
-          {{ accountGroupData().totalBalance | currency }}
-          <ng-icon hlmAccordionIcon name="lucideChevronDown" />
-        </span>
-      </button>
-    </h3>
+    <hlm-accordion-trigger>
+      <span class="flex items-center gap-2">
+        <ng-icon hlm size="base" [name]="accountGroupIcon()" />
+        {{ accountGroupTitle() }}
+      </span>
+      <span>
+        {{ accountGroupData().totalBalance | currency }}
+      </span>
+    </hlm-accordion-trigger>
     <hlm-accordion-content>
       @for (account of accountGroupData().accounts; track $index; let last = $last) {
         <div class="flex flex-col gap-2">

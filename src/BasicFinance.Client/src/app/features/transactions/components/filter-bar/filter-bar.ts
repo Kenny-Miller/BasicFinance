@@ -1,9 +1,8 @@
 import { Component, inject, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmDatePicker } from '@spartan-ng/helm/date-picker';
+import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
@@ -19,11 +18,10 @@ import { TransactionFilters } from '../../data/transactions-client';
     ReactiveFormsModule,
     HlmButtonImports,
     HlmInputImports,
-    HlmDatePicker,
+    HlmDatePickerImports,
     HlmCardImports,
     HlmFieldImports,
     HlmSelectImports,
-    BrnSelectImports,
   ],
   templateUrl: './filter-bar.html',
   styleUrl: './filter-bar.css',
