@@ -3,11 +3,14 @@ import { BrnAccordion } from '@spartan-ng/brain/accordion';
 import { classes } from '@spartan-ng/helm/utils';
 
 @Directive({
-	selector: '[hlmAccordion], hlm-accordion',
-	hostDirectives: [{ directive: BrnAccordion, inputs: ['type', 'dir', 'orientation'] }],
+  selector: '[hlmAccordion], hlm-accordion',
+  hostDirectives: [{ directive: BrnAccordion, inputs: ['type', 'orientation'] }],
+  host: {
+    'data-slot': 'accordion',
+  },
 })
 export class HlmAccordion {
-	constructor() {
-		classes(() => 'flex data-[orientation=horizontal]:flex-row data-[orientation=vertical]:flex-col');
-	}
+  constructor() {
+    classes(() => 'spartan-accordion flex w-full flex-col');
+  }
 }
