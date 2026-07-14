@@ -102,7 +102,7 @@ namespace BasicFinance.Api.Features.Spending
                 result[i] = new DailySpendingOverTime(i + 1, cumulativeSpend);
             }
 
-            return result.ToList();
+            return [.. result];
         }
     }
 }

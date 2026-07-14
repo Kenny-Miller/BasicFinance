@@ -63,10 +63,11 @@ namespace BasicFinance.Api.Features.Accounts
                 .GroupJoin(
                     dbContext.Accounts
                         .AsNoTracking()
-                        .Where(h => h.IsActive)
-                        .Where(h => h.BalanceRecordedDate >= currentMonthStart),
+                        .Where(a => a.UserId == user.Id)
+                        .Where(a => a.IsActive)
+                        .Where(a => a.BalanceRecordedDate >= currentMonthStart),
+                    at => at.AccountTypeId,
                     a => a.AccountTypeId,
-                    h => h.AccountTypeId,
                     (accountType, accounts) => new
                     {
                         AccounTypeId = accountType.AccountTypeId,
