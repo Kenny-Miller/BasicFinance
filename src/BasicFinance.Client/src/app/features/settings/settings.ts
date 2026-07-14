@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { provideIcons } from '@ng-icons/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronRight,
   lucideFileSpreadsheet,
@@ -8,10 +8,8 @@ import {
   lucideShield,
   lucideTrash,
 } from '@ng-icons/lucide';
-import { BrnNavigationMenuImports } from '@spartan-ng/brain/navigation-menu';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmNavigationMenuImports } from '@spartan-ng/helm/navigation-menu';
 import { NavMenuItem } from '../../shared/models/nav-menu-item';
@@ -31,11 +29,10 @@ import { NavMenuItem } from '../../shared/models/nav-menu-item';
     HlmCardImports,
     HlmButtonImports,
     HlmItemImports,
-    HlmIconImports,
+    NgIcon,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    BrnNavigationMenuImports,
     HlmNavigationMenuImports,
   ],
   templateUrl: './settings.html',

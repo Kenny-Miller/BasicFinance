@@ -3,7 +3,6 @@ import { Component, computed, inject, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { ThemeService } from '../../../../core/theme/theme.service';
@@ -12,7 +11,7 @@ import { SpendingOverTimeSummary } from '../../../../shared/api/spending/spendin
 @Component({
   selector: 'app-spend-activity-chart',
   providers: [provideIcons({ lucideArrowUpCircle, lucideArrowDownCircle })],
-  imports: [CommonModule, NgxEchartsDirective, HlmCardImports, HlmIconImports, NgIcon],
+  imports: [CommonModule, NgxEchartsDirective, HlmCardImports, NgIcon],
   templateUrl: './spend-activity-chart.html',
   styleUrl: './spend-activity-chart.css',
 })

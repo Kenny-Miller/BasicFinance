@@ -2,19 +2,23 @@
   <div hlmCardContent>
     <form [formGroup]="form" (ngSubmit)="onApply()">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div hlmField>
-          <label hlmFieldLabel for="filter-start-date">Start Date</label>
-          <hlm-date-picker id="filter-start-date" formControlName="startDate"
-            >Select start date</hlm-date-picker
-          >
-        </div>
+        <hlm-field>
+          <label hlmFieldLabel for="filter-start-range-date">Start Range</label>
+          <hlm-date-picker formControlName="startDate" autoCloseOnSelect="true">
+            <hlm-date-picker-trigger buttonId="filter-start-range-date" class="w-full"
+              >Pick a date</hlm-date-picker-trigger
+            >
+          </hlm-date-picker>
+        </hlm-field>
 
-        <div hlmField>
-          <label hlmFieldLabel for="filter-end-date">End Date</label>
-          <hlm-date-picker id="filter-end-date" formControlName="endDate"
-            >Select end date</hlm-date-picker
-          >
-        </div>
+        <hlm-field>
+          <label hlmFieldLabel for="filter-end-range-date">End Range</label>
+          <hlm-date-picker formControlName="endDate" autoCloseOnSelect="true">
+            <hlm-date-picker-trigger buttonId="filter-end-range-date" class="w-full"
+              >Pick a date</hlm-date-picker-trigger
+            >
+          </hlm-date-picker>
+        </hlm-field>
 
         <div hlmField>
           <label hlmFieldLabel for="filter-min-amount">Min Amount</label>
@@ -41,14 +45,14 @@
         </div>
 
         <div hlmField>
-          <label hlmFieldLabel for="filter-type">Type</label>
-          <hlm-select id="filter-type" class="inline-block" formControlName="transactionTypeId">
-            <hlm-select-trigger class="w-full">
-              <hlm-select-value />
+          <label hlmFieldLabel for="filter-transaction-type-select">Transaction Type</label>
+          <hlm-select [itemToString]="transactionTypeToString" formControlName="transactionTypeId">
+            <hlm-select-trigger class="w-full" buttonId="filter-transaction-type-select">
+              <hlm-select-value placeholder="Choose a Transaction Type..." />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
               <hlm-select-group>
-                @for (option of typeOptions; track option.value) {
+                @for (option of transactionTypeOptions; track option.value) {
                   <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
                 }
               </hlm-select-group>
@@ -57,14 +61,10 @@
         </div>
 
         <div hlmField>
-          <label hlmFieldLabel for="filter-category">Category</label>
-          <hlm-select
-            id="filter-category"
-            class="inline-block"
-            formControlName="transactionCategoryId"
-          >
-            <hlm-select-trigger class="w-full">
-              <hlm-select-value />
+          <label hlmFieldLabel for="filter-category-select">Category</label>
+          <hlm-select [itemToString]="categoryToString" formControlName="transactionCategoryId">
+            <hlm-select-trigger class="w-full" buttonId="filter-category-select">
+              <hlm-select-value placeholder="Choose a Category..." />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
               <hlm-select-group>

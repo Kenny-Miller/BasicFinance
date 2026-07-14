@@ -7,7 +7,7 @@
             <div
               class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
             >
-              <ng-icon hlm name="lucideChartLine" class="text-base" />
+              <ng-icon name="lucideChartLine" class="text-base" />
             </div>
             <div class="grid flex-1 text-left leading-tight">
               <span class="truncate font-medium">Basic Finance</span>
@@ -32,7 +32,7 @@
                   [isActive]="rla.isActive"
                   [routerLinkActiveOptions]="{ exact: true }"
                 >
-                  <ng-icon hlm [name]="item.icon" />
+                  <ng-icon [name]="item.icon" />
                   <span>{{ item.label }}</span>
                 </a>
               </li>
@@ -47,7 +47,7 @@
         <ul hlmSidebarMenu>
           <li hlmSidebarMenuItem>
             <button hlmSidebarMenuButton (click)="toggleSidebarOpen()">
-              <ng-icon hlm name="lucideChevronRight" />
+              <ng-icon name="lucideChevronRight" />
               <span class="sr-only">Toggle Sidebar Open</span>
             </button>
           </li>
@@ -62,13 +62,13 @@
             #rla="routerLinkActive"
             [isActive]="rla.isActive"
           >
-            <ng-icon hlm name=" lucideSettings" />
+            <ng-icon name=" lucideSettings" />
             <span>Settings</span>
           </a>
 
           @if (!isMobile()) {
             <button hlmSidebarMenuAction (click)="toggleSidebarOpen()">
-              <ng-icon hlm name=" lucideChevronLeft" />
+              <ng-icon name=" lucideChevronLeft" />
               <span class="sr-only">Toggle Sidebar Close</span>
             </button>
           }

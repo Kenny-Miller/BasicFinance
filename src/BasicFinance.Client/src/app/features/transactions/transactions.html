@@ -1,4 +1,4 @@
-<section>
+<section class="gap-4 flex flex-col">
   <app-filter-bar (filtersChange)="onFiltersChange($event)" />
 
   @if (resource.error()) {
@@ -29,7 +29,7 @@
     </div>
   }
   @if (hasMore() && !resource.isLoading()) {
-    <div class="flex justify-center mt-4">
+    <div class="flex justify-center">
       <button hlmBtn class="w-full lg:w-80" (click)="loadMore()">Load More</button>
     </div>
   }

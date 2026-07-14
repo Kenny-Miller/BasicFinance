@@ -1,9 +1,9 @@
-<div hlmItem>
+<hlm-item size="xs">
   <hlm-item-media variant="icon" class="size-10">
     <ng-icon name="lucideReceiptText" />
   </hlm-item-media>
 
-  <hlm-item-content class="gap-1">
+  <hlm-item-content class="gap-2">
     <hlm-item-title>{{ transaction().description | truncate: 25 }}</hlm-item-title>
     <p hlmItemDescription>{{ transaction().date | date }}</p>
   </hlm-item-content>
@@ -11,4 +11,4 @@
   <hlm-item-content class="flex-none text-center">
     <p>{{ transaction().amount | currency }}</p>
   </hlm-item-content>
-</div>
+</hlm-item>

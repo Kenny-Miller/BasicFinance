@@ -16,17 +16,16 @@
                   [routerLink]="item.routerLink"
                   routerLinkActive
                   #rla="routerLinkActive"
-                  [isActive]="rla.isActive"
                   class="flex flex-row"
                 >
                   <div hlmItemMedia>
-                    <ng-icon hlm [name]="item.icon" size="sm" />
+                    <ng-icon [name]="item.icon" />
                   </div>
                   <div hlmItemContent>
                     <div hlmItemTitle>{{ item.label }}</div>
                   </div>
                   <div hlmItemActions>
-                    <ng-icon hlm name="lucideChevronRight" size="sm" />
+                    <ng-icon name="lucideChevronRight" />
                   </div>
                 </a>
               </li>

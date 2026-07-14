@@ -31,17 +31,17 @@ export class FilterBar {
 
   public readonly filtersChange = output<TransactionFilters>();
 
-  readonly typeOptions = TRANSACTION_TYPE_OPTIONS;
+  readonly transactionTypeOptions = TRANSACTION_TYPE_OPTIONS;
   readonly categoryOptions = TRANSACTION_CATEGORY_OPTIONS;
 
   public form = this._formBuilder.group({
-    startDate: [''],
-    endDate: [''],
-    minAmount: [''],
-    maxAmount: [''],
+    startDate: '',
+    endDate: '',
+    minAmount: '',
+    maxAmount: '',
     transactionTypeId: [''],
     transactionCategoryId: [''],
-    search: [''],
+    search: '',
   });
 
   onApply(): void {
@@ -69,5 +69,15 @@ export class FilterBar {
       transactionCategoryId: '',
       search: '',
     });
+
+    this.filtersChange.emit(this.form
   }
+
+
+
+  readonly transactionTypeToString = (value: string) =>
+    this.transactionTypeOptions.find((d) => d.value === value)?.label ?? '';
+
+  readonly categoryToString = (value: string) =>
+    this.categoryOptions.find((d) => d.value === value)?.label ?? '';
 }

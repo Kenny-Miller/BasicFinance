@@ -10,10 +10,10 @@
     </p>
   </div>
   <div hlmCardContent>
-    <div hlmItemGroup class="gap-2">
+    <hlm-item-group class="gap-2">
       @if (spreadsheetResource.hasValue()) {
         @for (spreadsheet of spreadsheetResource.value().items; track spreadsheet.id) {
-          <div hlmItem variant="outline">
+          <hlm-item variant="outline">
             <div hlmItemContent>
               <div hlmItemTitle>{{ spreadsheet.googleSheetName }}</div>
               <p hlmItemDescription>
@@ -34,10 +34,10 @@
                 hlmBtn
                 (click)="deleteGoogleSpreadsheet(spreadsheet.id)"
               >
-                <ng-icon hlm size="sm" name="lucideTrash" />
+                <ng-icon name="lucideTrash" />
               </button>
             </div>
-          </div>
+          </hlm-item>
         }
       }
       @if (spreadsheetResource.error()) {
@@ -47,11 +47,11 @@
           </div>
         </div>
       }
-    </div>
+    </hlm-item-group>
   </div>
   <div hlmCardFooter class="justify-end">
     <button hlmBtn (click)="openGoogleFilePicker()" [disabled]="isGoogleFilePickerOpen()">
-      <ng-icon hlm size="sm" name="lucidePlus" />
+      <ng-icon name="lucidePlus" />
       Add Spreadsheet
     </button>
   </div>

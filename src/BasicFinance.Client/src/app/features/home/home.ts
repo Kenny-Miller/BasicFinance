@@ -13,7 +13,6 @@ import {
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { ThemeService } from '../../core/theme/theme.service';
@@ -36,7 +35,6 @@ import { HomeClient } from './data/home-client';
     RouterLink,
     CommonModule,
     HlmCardImports,
-    HlmIconImports,
     HlmAccordionImports,
     TransactionsList,
     TransactionsListSkeleton,

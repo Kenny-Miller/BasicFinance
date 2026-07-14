@@ -6,10 +6,10 @@
     <div class="font-semibold text-2xl">{{ totalSpend() | currency }}</div>
     <div class="text-sm flex items-center gap-1">
       @if (isSpendIncrease()) {
-        <ng-icon hlm name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
+        <ng-icon name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
         <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> above last month
       } @else {
-        <ng-icon hlm name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
+        <ng-icon name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
         <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> below last month
       }
     </div>
