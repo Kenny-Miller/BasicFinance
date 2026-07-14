@@ -1,0 +1,50 @@
+name: Validate Build
+on:
+  pull_request:
+    branches:
+      - main
+      - "release/*"
+
+jobs:
+  angular:
+    name: Build Angular
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/BasicFinance.Client
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "npm"
+          cache-dependency-path: "./src/BasicFinance.Client/package-lock.json"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prettier Check
+        run: npx prettier --check "src/**/*.{ts,html,css,scss,json}"
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run Unit Tests
+        run: npm run test:ci
+      - name: Run Build
+        run: npm run build
+
+  dotnet:
+    name: Build .NET
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore Dependencies
+        run: dotnet restore
+      - name: Run .NET Format
+        run: dotnet format --verify-no-changes
+      - name: Build and Test Application
+        run: dotnet test --configuration Release
