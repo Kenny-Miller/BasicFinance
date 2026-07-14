@@ -1,180 +1,186 @@
 import type { BooleanInput } from '@angular/cdk/coercion';
 import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  forwardRef,
-  input,
-  linkedSignal,
-  output,
-  signal,
+	booleanAttribute,
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	contentChild,
+	forwardRef,
+	input,
+	linkedSignal,
+	output,
+	signal,
+	viewChild,
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { provideIcons } from '@ng-icons/core';
-import { lucideChevronDown } from '@ng-icons/lucide';
-import type { BrnDialogState } from '@spartan-ng/brain/dialog';
+import { type BrnDatePickerBase, BrnDatePickerTriggerToken, provideBrnDatePicker } from '@spartan-ng/brain/date-picker';
+import { BrnFieldControl, provideBrnLabelable } from '@spartan-ng/brain/field';
 import type { ChangeFn, TouchFn } from '@spartan-ng/brain/forms';
-
+import type { BrnOverlayState } from '@spartan-ng/brain/overlay';
+import { BrnPopover } from '@spartan-ng/brain/popover';
 import { HlmCalendar } from '@spartan-ng/helm/calendar';
-import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
-import { hlm } from '@spartan-ng/helm/utils';
-import type { ClassValue } from 'clsx';
 import { injectHlmDatePickerConfig } from './hlm-date-picker.token';
 
 export const HLM_DATE_PICKER_VALUE_ACCESSOR = {
-  provide: NG_VALUE_ACCESSOR,
-  useExisting: forwardRef(() => HlmDatePicker),
-  multi: true,
+	provide: NG_VALUE_ACCESSOR,
+	useExisting: forwardRef(() => HlmDatePicker),
+	multi: true,
 };
 
-let nextId = 0;
-
 @Component({
-  selector: 'hlm-date-picker',
-  imports: [HlmIconImports, HlmPopoverImports, HlmCalendar],
-  providers: [HLM_DATE_PICKER_VALUE_ACCESSOR, provideIcons({ lucideChevronDown })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    class: 'block',
-  },
-  template: `
-    <hlm-popover
-      sideOffset="5"
-      [state]="_popoverState()"
-      (stateChanged)="_popoverState.set($event)"
-    >
-      <button
-        [id]="buttonId()"
-        type="button"
-        [class]="_computedClass()"
-        [disabled]="_mutableDisabled()"
-        hlmPopoverTrigger
-      >
-        <span class="truncate">
-          @if (_formattedDate(); as formattedDate) {
-            {{ formattedDate }}
-          } @else {
-            <ng-content />
-          }
-        </span>
+	selector: 'hlm-date-picker',
+	imports: [HlmPopoverImports, HlmCalendar],
+	providers: [HLM_DATE_PICKER_VALUE_ACCESSOR, provideBrnDatePicker(HlmDatePicker), provideBrnLabelable(HlmDatePicker)],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	hostDirectives: [BrnFieldControl],
+	host: { class: 'block' },
+	template: `
+		<hlm-popover sideOffset="5" [state]="_popoverState()" (stateChanged)="_onStateChange($event)">
+			<ng-content />
 
-        <ng-icon hlm size="sm" name="lucideChevronDown" />
-      </button>
-
-      <div hlmPopoverContent class="w-auto p-0" *hlmPopoverPortal="let ctx">
-        <hlm-calendar
-          calendarClass="border-0 rounded-none"
-          [captionLayout]="captionLayout()"
-          [date]="_mutableDate()"
-          [min]="min()"
-          [max]="max()"
-          [disabled]="_mutableDisabled()"
-          (dateChange)="_handleChange($event)"
-        />
-      </div>
-    </hlm-popover>
-  `,
+			<hlm-popover-content class="w-fit p-0" *hlmPopoverPortal="let ctx">
+				<ng-content select="[hlmDatePickerHeader]" />
+				<hlm-calendar
+					class="rounded-none border-0"
+					[captionLayout]="captionLayout()"
+					[date]="_mutableDate()"
+					[defaultFocusedDate]="_mutableDate() ?? defaultFocusedDate()"
+					[min]="min()"
+					[max]="max()"
+					[disabled]="_disabled()"
+					(dateChange)="_handleChange($event)"
+				/>
+				<ng-content select="[hlmDatePickerFooter]" />
+			</hlm-popover-content>
+		</hlm-popover>
+	`,
 })
-export class HlmDatePicker<T> implements ControlValueAccessor {
-  private readonly _config = injectHlmDatePickerConfig<T>();
+export class HlmDatePicker<T> implements BrnDatePickerBase<T>, ControlValueAccessor {
+	private readonly _config = injectHlmDatePickerConfig<T>();
 
-  public readonly userClass = input<ClassValue>('', { alias: 'class' });
-  protected readonly _computedClass = computed(() =>
-    hlm(
-      'ring-offset-background border-input bg-background hover:bg-accent dark:bg-input/30 dark:hover:bg-input/50 hover:text-accent-foreground inline-flex h-9 w-[280px] cursor-default items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm font-normal whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50',
-      'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-      'disabled:pointer-events-none disabled:opacity-50',
-      '[&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0',
-      this.userClass(),
-    ),
-  );
+	public readonly popover = viewChild.required(BrnPopover);
 
-  /** The id of the button that opens the date picker. */
-  public readonly buttonId = input<string>(`hlm-date-picker-${++nextId}`);
+	private readonly _trigger = contentChild(BrnDatePickerTriggerToken);
 
-  /** Show dropdowns to navigate between months or years. */
-  public readonly captionLayout = input<
-    'dropdown' | 'label' | 'dropdown-months' | 'dropdown-years'
-  >('label');
+	/** Show dropdowns to navigate between months or years. */
+	public readonly captionLayout = input<'dropdown' | 'label' | 'dropdown-months' | 'dropdown-years'>('label');
 
-  /** The minimum date that can be selected.*/
-  public readonly min = input<T>();
+	/** The minimum date that can be selected.*/
+	public readonly min = input<T>();
 
-  /** The maximum date that can be selected. */
-  public readonly max = input<T>();
+	/** The maximum date that can be selected. */
+	public readonly max = input<T>();
 
-  /** Determine if the date picker is disabled. */
-  public readonly disabled = input<boolean, BooleanInput>(false, {
-    transform: booleanAttribute,
-  });
+	/** Determine if the date picker is disabled. */
+	public readonly disabled = input<boolean, BooleanInput>(false, {
+		transform: booleanAttribute,
+	});
 
-  /** The selected value. */
-  public readonly date = input<T>();
+	/** The selected value. */
+	public readonly date = input<T>();
 
-  protected readonly _mutableDate = linkedSignal(this.date);
+	/** The date the calendar focuses on first open when no date is selected. */
+	public readonly defaultFocusedDate = input<T>();
 
-  /** If true, the date picker will close when a date is selected. */
-  public readonly autoCloseOnSelect = input<boolean, BooleanInput>(this._config.autoCloseOnSelect, {
-    transform: booleanAttribute,
-  });
+	protected readonly _mutableDate = linkedSignal(this.date);
 
-  /** Defines how the date should be displayed in the UI.  */
-  public readonly formatDate = input<(date: T) => string>(this._config.formatDate);
+	/** If true, the date picker will close when a date is selected. */
+	public readonly autoCloseOnSelect = input<boolean, BooleanInput>(this._config.autoCloseOnSelect, {
+		transform: booleanAttribute,
+	});
 
-  /** Defines how the date should be transformed before saving to model/form. */
-  public readonly transformDate = input<(date: T) => T>(this._config.transformDate);
+	/** Defines how the date should be displayed in the UI.  */
+	public readonly formatDate = input<(date: T) => string>(this._config.formatDate);
 
-  protected readonly _popoverState = signal<BrnDialogState | null>(null);
+	/** Defines how the date should be transformed before saving to model/form. */
+	public readonly transformDate = input<(date: T) => T>(this._config.transformDate);
 
-  protected readonly _mutableDisabled = linkedSignal(this.disabled);
+	protected readonly _popoverState = signal<BrnOverlayState | null>(null);
 
-  protected readonly _formattedDate = computed(() => {
-    const date = this._mutableDate();
-    return date ? this.formatDate()(date) : undefined;
-  });
+	protected readonly _disabled = linkedSignal(this.disabled);
 
-  public readonly dateChange = output<T>();
+	/** @internal The disabled state as a readonly signal */
+	public readonly disabledState = this._disabled.asReadonly();
 
-  protected _onChange?: ChangeFn<T>;
-  protected _onTouched?: TouchFn;
+	public readonly formattedDate = computed(() => {
+		const date = this._mutableDate();
+		return date ? this.formatDate()(date) : undefined;
+	});
 
-  protected _handleChange(value: T) {
-    if (this._mutableDisabled()) return;
-    const transformedDate = value !== undefined ? this.transformDate()(value) : value;
+	public readonly dateChange = output<T | null>();
 
-    this._mutableDate.set(transformedDate);
-    this._onChange?.(transformedDate);
-    this.dateChange.emit(transformedDate);
+	public readonly labelableId = computed(() => this._trigger()?.triggerId());
 
-    if (this.autoCloseOnSelect()) {
-      this._popoverState.set('closed');
-    }
-  }
+	public readonly hasDate = computed(() => !!this._mutableDate());
 
-  /** CONTROL VALUE ACCESSOR */
-  public writeValue(value: T | null): void {
-    this._mutableDate.set(value ? this.transformDate()(value) : undefined);
-  }
+	/** @internal The current raw value, used by inputs to reformat on focus. */
+	public readonly value = computed(() => this._mutableDate() ?? null);
 
-  public registerOnChange(fn: ChangeFn<T>): void {
-    this._onChange = fn;
-  }
+	protected _onChange?: ChangeFn<T | null>;
+	protected _onTouched?: TouchFn;
 
-  public registerOnTouched(fn: TouchFn): void {
-    this._onTouched = fn;
-  }
+	protected _onStateChange(state: BrnOverlayState) {
+		this._popoverState.set(state);
+		if (state === 'closed') this._onTouched?.();
+	}
 
-  public setDisabledState(isDisabled: boolean): void {
-    this._mutableDisabled.set(isDisabled);
-  }
+	protected _handleChange(value: T | undefined) {
+		if (this._disabled()) return;
+		this.updateDate(value ?? null);
 
-  public open() {
-    this._popoverState.set('open');
-  }
+		if (this.autoCloseOnSelect()) {
+			this._popoverState.set('closed');
+		}
+	}
 
-  public close() {
-    this._popoverState.set('closed');
-  }
+	/**
+	 * Commit a date to the picker. Updates the internal model, notifies form
+	 * controls, and emits `dateChange`. Unlike `_handleChange`, this does not
+	 * close the popover - it's intended to be called from a text input that
+	 * is parsing user-entered values while typing.
+	 */
+	public updateDate(value: T | null) {
+		if (this._disabled()) return;
+		const transformedDate = value != null ? this.transformDate()(value) : undefined;
+
+		this._mutableDate.set(transformedDate);
+		this._onChange?.(transformedDate ?? null);
+		this.dateChange.emit(transformedDate ?? null);
+	}
+
+	/** CONTROL VALUE ACCESSOR */
+	public writeValue(value: T | null): void {
+		this._mutableDate.set(value ? this.transformDate()(value) : undefined);
+	}
+
+	public registerOnChange(fn: ChangeFn<T | null>): void {
+		this._onChange = fn;
+	}
+
+	public registerOnTouched(fn: TouchFn): void {
+		this._onTouched = fn;
+	}
+
+	public touched(): void {
+		this._onTouched?.();
+	}
+
+	public setDisabledState(isDisabled: boolean): void {
+		this._disabled.set(isDisabled);
+	}
+
+	public open() {
+		this._popoverState.set('open');
+	}
+
+	public close() {
+		this._popoverState.set('closed');
+	}
+
+	public reset() {
+		this._mutableDate.set(undefined);
+		this._onChange?.(null);
+		this.dateChange.emit(null);
+	}
 }

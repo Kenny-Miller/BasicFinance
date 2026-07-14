@@ -21,14 +21,14 @@ export * from './lib/hlm-field-set';
 export * from './lib/hlm-field-title';
 
 export const HlmFieldImports = [
-  HlmField,
-  HlmFieldTitle,
-  HlmFieldContent,
-  HlmFieldDescription,
-  HlmFieldError,
-  HlmFieldLabel,
-  HlmFieldSeparator,
-  HlmFieldGroup,
-  HlmFieldLegend,
-  HlmFieldSet,
+	HlmField,
+	HlmFieldContent,
+	HlmFieldDescription,
+	HlmFieldError,
+	HlmFieldGroup,
+	HlmFieldLabel,
+	HlmFieldLegend,
+	HlmFieldSeparator,
+	HlmFieldSet,
+	HlmFieldTitle,
 ] as const;
