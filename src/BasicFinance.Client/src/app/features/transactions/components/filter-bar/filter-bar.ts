@@ -69,11 +69,7 @@ export class FilterBar {
       transactionCategoryId: '',
       search: '',
     });
-
-    this.filtersChange.emit(this.form
   }
-
-
 
   readonly transactionTypeToString = (value: string) =>
     this.transactionTypeOptions.find((d) => d.value === value)?.label ?? '';
