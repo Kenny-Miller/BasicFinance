@@ -30,8 +30,7 @@ export class ThemeService {
     ColorTheme
   >({
     source: () => ({ systemTheme: this.userSystemTheme(), localTheme: this.localStorageTheme() }),
-    computation: (themes) =>
-      themes.localTheme !== null ? themes.localTheme : themes.systemTheme,
+    computation: (themes) => (themes.localTheme !== null ? themes.localTheme : themes.systemTheme),
   });
 
   readonly appTheme = computed(() => this.currentTheme());
