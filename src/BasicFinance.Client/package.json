@@ -12,6 +12,7 @@
     "postbuild": "npx tsx scripts/generate-environment-config.ts",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --watch=false --coverage",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "lint": "ng lint"
   },
