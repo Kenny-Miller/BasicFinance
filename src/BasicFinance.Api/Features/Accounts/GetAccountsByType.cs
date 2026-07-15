@@ -12,9 +12,9 @@ using AccountType = BasicFinance.Infrastructure.Entities.AccountType;
 namespace BasicFinance.Api.Features.Accounts
 {
     /// <summary>
-    /// Contains all logic associated with the List Recent Accounts Endpoint.
+    /// Contains all logic associated with the Get Accounts By Type Endpoint.
     /// </summary>
-    public static class ListUserAccountsByType
+    public static class GetUserAccountsByType
     {
         /// <summary>
         /// Dto containing a list of <see cref="Account"/>s grouped by <see cref="AccountType"/>.
@@ -64,7 +64,7 @@ namespace BasicFinance.Api.Features.Accounts
                     account => account.AccountTypeId,
                     (accountType, accounts) => new
                     {
-                        AccountTypeCode = accountType.AccountTypeCode,
+                        accountType.AccountTypeCode,
                         Accounts = accounts
                     })
                 .ToListAsync(cancellationToken);

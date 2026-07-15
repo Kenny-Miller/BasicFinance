@@ -52,7 +52,7 @@ namespace BasicFinance.Api.Features.Spending
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var now = new DateTime(2025, 11, 25);
+            var now = timeProvider.GetUtcNow();
             var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
             var previousMonthStart = currentMonthStart.AddMonths(-1);
 
@@ -83,6 +83,12 @@ namespace BasicFinance.Api.Features.Spending
                 currentMonthTotal - previousMonthTotal));
         }
 
+        /// <summary>
+        /// Builds a cumulative spending per day for a given month based on daily spending data.
+        /// </summary>
+        /// <param name="monthStart"></param>
+        /// <param name="dailySpendDict"></param>
+        /// <returns></returns>
         private static List<DailySpendingOverTime> BuildCumulativeSpend(DateTime monthStart, Dictionary<DateTime, decimal> dailySpendDict)
         {
             var daysInMonth = DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
