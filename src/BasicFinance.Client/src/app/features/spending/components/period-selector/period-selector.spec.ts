@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { PeriodSelector } from './period-selector';
 
 @Component({
-  selector: 'test-host',
+  selector: 'app-test-host',
   template: '<app-period-selector [activePeriod]="period()" />',
   imports: [PeriodSelector],
 })

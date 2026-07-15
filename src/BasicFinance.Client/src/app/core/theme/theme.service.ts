@@ -30,7 +30,7 @@ export class ThemeService {
     ColorTheme
   >({
     source: () => ({ systemTheme: this.userSystemTheme(), localTheme: this.localStorageTheme() }),
-    computation: (themes, _) =>
+    computation: (themes) =>
       themes.localTheme !== null ? themes.localTheme : themes.systemTheme,
   });
 

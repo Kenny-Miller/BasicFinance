@@ -80,7 +80,9 @@
     <header class="flex h-16 shrink-0 items-center gap-2">
       <div class="flex items-center gap-2 px-4">
         @if (isMobile()) {
-          <button hlmSidebarTrigger></button>
+          <button hlmSidebarTrigger>
+            <span class="sr-only">Toggle Sidebar</span>
+          </button>
         }
       </div>
     </header>
