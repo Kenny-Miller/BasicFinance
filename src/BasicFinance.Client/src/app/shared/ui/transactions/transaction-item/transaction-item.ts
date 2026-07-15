@@ -1,10 +1,10 @@
-import { Component, input } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { HlmItemImports } from '@spartan-ng/helm/item';
+import { Component, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideReceiptText } from '@ng-icons/lucide';
-import { TruncatePipe } from '../../../pipes/truncate-pipe';
+import { HlmItemImports } from '@spartan-ng/helm/item';
 import { Transaction } from '../../../api/transactions/transactions';
+import { TruncatePipe } from '../../../pipes/truncate-pipe';
 
 @Component({
   selector: 'app-transaction-item',
