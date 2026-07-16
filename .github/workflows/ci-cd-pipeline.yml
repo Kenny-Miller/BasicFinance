@@ -36,9 +36,6 @@ jobs:
       - name: Run Build
         run: npm run build --configuration=production
 
-      - name: Run Unit Tests
-        run: npm run test:ci
-
       - name: Cache Playwright Browsers
         id: playwright-cache
         uses: actions/cache@v4
@@ -54,8 +51,11 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
+      - name: Run Unit Tests
+        run: npm run test:unit
+
       - name: Run Playwright E2E Tests
-        run: npx playwright test
+        run: npm run test:e2e
 
       - name: Upload Playwright Report
         if: failure()
