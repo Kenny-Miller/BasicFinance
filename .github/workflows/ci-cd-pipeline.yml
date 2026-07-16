@@ -1,4 +1,4 @@
-name: CI/CD Prod Pipeline
+name: CI/CD Pipeline
 on:
   pull_request:
     branches:
@@ -39,20 +39,8 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:ci
 
-      - name: Cache Playwright Browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-
       - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
-
-      - name: Install Playwright System Dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
 
       - name: Run Playwright E2E Tests
         run: npx playwright test
