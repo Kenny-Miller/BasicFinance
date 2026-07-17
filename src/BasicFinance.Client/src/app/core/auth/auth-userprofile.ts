@@ -22,5 +22,5 @@ export interface AuthUserProfile {
   sid: string;
   sub: string;
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

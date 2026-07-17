@@ -6,13 +6,13 @@ namespace BasicFinance.Infrastructure
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Account> Accounts { get; init; }
-        public DbSet<AccountType> AccountTypes { get; init; }
-        public DbSet<UserGoogleSpreadsheet> UserGoogleSpreadsheets { get; init; }
-        public DbSet<AccountBalanceHistory> AccountBalanceHistories { get; init; }
-        public DbSet<Transaction> Transactions { get; init; }
-        public DbSet<TransactionCategory> TransactionCategories { get; init; }
-        public DbSet<TransactionType> TransactionTypes { get; init; }
+        public DbSet<Account> Accounts { get; init; } = null!;
+        public DbSet<AccountType> AccountTypes { get; init; } = null!;
+        public DbSet<UserGoogleSpreadsheet> UserGoogleSpreadsheets { get; init; } = null!;
+        public DbSet<AccountBalanceHistory> AccountBalanceHistories { get; init; } = null!;
+        public DbSet<Transaction> Transactions { get; init; } = null!;
+        public DbSet<TransactionCategory> TransactionCategories { get; init; } = null!;
+        public DbSet<TransactionType> TransactionTypes { get; init; } = null!;
 
         /// <summary>
         /// Shared instance of the <see cref="TrimWhitespaceInterceptor"/> to be used by all DbContext instances. Will 

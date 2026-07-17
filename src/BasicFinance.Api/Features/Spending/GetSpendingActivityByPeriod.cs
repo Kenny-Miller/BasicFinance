@@ -91,8 +91,8 @@ namespace BasicFinance.Api.Features.Spending
             CancellationToken cancellationToken)
         {
             var startDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified);
-            var now = new DateTime(2025, 11, 25);
-            var (periodStart, periodEnd) = GetPeriodBoundaries(now, request.SpendingPeriod, now);
+            var now = timeProvider.GetUtcNow();
+            var (periodStart, periodEnd) = GetPeriodBoundaries(startDate, request.SpendingPeriod, now.Date);
 
             var userTransactions = dbContext.Transactions
                 .AsNoTracking()

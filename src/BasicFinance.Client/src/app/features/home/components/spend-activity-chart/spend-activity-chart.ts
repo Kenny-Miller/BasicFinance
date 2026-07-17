@@ -8,6 +8,11 @@ import { NgxEchartsDirective } from 'ngx-echarts';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { SpendingOverTimeSummary } from '../../../../shared/api/spending/spending-over-time-summary';
 
+interface TooltipParam {
+  seriesIndex: number;
+  value: number;
+}
+
 @Component({
   selector: 'app-spend-activity-chart',
   providers: [provideIcons({ lucideArrowUpCircle, lucideArrowDownCircle })],
@@ -40,7 +45,7 @@ export class SpendActivityChart {
     return {
       tooltip: {
         trigger: 'axis',
-        formatter: (params: any[]) => {
+        formatter: (params: TooltipParam[]) => {
           const current = params.find((p) => p.seriesIndex === 1);
           const previous = params.find((p) => p.seriesIndex === 0);
           if (!current || !previous) return '';

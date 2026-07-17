@@ -13,6 +13,9 @@ describe('AccountGroupAccordion', () => {
 
     fixture = TestBed.createComponent(AccountGroupAccordion);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('accountGroupTitle', 'Checking');
+    fixture.componentRef.setInput('accountGroupIcon', 'lucideLandmark');
+    fixture.componentRef.setInput('accountGroupData', { totalBalance: 1000, accounts: [] });
     await fixture.whenStable();
   });
 

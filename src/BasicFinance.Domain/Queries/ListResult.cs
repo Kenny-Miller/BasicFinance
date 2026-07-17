@@ -9,7 +9,7 @@
         /// <summary>
         /// Gets a value indicating the items returned in the paged query response.
         /// </summary>
-        public IEnumerable<T> Items { get; init; } =[];
+        public IEnumerable<T> Items { get; init; } = [];
 
         /// <summary>
         /// Gets a value indicating the current page of the paged query response.

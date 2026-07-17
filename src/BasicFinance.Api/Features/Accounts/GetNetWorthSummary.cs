@@ -52,8 +52,7 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            // var now = timeProvider.GetUtcNow();
-            var now = new DateTime(2025, 11, 25);
+            var now = timeProvider.GetUtcNow();
             var currentMonthStart = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero);
             var previousMonthStart = currentMonthStart.AddMonths(-1);
 
@@ -63,10 +62,11 @@ namespace BasicFinance.Api.Features.Accounts
                 .GroupJoin(
                     dbContext.Accounts
                         .AsNoTracking()
-                        .Where(h => h.IsActive)
-                        .Where(h => h.BalanceRecordedDate >= currentMonthStart),
+                        .Where(a => a.UserId == user.Id)
+                        .Where(a => a.IsActive)
+                        .Where(a => a.BalanceRecordedDate >= currentMonthStart),
+                    at => at.AccountTypeId,
                     a => a.AccountTypeId,
-                    h => h.AccountTypeId,
                     (accountType, accounts) => new
                     {
                         AccounTypeId = accountType.AccountTypeId,

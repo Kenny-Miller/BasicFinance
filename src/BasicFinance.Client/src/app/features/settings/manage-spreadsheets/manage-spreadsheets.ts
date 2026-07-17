@@ -53,7 +53,7 @@ export class ManageSpreadsheets {
     this.googleOAuthToken.set(event.detail.access_token);
   }
 
-  public handleOAuthError(event: OAuthErrorEvent): void {
+  public handleOAuthError(_event: OAuthErrorEvent): void {
     this.googleOAuthToken.set(null);
     this.isGoogleFilePickerOpen.set(false);
   }
@@ -68,7 +68,7 @@ export class ManageSpreadsheets {
     const googleSpreadsheetId = event.detail['docs'][0]['id'];
     this.settingsClient.addSpreadSheet(googleSpreadsheetId, googleOAuthToken).subscribe({
       next: () => this.spreadsheetResource.reload(),
-      error: (e) => {
+      error: (_e) => {
         this.isGoogleFilePickerOpen.set(false);
       },
       complete: () => {
@@ -78,7 +78,7 @@ export class ManageSpreadsheets {
     });
   }
 
-  public handlePickerCanceled(event: PickerCanceledEvent): void {
+  public handlePickerCanceled(_event: PickerCanceledEvent): void {
     this.isGoogleFilePickerOpen.set(false);
   }
 

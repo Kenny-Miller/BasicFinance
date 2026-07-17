@@ -1,14 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { SpendingPeriod } from '../../data/spending-client';
 import { PeriodSelector } from './period-selector';
 
 @Component({
-  selector: 'test-host',
+  selector: 'app-test-host',
   template: '<app-period-selector [activePeriod]="period()" />',
   imports: [PeriodSelector],
 })
 class TestHost {
-  period = signal('Monthly');
+  period = signal<SpendingPeriod>('Monthly');
 }
 
 describe('PeriodSelector', () => {
