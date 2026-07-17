@@ -30,8 +30,8 @@ describe('Home', () => {
           useValue: {
             accountsByTypeResource: { value: () => ({ items: [], totalCount: 0, page: 1 }) },
             transactionsResource: { value: () => [] },
-            spendingOverTimeResource: { value: () => (null) },
-            netWorthSummaryResource: { value: () => (null) },
+            spendingOverTimeResource: { value: () => null },
+            netWorthSummaryResource: { value: () => null },
           },
         },
         {
