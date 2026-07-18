@@ -1,0 +1,20 @@
+<section hlmCard class="h-full gap-2 rounded-sm relative">
+  @if (showTopBar() !== undefined) {
+    <div class="h-0.5 absolute inset-0" [ngClass]="'bg-' + highlightColor()"></div>
+  }
+
+  <div hlmCardHeader>
+    <h3 hlmCardTitle class="text-muted-foreground font-normal text-xs">{{ title() }}</h3>
+  </div>
+  <div hlmCardContent class="flex-1">
+    <div class="font-semibold text-2xl">
+      {{ currentValue() | currency }}
+    </div>
+  </div>
+
+  <div hlmCardFooter>
+    <div class="text-xs w-full border-t pt-2" [ngClass]="'text-' + highlightColor()">
+      {{ valueSign() }}{{ valuePercentChange() | number: '1.1-1' }}% vs last month
+    </div>
+  </div>
+</section>
