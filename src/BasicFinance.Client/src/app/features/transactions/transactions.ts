@@ -8,6 +8,7 @@ import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
+import { PageService } from '../../core/page/page.service';
 import { Transaction } from '../../shared/api/transactions/transactions';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions/transactions-list-skeleton/transactions-list-skeleton';
 import { FilterBar } from './components/filter-bar/filter-bar';
@@ -52,6 +53,7 @@ export class Transactions implements OnInit {
   private readonly client = inject(TransactionsClient);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly pageService = inject(PageService);
 
   readonly page = signal(1);
   readonly sortField = signal('Date');
@@ -100,6 +102,8 @@ export class Transactions implements OnInit {
   }
 
   ngOnInit(): void {
+    this.pageService.setPageTitle('Transactions');
+    this.pageService.setPageSubtitle('View your transactions');
     this.page.set(1);
     this.restoreFiltersFromRoute();
   }

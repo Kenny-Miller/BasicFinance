@@ -20,6 +20,7 @@
     <hlm-separator />
     <hlm-sidebar-content>
       <hlm-sidebar-group>
+        <div hlmSidebarGroupLabel>Overview</div>
         <div hlmSidebarGroupContent>
           <ul hlmSidebarMenu>
             @for (item of navigationItems; track item.label) {
@@ -40,6 +41,31 @@
           </ul>
         </div>
       </hlm-sidebar-group>
+
+      @if (accountNavigationItems.length > 0) {
+        <hlm-sidebar-group>
+          <div hlmSidebarGroupLabel>Accounts</div>
+          <div hlmSidebarGroupContent>
+            <ul hlmSidebarMenu>
+              @for (item of accountNavigationItems; track item.label) {
+                <li hlmSidebarMenuItem>
+                  <a
+                    hlmSidebarMenuButton
+                    [routerLink]="item.routerLink"
+                    routerLinkActive
+                    #rla="routerLinkActive"
+                    [isActive]="rla.isActive"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                  >
+                    <ng-icon [name]="item.icon" />
+                    <span>{{ item.label }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        </hlm-sidebar-group>
+      }
     </hlm-sidebar-content>
     <hlm-separator />
     <hlm-sidebar-footer>
@@ -57,7 +83,7 @@
         <li hlmSidebarMenuItem>
           <a
             hlmSidebarMenuButton
-            routerLink="settings"
+            routerLink="Settings"
             routerLinkActive
             #rla="routerLinkActive"
             [isActive]="rla.isActive"
@@ -77,17 +103,22 @@
     </hlm-sidebar-footer>
   </hlm-sidebar>
   <main hlmSidebarInset variant="inset">
-    <header class="flex h-16 shrink-0 items-center gap-2">
-      <div class="flex items-center gap-2 px-4">
+    <header [class]="(!isMobile() ? 'h-16 ' : '') + 'flex shrink-0 items-center gap-2 py-5'">
+      <div class="flex items-center gap-2 px-5">
         @if (isMobile()) {
           <button hlmSidebarTrigger>
             <span class="sr-only">Toggle Sidebar</span>
           </button>
         }
+        <span class="text-2xl font-bold tracking-tight">{{ pageTitle() }}</span>
       </div>
     </header>
     <hlm-separator />
-    <div class="bg-muted/40 p-5 flex-1 flex flex-col min-h-0">
+    <div class="p-5 flex-1 flex flex-col min-h-0">
+      <div class="mb-4">
+        <p class="text-muted-foreground">{{ pageSubtitle() }}</p>
+      </div>
+
       <router-outlet />
     </div>
   </main>

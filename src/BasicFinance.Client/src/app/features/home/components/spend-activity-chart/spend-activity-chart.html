@@ -1,16 +1,16 @@
 <section hlmCard class="flex flex-col gap-2 rounded-sm">
   <div hlmCardHeader>
-    <h3 hlmCardTitle>Spend Activity</h3>
+    <h3 hlmCardTitle class="text-muted-foreground font-normal text-xs">Spend Activity</h3>
   </div>
   <div hlmCardContent class="flex justify-between items-center">
     <div class="font-semibold text-2xl">{{ totalSpend() | currency }}</div>
-    <div class="text-sm flex items-center gap-1">
+    <div class="text-sm flex items-center gap-1 {{ changeClass() }}">
       @if (isSpendIncrease()) {
-        <ng-icon name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
-        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> above last month
+        <ng-icon name="lucideArrowUpCircle" class="size-4" />
+        {{ spendDifference() | currency }} above last month
       } @else {
-        <ng-icon name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
-        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> below last month
+        <ng-icon name="lucideArrowDownCircle" class="size-4" />
+        {{ spendDifference() | currency }} below last month
       }
     </div>
   </div>

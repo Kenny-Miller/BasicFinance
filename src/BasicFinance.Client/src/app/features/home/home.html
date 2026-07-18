@@ -1,40 +1,25 @@
-<div class="grid grid-cols-4 gap-5">
-  <div class="col-span-4 lg:col-span-2 lg:row-span-1 row-span-1">
-    @if (spendingOverTimeResource.hasValue()) {
-      <app-spend-activity-chart
-        [theme]="themeService.appTheme()"
-        [data]="spendingOverTimeResource.value()"
-      />
-    } @else if (spendingOverTimeResource.isLoading()) {
-      <app-spend-activity-chart-skeleton />
-    }
-  </div>
-
-  <div class="col-span-4 lg:col-span-2 lg:row-span-1 grid grid-cols-2 gap-2">
+<div class="flex flex-col gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
     @if (netWorthSummaryResource.hasValue()) {
       <app-summary-card
         title="Networth"
         [currentValue]="netWorthSummaryResource.value().currentNetWorth"
         [lastMonthValue]="netWorthSummaryResource.value().lastMonthNetWorth"
-        variant="networth"
       />
       <app-summary-card
         title="Checking"
         [currentValue]="netWorthSummaryResource.value().currentChecking"
         [lastMonthValue]="netWorthSummaryResource.value().lastMonthChecking"
-        variant="category"
       />
       <app-summary-card
         title="Savings"
         [currentValue]="netWorthSummaryResource.value().currentSavings"
         [lastMonthValue]="netWorthSummaryResource.value().lastMonthSavings"
-        variant="category"
       />
       <app-summary-card
         title="Investments"
         [currentValue]="netWorthSummaryResource.value().currentInvestments"
         [lastMonthValue]="netWorthSummaryResource.value().lastMonthInvestments"
-        variant="category"
       />
     } @else if (netWorthSummaryResource.isLoading()) {
       <app-summary-card-skeleton />
@@ -44,35 +29,47 @@
     }
   </div>
 
-  <section hlmCard class="col-span-4 lg:col-span-2 gap-2 rounded-sm">
-    <div hlmCardHeader>
-      <h3 hlmCardTitle>Accounts</h3>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="col-span-1 md:col-span-3 h-full">
+      @if (spendingOverTimeResource.hasValue()) {
+        <app-spend-activity-chart [theme]="appTheme()" [data]="spendingOverTimeResource.value()" />
+      } @else if (spendingOverTimeResource.isLoading()) {
+        <app-spend-activity-chart-skeleton />
+      }
     </div>
-    <div hlmCardContent class="flex-1">
-      <app-account-group-accordion
-        accountGroupTitle="Checking"
-        accountGroupIcon="lucideDollarSign"
-        [accountGroupData]="checkingAccountsDisplay()"
-      ></app-account-group-accordion>
-      <app-account-group-accordion
-        accountGroupTitle="Savings"
-        accountGroupIcon="lucideLandmark"
-        [accountGroupData]="savingsAccountsDisplay()"
-      ></app-account-group-accordion>
-      <app-account-group-accordion
-        accountGroupTitle="Credit Cards"
-        accountGroupIcon="lucideCreditCard"
-        [accountGroupData]="creditCardAccountsDisplay()"
-      ></app-account-group-accordion>
-      <app-account-group-accordion
-        accountGroupTitle="Investments"
-        accountGroupIcon="lucideChartNoAxesCombined"
-        [accountGroupData]="investmentAccountsDisplay()"
-      ></app-account-group-accordion>
-    </div>
-  </section>
 
-  <div class="col-span-4 lg:col-span-2 gap-2 row-span-2">
+    <div class="col-span-1 md:col-span-1 h-full">
+      <section hlmCard class="gap-4 rounded-sm">
+        <div hlmCardHeader>
+          <h3 hlmCardTitle>Accounts</h3>
+        </div>
+        <div hlmCardContent class="flex-1">
+          <app-account-group-accordion
+            accountGroupTitle="Checking"
+            accountGroupIcon="lucideDollarSign"
+            [accountGroupData]="checkingAccountsDisplay()"
+          ></app-account-group-accordion>
+          <app-account-group-accordion
+            accountGroupTitle="Savings"
+            accountGroupIcon="lucideLandmark"
+            [accountGroupData]="savingsAccountsDisplay()"
+          ></app-account-group-accordion>
+          <app-account-group-accordion
+            accountGroupTitle="Credit Cards"
+            accountGroupIcon="lucideCreditCard"
+            [accountGroupData]="creditCardAccountsDisplay()"
+          ></app-account-group-accordion>
+          <app-account-group-accordion
+            accountGroupTitle="Investments"
+            accountGroupIcon="lucideChartNoAxesCombined"
+            [accountGroupData]="investmentAccountsDisplay()"
+          ></app-account-group-accordion>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div>
     <section hlmCard class="rounded-sm">
       <div hlmCardHeader>
         <h3 hlmCardTitle>Recent Transactions</h3>
