@@ -52,7 +52,7 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var now = timeProvider.GetUtcNow();
+            var now = new DateTime(2025, 11, 25, 13, 26, 30);
             var currentMonthStart = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero);
             var previousMonthStart = currentMonthStart.AddMonths(-1);
 

@@ -14,12 +14,12 @@ using Wolverine.Http;
 namespace BasicFinance.Api.Features.Transactions
 {
     /// <summary>
-    /// Contains all logic associated with the Get Recent Transactions Endpoint.
+    /// Contains all logic associated with the <see cref="ListTransactions"/> Endpoint.
     /// </summary>
-    public static class GetUserTransactions
+    public static class ListTransactions
     {
         /// <summary>
-        /// Request Dto for the <see cref="GetUserTransactions"/> endpoint.
+        /// Request Dto for the <see cref="ListTransactions"/> endpoint.
         /// </summary>
         /// <param name="Page"></param>
         /// <param name="PageSize"></param>
@@ -29,10 +29,9 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="EndDate"></param>
         /// <param name="MinAmount"></param>
         /// <param name="MaxAmount"></param>
-        /// <param name="TransactionTypeId"></param>
-        /// <param name="TransactionCategoryId"></param>
+        /// <param name="TransactionTypeCode"></param>
+        /// <param name="TransactionCategoryCode"></param>
         /// <param name="AccountId"></param>
-        /// <param name="Search"></param>
         public record Request(
             int? Page,
             int? PageSize,
@@ -42,10 +41,9 @@ namespace BasicFinance.Api.Features.Transactions
             DateTime? EndDate,
             decimal? MinAmount,
             decimal? MaxAmount,
-            int? TransactionTypeId,
-            int? TransactionCategoryId,
-            Guid? AccountId,
-            string? Search) : IPagedQuery, ISortedQuery;
+            string? TransactionTypeCode,
+            string? TransactionCategoryCode,
+            Guid? AccountId) : IPagedQuery, ISortedQuery;
 
         /// <summary>
         /// Dto containing <see cref="Transaction"/> data.
@@ -67,7 +65,8 @@ namespace BasicFinance.Api.Features.Transactions
             string Description);
 
         /// <summary>
-        /// Lists <see cref="Transaction"/>s associated with the authenticated user.
+        /// Retrieves <see cref="Transaction"/>s associated with the authenticated user
+        /// based on the provided search criteria.
         /// </summary>
         /// <param name="request">The request query parameters.</param>
         /// <param name="user">The authenticated user performing the request.</param>
@@ -99,6 +98,7 @@ namespace BasicFinance.Api.Features.Transactions
 
             var transactions = await baseQuery
                 .OrderBy(sortExpressionSelector, request)
+                    .ThenBy(x => x.Description, request)
                     .ThenBy(x => x.TransactionId, request)
                 .Paginate(request)
                 .Select(x => new TransactionDto(
@@ -141,25 +141,19 @@ namespace BasicFinance.Api.Features.Transactions
                 query = query.Where(x => x.Amount <= request.MaxAmount.Value);
             }
 
-            if (request.TransactionTypeId.HasValue)
+            if (!string.IsNullOrEmpty(request.TransactionTypeCode))
             {
-                query = query.Where(x => x.TransactionTypeId == request.TransactionTypeId.Value);
+                query = query.Where(x => x.TransactionType.TransactionTypeCode == request.TransactionTypeCode);
             }
 
-            if (request.TransactionCategoryId.HasValue)
+            if (!string.IsNullOrEmpty(request.TransactionCategoryCode))
             {
-                query = query.Where(x => x.TransactionCategoryId == request.TransactionCategoryId.Value);
+                query = query.Where(x => x.TransactionCategory.TransactionCategoryCode == request.TransactionCategoryCode);
             }
 
             if (request.AccountId.HasValue)
             {
                 query = query.Where(x => x.AccountId == request.AccountId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Search))
-            {
-                var searchTerm = request.Search!.Trim();
-                query = query.Where(x => x.Description.Contains(searchTerm));
             }
 
             return query;
