@@ -24,13 +24,14 @@
         /// <summary>
         /// Gets a value indicating the total number of pages available in the paged query response.
         /// </summary>
-        public int PageCount => (int)Math.Ceiling((double)this.TotalCount / this.PageSize);
+        public int PageCount => (int)Math.Ceiling((double)TotalCount / PageSize);
 
         /// <summary>
         /// Gets a value indicating the total number of items available in the paged query response.
         /// </summary>
         public int TotalCount { get; init; }
 
+        /// <summary>
         /// Constructs a new instance of the <see cref="ListResult{T}"/> class.
         /// </summary>
         /// <param name="items"></param>
@@ -39,10 +40,18 @@
         /// <param name="totalCount"></param>
         public ListResult(IEnumerable<T> items, int? page, int? pageSize, int? totalCount)
         {
-            this.Items = items;
-            this.Page = !page.HasValue || page <= QueryConstants.DefaultPage ? QueryConstants.DefaultPage : page.Value;
-            this.PageSize = !pageSize.HasValue || pageSize <= 0 ? QueryConstants.DefaultPageSize : pageSize.Value;
-            this.TotalCount = !totalCount.HasValue || totalCount < 0 ? 0 : totalCount.Value;
+            Items = items;
+            Page = !page.HasValue || page <= QueryConstants.DefaultPage ? QueryConstants.DefaultPage : page.Value;
+            PageSize = !pageSize.HasValue || pageSize <= 0 ? QueryConstants.DefaultPageSize : pageSize.Value;
+            TotalCount = !totalCount.HasValue || totalCount < 0 ? 0 : totalCount.Value;
+        }
+
+        /// <summary>
+        /// Constructs a new instance of the <see cref="ListResult{T}"/> class.
+        /// </summary>
+        /// <param name="items"></param>
+        public ListResult(IList<T> items) : this(items, 1, items.Count, items.Count)
+        {
         }
     }
 }

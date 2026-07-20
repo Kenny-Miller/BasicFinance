@@ -9,33 +9,54 @@ using Wolverine.Http;
 namespace BasicFinance.Api.Features.Accounts
 {
     /// <summary>
-    /// Contains all logic associated with the Net Worth Summary Endpoint.
+    /// Contains all logic associated with the <see cref="GetAccountAnalytics"/> Endpoint.
     /// </summary>
-    public static class GetNetWorthSummary
+    public static class GetAccountAnalytics
     {
-        /// <summary>
-        /// Dto containing the net worth and category totals for current and previous months.
-        /// </summary>
-        /// <param name="CurrentNetWorth">The total net worth for the current month (assets minus liabilities).</param>
-        /// <param name="LastMonthNetWorth">The total net worth for the previous month (assets minus liabilities).</param>
-        /// <param name="CurrentChecking">The total checking balance for the current month.</param>
-        /// <param name="LastMonthChecking">The total checking balance for the previous month.</param>
-        /// <param name="CurrentSavings">The total savings balance for the current month.</param>
-        /// <param name="LastMonthSavings">The total savings balance for the previous month.</param>
-        /// <param name="CurrentInvestments">The total investments balance for the current month.</param>
-        /// <param name="LastMonthInvestments">The total investments balance for the previous month.</param>
-        public record Response(
-            decimal CurrentNetWorth,
-            decimal LastMonthNetWorth,
-            decimal CurrentChecking,
-            decimal LastMonthChecking,
-            decimal CurrentSavings,
-            decimal LastMonthSavings,
-            decimal CurrentInvestments,
-            decimal LastMonthInvestments);
+        public record Request(DateTimeOffset RecordedDate, TimePeriod TimePeriod);
 
         /// <summary>
-        /// Retrieves the net worth summary for the authenticated user.
+        /// Defines time periods to group activity by.
+        /// </summary>
+        public enum TimePeriod
+        {
+            /// <summary>
+            /// Represents a weekly period.
+            /// </summary>
+            Weekly,
+
+            /// <summary>
+            /// Represents a monthly period.
+            /// </summary>
+            Monthly,
+
+            /// <summary>
+            /// Represents a quarterly period.
+            /// </summary>
+            Quarterly,
+
+            /// <summary>
+            /// Represents a yearly period.
+            /// </summary>
+            Yearly
+        }
+
+        public record Response(TotalBalanceBreakdown CurrentPeriodBreakdown, TotalBalanceBreakdown PreviousPeriodBreakdown);
+
+        public record TotalBalanceBreakdown(decimal Balance, Dictionary<string, AccountTypeBreakdown> AccountTypeBreakdowns);
+
+        public record AccountTypeBreakdown(decimal Balance, decimal PercentageOfTotalBalance, List<AccountDto> Accounts);
+        public record AccountDto(
+            Guid Id,
+            string AccountTypeCode,
+            string Institution,
+            string AccountName,
+            decimal Balance,
+            decimal PercentageOfTotalBalance,
+            decimal PercentageOfAccountTypeBalance);
+
+        /// <summary>
+        /// Retrieves the account balance summary for the authenticated user.
         /// </summary>
         /// <param name="user">The authenticated user performing the request.</param>
         /// <param name="timeProvider">Time provider for consistent date calculations.</param>
@@ -45,7 +66,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// Returns <see cref="Ok{TValue}"/> with net worth summary when successful.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/accounts/netWorthSummary")]
+        [WolverineGet("api/accounts/balanceSummary")]
         public static async Task<Ok<Response>> HandleAsync(
             AuthenticatedUser user,
             TimeProvider timeProvider,
