@@ -92,6 +92,8 @@ public static class DateTimeOffsetExtensions
         /// containing <paramref name="source"/>.
         /// </summary>
         /// <param name="timePeriod"></param>
-        public DateTimeOffsetRange ToPeriodRange(TimePeriod timePeriod) => new(source.ToStartOfPeriod(timePeriod), source.ToEndOfPeriod(timePeriod));
+        /// <param name="offset"></param>
+        public DateTimeOffsetRange ToPeriodRange(TimePeriod timePeriod, int offset = 0) =>
+            new(source.ToStartOfPeriod(timePeriod, offset), source.ToEndOfPeriod(timePeriod, offset));
     }
 }
