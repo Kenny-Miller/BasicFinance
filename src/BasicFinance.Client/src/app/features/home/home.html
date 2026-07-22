@@ -1,27 +1,27 @@
 <div class="flex flex-col gap-4">
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-    @if (netWorthSummaryResource.hasValue()) {
+    @if (balanceSummaryResource.hasValue()) {
       <app-summary-card
         title="Networth"
-        [currentValue]="netWorthSummaryResource.value().currentNetWorth"
-        [lastMonthValue]="netWorthSummaryResource.value().lastMonthNetWorth"
+        [currentValue]="currentNetWorth()"
+        [lastMonthValue]="previousNetWorth()"
       />
       <app-summary-card
         title="Checking"
-        [currentValue]="netWorthSummaryResource.value().currentChecking"
-        [lastMonthValue]="netWorthSummaryResource.value().lastMonthChecking"
+        [currentValue]="currentChecking()"
+        [lastMonthValue]="previousChecking()"
       />
       <app-summary-card
         title="Savings"
-        [currentValue]="netWorthSummaryResource.value().currentSavings"
-        [lastMonthValue]="netWorthSummaryResource.value().lastMonthSavings"
+        [currentValue]="currentSavings()"
+        [lastMonthValue]="previousSavings()"
       />
       <app-summary-card
         title="Investments"
-        [currentValue]="netWorthSummaryResource.value().currentInvestments"
-        [lastMonthValue]="netWorthSummaryResource.value().lastMonthInvestments"
+        [currentValue]="currentInvestments()"
+        [lastMonthValue]="previousInvestments()"
       />
-    } @else if (netWorthSummaryResource.isLoading()) {
+    } @else if (balanceSummaryResource.isLoading()) {
       <app-summary-card-skeleton />
       <app-summary-card-skeleton />
       <app-summary-card-skeleton />
@@ -29,8 +29,8 @@
     }
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="col-span-1 md:col-span-3 h-full">
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="col-span-1 xl:col-span-1">
       @if (spendingOverTimeResource.hasValue()) {
         <app-spend-activity-chart [theme]="appTheme()" [data]="spendingOverTimeResource.value()" />
       } @else if (spendingOverTimeResource.isLoading()) {
@@ -38,60 +38,22 @@
       }
     </div>
 
-    <div class="col-span-1 md:col-span-1 h-full">
-      <section hlmCard class="gap-4 rounded-sm">
-        <div hlmCardHeader>
-          <h3 hlmCardTitle>Accounts</h3>
-        </div>
-        <div hlmCardContent class="flex-1">
-          <app-account-group-accordion
-            accountGroupTitle="Checking"
-            accountGroupIcon="lucideDollarSign"
-            [accountGroupData]="checkingAccountsDisplay()"
-          ></app-account-group-accordion>
-          <app-account-group-accordion
-            accountGroupTitle="Savings"
-            accountGroupIcon="lucideLandmark"
-            [accountGroupData]="savingsAccountsDisplay()"
-          ></app-account-group-accordion>
-          <app-account-group-accordion
-            accountGroupTitle="Credit Cards"
-            accountGroupIcon="lucideCreditCard"
-            [accountGroupData]="creditCardAccountsDisplay()"
-          ></app-account-group-accordion>
-          <app-account-group-accordion
-            accountGroupTitle="Investments"
-            accountGroupIcon="lucideChartNoAxesCombined"
-            [accountGroupData]="investmentAccountsDisplay()"
-          ></app-account-group-accordion>
-        </div>
-      </section>
+    <div class="col-span-1 xl:col-span-1">
+      @if (balanceSummaryResource.hasValue()) {
+        <app-account-net-worth-breakdown
+          [data]="currentPeriodBreakdown()"
+        ></app-account-net-worth-breakdown>
+      } @else if (balanceSummaryResource.isLoading()) {
+        <app-account-net-worth-breakdown-skeleton />
+      }
     </div>
   </div>
 
   <div>
-    <section hlmCard class="rounded-sm">
-      <div hlmCardHeader>
-        <h3 hlmCardTitle>Recent Transactions</h3>
-      </div>
-      <div hlmCardContent class="flex-1">
-        @if (transactionsResource.hasValue()) {
-          <app-transactions-list [transactions]="transactionsResource.value()" />
-        } @else if (transactionsResource.isLoading()) {
-          <app-transactions-list-skeleton [skeletonListLength]="5" />
-        }
-
-        <div class="flex justify-center mt-2">
-          <button
-            routerLink="/transactions"
-            hlmBtn
-            [disabled]="transactionsResource.isLoading()"
-            class="w-full lg:w-80"
-          >
-            View More
-          </button>
-        </div>
-      </div>
-    </section>
+    @if (transactionsResource.hasValue()) {
+      <app-recent-transactions [transactions]="recentTransactions()" />
+    } @else if (transactionsResource.isLoading()) {
+      <app-recent-transactions-skeleton />
+    }
   </div>
 </div>

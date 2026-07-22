@@ -28,10 +28,14 @@ describe('Home', () => {
         {
           provide: HomeClient,
           useValue: {
-            accountsByTypeResource: { value: () => ({ items: [], totalCount: 0, page: 1 }) },
+            balanceSummaryResource: {
+              value: () => ({
+                currentPeriodBreakdown: { balance: 0, accountTypeBreakdowns: {} },
+                previousPeriodBreakdown: { balance: 0, accountTypeBreakdowns: {} },
+              }),
+            },
             transactionsResource: { value: () => [] },
             spendingOverTimeResource: { value: () => null },
-            netWorthSummaryResource: { value: () => null },
           },
         },
         {

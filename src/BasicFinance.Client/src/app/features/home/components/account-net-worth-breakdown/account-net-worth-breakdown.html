@@ -1,0 +1,60 @@
+<section hlmCard class="gap-4 rounded-sm h-full">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle class="text-xs">Net Worth by Account</h3>
+  </div>
+  <div hlmCardContent>
+    <div class="grid grid-cols-3 items-center gap-4">
+      <div class="col-span-1">
+        <div echarts [options]="pieOptions()" [autoResize]="true" class="h-64"></div>
+      </div>
+
+      <hlm-accordion type="multiple" class="col-span-2">
+        @for (entry of breakdownEntries(); track entry.code) {
+          @let code = entry.code;
+          @let breakdown = entry.breakdown;
+          <hlm-accordion-item>
+            <hlm-accordion-trigger>
+              <div class="flex flex-col gap-2 w-full">
+                <div class="flex items-center justify-between">
+                  <span class="flex items-center gap-2">
+                    <ng-icon [name]="accountTypeIcons[code]" />
+                    {{ accountTypeLabels[code] }}
+                  </span>
+                  <span class="font-medium">
+                    {{ breakdown.balance | currency }}
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    class="h-2 rounded-full"
+                    [style.background]="accountTypeColors[code]"
+                    [style.width]="(breakdown.percentageOfTotalBalance | abs) + '%'"
+                  ></div>
+                </div>
+                <div class="text-xs text-right text-gray-500">
+                  {{ breakdown.percentageOfTotalBalance | number: '1.0-0' }}% of net worth
+                </div>
+              </div>
+            </hlm-accordion-trigger>
+            <hlm-accordion-content>
+              @for (account of breakdown.accounts; track account.id; let last = $last) {
+                <app-account-item [account]="account" />
+                @if (!last) {
+                  <hlm-separator />
+                }
+              } @empty {
+                <div class="flex flex-col gap-2">
+                  <hlm-item>
+                    <hlm-item-content class="gap-1">
+                      <hlm-item-title>No accounts found</hlm-item-title>
+                    </hlm-item-content>
+                  </hlm-item>
+                </div>
+              }
+            </hlm-accordion-content>
+          </hlm-accordion-item>
+        }
+      </hlm-accordion>
+    </div>
+  </div>
+</section>

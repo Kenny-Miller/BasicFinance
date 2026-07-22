@@ -1,0 +1,11 @@
+<section hlmCard class="gap-4 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle class="text-xs">Recent Transactions</h3>
+  </div>
+  <div hlmCardContent class="flex-1">
+    <app-transactions-list [transactions]="transactions()" />
+    <div class="flex justify-center mt-2">
+      <button routerLink="/transactions" hlmBtn class="w-full lg:w-80">View More</button>
+    </div>
+  </div>
+</section>

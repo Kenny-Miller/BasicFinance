@@ -1,0 +1,19 @@
+<section hlmCard class="h-full flex flex-col gap-4 rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle class="text-xs">
+      <hlm-skeleton class="h-5 w-40" />
+    </h3>
+  </div>
+  <div hlmCardContent class="flex-1">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="md:col-span-1 flex items-center justify-center">
+        <hlm-skeleton class="w-48 h-48 rounded-full" />
+      </div>
+      <div class="md:col-span-2 flex flex-col gap-2">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <hlm-skeleton class="h-16 w-full rounded" />
+        }
+      </div>
+    </div>
+  </div>
+</section>
