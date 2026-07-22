@@ -3,12 +3,40 @@
     <h3 hlmCardTitle class="text-xs">Net Worth by Account</h3>
   </div>
   <div hlmCardContent>
-    <div class="grid grid-cols-3 items-center gap-4">
-      <div class="col-span-1">
+    <!-- <div class="col-span-1">
         <div echarts [options]="pieOptions()" [autoResize]="true" class="h-64"></div>
-      </div>
+      </div> -->
 
-      <hlm-accordion type="multiple" class="col-span-2">
+    <hlm-item-group>
+      @for (entry of breakdownEntries(); track entry.code) {
+        @let code = entry.code;
+        @let breakdown = entry.breakdown;
+        <hlm-item size="xs">
+          <hlm-item-content>
+            <hlm-item-title>
+              {{ accountTypeLabels[code] }}
+            </hlm-item-title>
+            <p hlmItemDescription>
+              {{ breakdown.percentageOfTotalBalance | number: '1.0-0' }}% of net worth
+            </p>
+          </hlm-item-content>
+
+          <hlm-item-content>
+            <p hlmItemDescription>{{ breakdown.balance | currency }}</p>
+          </hlm-item-content>
+
+          <hlm-item-footer>
+            <div
+              class="h-2 rounded-full"
+              [style.background]="accountTypeColors[code]"
+              [style.width]="(breakdown.percentageOfTotalBalance | abs) + '%'"
+            ></div>
+          </hlm-item-footer>
+        </hlm-item>
+      }
+    </hlm-item-group>
+
+    <!-- <hlm-accordion type="multiple" class="col-span-2">
         @for (entry of breakdownEntries(); track entry.code) {
           @let code = entry.code;
           @let breakdown = entry.breakdown;
@@ -54,7 +82,6 @@
             </hlm-accordion-content>
           </hlm-accordion-item>
         }
-      </hlm-accordion>
-    </div>
+      </hlm-accordion> -->
   </div>
 </section>
