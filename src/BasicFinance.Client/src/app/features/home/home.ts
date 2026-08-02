@@ -66,45 +66,39 @@ export class Home implements OnInit {
     () =>
       this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.CHECKING
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
   readonly previousChecking = computed(
     () =>
       this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.CHECKING
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
 
   readonly currentSavings = computed(
     () =>
       this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.SAVINGS
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
   readonly previousSavings = computed(
     () =>
       this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.SAVINGS
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
 
   readonly currentInvestments = computed(
     () =>
       this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.INVESTMENTS
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
   readonly previousInvestments = computed(
     () =>
       this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
         ACCOUNT_TYPE_CODES.INVESTMENTS
-      ]
-        ?.balance ?? 0,
+      ]?.balance ?? 0,
   );
 
   readonly currentPeriodBreakdown = computed(

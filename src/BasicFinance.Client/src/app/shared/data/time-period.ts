@@ -1,11 +1,6 @@
 export type TimePeriod = 'Weekly' | 'Monthly' | 'Quarterly' | 'Yearly';
 
-export const TIME_PERIODS: readonly TimePeriod[] = [
-  'Weekly',
-  'Monthly',
-  'Quarterly',
-  'Yearly',
-];
+export const TIME_PERIODS: readonly TimePeriod[] = ['Weekly', 'Monthly', 'Quarterly', 'Yearly'];
 
 export const DEFAULT_TIME_PERIOD: TimePeriod = 'Monthly';
 
