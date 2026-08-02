@@ -1,13 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { CategoryBreakdownList } from './components/category-breakdown-list/category-breakdown-list';
 import { CategoryBreakdownListSkeleton } from './components/category-breakdown-list-skeleton/category-breakdown-list-skeleton';
-import { CategoryPieChart } from './components/category-pie-chart/category-pie-chart';
+import { CategoryBreakdownList } from './components/category-breakdown-list/category-breakdown-list';
 import { CategoryPieChartSkeleton } from './components/category-pie-chart-skeleton/category-pie-chart-skeleton';
+import { CategoryPieChart } from './components/category-pie-chart/category-pie-chart';
 import { PeriodSelector } from './components/period-selector/period-selector';
-import { SpendingSummaryTile } from './components/spending-summary-tile/spending-summary-tile';
 import { SpendingSummaryTileSkeleton } from './components/spending-summary-tile-skeleton/spending-summary-tile-skeleton';
-import { SpendingClient, SpendingPeriod } from './data/spending-client';
+import { SpendingSummaryTile } from './components/spending-summary-tile/spending-summary-tile';
+import { SpendingClient } from './data/spending-client';
+import { TimePeriod } from '../../shared/data/time-period';
 
 @Component({
   selector: 'app-spending',
@@ -23,20 +25,25 @@ import { SpendingClient, SpendingPeriod } from './data/spending-client';
   templateUrl: './spending.html',
   styleUrl: './spending.css',
 })
-export class Spending {
-  readonly themeService = inject(ThemeService);
+export class Spending implements OnInit {
+  private readonly pageService = inject(PageService);
   private readonly spendingClient = inject(SpendingClient);
+  private readonly themeService = inject(ThemeService);
 
-  readonly selectedPeriod = signal<SpendingPeriod>('Monthly');
-
+  readonly appTheme = this.themeService.appTheme;
+  readonly selectedPeriod = signal<TimePeriod>('Monthly');
   readonly startDate = signal(new Date().toISOString().split('T')[0]);
-
   readonly spendingResource = this.spendingClient.createResource(
     this.selectedPeriod,
     this.startDate,
   );
 
-  selectPeriod(period: SpendingPeriod) {
+  ngOnInit(): void {
+    this.pageService.setPageTitle('Spending');
+    this.pageService.setPageSubtitle('View your spending summary and breakdown by category.');
+  }
+
+  selectPeriod(period: TimePeriod) {
     this.selectedPeriod.set(period);
   }
 

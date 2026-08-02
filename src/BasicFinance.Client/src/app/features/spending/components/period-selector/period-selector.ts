@@ -3,9 +3,12 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
-import { SpendingPeriod } from '../../data/spending-client';
-
-const VALID_PERIODS: readonly SpendingPeriod[] = ['Weekly', 'Monthly', 'Quarterly', 'Yearly'];
+import {
+  DEFAULT_TIME_PERIOD,
+  TimePeriod,
+  TIME_PERIODS,
+  isValidTimePeriod,
+} from '../../../../shared/data/time-period';
 
 @Component({
   selector: 'app-period-selector',
@@ -14,19 +17,19 @@ const VALID_PERIODS: readonly SpendingPeriod[] = ['Weekly', 'Monthly', 'Quarterl
   styleUrl: './period-selector.css',
 })
 export class PeriodSelector implements OnChanges {
-  readonly activePeriod = input.required<SpendingPeriod>();
-  readonly periodChange = output<SpendingPeriod>();
+  readonly activePeriod = input.required<TimePeriod>();
+  readonly periodChange = output<TimePeriod>();
 
-  readonly periods = VALID_PERIODS;
+  readonly periods = TIME_PERIODS;
 
-  public selectedPeriod: SpendingPeriod = 'Monthly';
+  public selectedPeriod: TimePeriod = DEFAULT_TIME_PERIOD;
 
   public ngOnChanges(): void {
     this.selectedPeriod = this.activePeriod();
   }
 
-  private isValidPeriod(value: unknown): value is SpendingPeriod {
-    return VALID_PERIODS.includes(value as SpendingPeriod);
+  private isValidPeriod(value: unknown): value is TimePeriod {
+    return isValidTimePeriod(value);
   }
 
   selectPeriod(value: unknown) {

@@ -1,14 +1,13 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
 import { SpendingByPeriod } from '../../../shared/api/spending/spending-by-period';
-
-export type SpendingPeriod = 'Weekly' | 'Monthly' | 'Quarterly' | 'Yearly';
+import { TimePeriod } from '../../../shared/data/time-period';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpendingClient {
-  createResource(periodSignal: Signal<SpendingPeriod>, startDateSignal: Signal<string>) {
+  createResource(periodSignal: Signal<TimePeriod>, startDateSignal: Signal<string>) {
     return httpResource<SpendingByPeriod>(() => {
       const params = new URLSearchParams();
       params.set('startDate', startDateSignal());

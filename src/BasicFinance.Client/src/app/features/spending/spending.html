@@ -12,7 +12,7 @@
         [totalIncome]="spendingResource.value().totalIncome"
         [totalSpend]="spendingResource.value().totalSpend"
       />
-      <app-category-pie-chart [theme]="themeService.appTheme()" [data]="spendingResource.value()" />
+      <app-category-pie-chart [theme]="appTheme()" [data]="spendingResource.value()" />
     </div>
 
     <app-category-breakdown-list [data]="spendingResource.value()" />

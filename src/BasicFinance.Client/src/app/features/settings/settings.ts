@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -12,6 +12,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmNavigationMenuImports } from '@spartan-ng/helm/navigation-menu';
+import { PageService } from '../../core/page/page.service';
 import { NavMenuItem } from '../../shared/models/nav-menu-item';
 
 @Component({
@@ -38,9 +39,16 @@ import { NavMenuItem } from '../../shared/models/nav-menu-item';
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
-export class Settings {
+export class Settings implements OnInit {
+  private readonly pageService = inject(PageService);
+
   readonly navigationItems: NavMenuItem[] = [
     { label: 'Manage Spreadsheets', icon: 'lucideFileSpreadsheet', routerLink: './spreadsheets' },
     { label: 'Account', icon: 'lucideShield', routerLink: './account' },
   ];
+
+  ngOnInit(): void {
+    this.pageService.setPageTitle('Settings');
+    this.pageService.setPageSubtitle('Manage application and account settings.');
+  }
 }

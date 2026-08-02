@@ -1,0 +1,16 @@
+<section hlmCard class="rounded-sm">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>
+      <hlm-skeleton class="h-5 w-48" />
+    </h3>
+  </div>
+  <div hlmCardContent class="flex-1">
+    @for (i of [1, 2, 3, 4, 5]; track i) {
+      <hlm-skeleton class="h-16 w-full rounded" />
+    }
+
+    <div class="flex justify-center mt-2">
+      <hlm-skeleton class="h-10 w-full lg:w-80 rounded" />
+    </div>
+  </div>
+</section>

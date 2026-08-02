@@ -91,6 +91,9 @@
       ],
       "@spartan-ng/helm/dialog": [
         "./libs/ui/dialog/src/index.ts"
+      ],
+      "@spartan-ng/helm/progress": [
+        "./libs/ui/progress/src/index.ts"
       ]
     }
   },

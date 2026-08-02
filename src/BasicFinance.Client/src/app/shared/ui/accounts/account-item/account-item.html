@@ -1,0 +1,14 @@
+<hlm-item size="xs" class="py-0">
+  <hlm-item-media variant="icon" class="size-8">
+    <ng-icon name="lucideReceiptText" />
+  </hlm-item-media>
+
+  <hlm-item-content class="gap-1">
+    <hlm-item-title>{{ account().accountName | truncate: 25 }}</hlm-item-title>
+    <p hlmItemDescription>{{ account().institution }}</p>
+  </hlm-item-content>
+
+  <hlm-item-content>
+    <p>{{ account().balance | currency }}</p>
+  </hlm-item-content>
+</hlm-item>

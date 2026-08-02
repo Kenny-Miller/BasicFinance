@@ -37,7 +37,7 @@ export class SpendActivityChart {
     const spendingData = this.data();
 
     const primaryColor = '#000000';
-    const previousMonthColor = '#ef4444';
+    const previousMonthColor = '#ffffff';
 
     const currentData = spendingData?.currentMonthActivity.map((item) => item.y) ?? [];
     const previousData = spendingData?.previousMonthActivity.map((item) => item.y) ?? [];
@@ -54,7 +54,7 @@ export class SpendActivityChart {
           if (current)
             result += `<div style="color:#000000;">Current: ${currency.format(current.value)}</div>`;
           if (previous)
-            result += `<div style="color:#000000;">Previous: ${currency.format(previous.value)}</div>`;
+            result += `<div style="color:#ffffff;">Previous: ${currency.format(previous.value)}</div>`;
           return result;
         },
       },
@@ -97,8 +97,8 @@ export class SpendActivityChart {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: previousMonthColor },
-                { offset: 1, color: previousMonthColor },
+                { offset: 0, color: 'rgba(0, 0, 0, 0.75)' },
+                { offset: 1, color: 'rgba(0, 0, 0, 0.05)' },
               ],
             },
           },
