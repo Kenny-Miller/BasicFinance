@@ -10,7 +10,7 @@ public static class DateTimeOffsetExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the week it lies within.
         /// </summary>
-        public DateTimeOffset StartOfWeek => source.AddDays(-(int)source.DayOfWeek);
+        public DateTimeOffset StartOfWeek => source.AddDays(-(source.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)source.DayOfWeek - 1));
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the month it lies within.
@@ -20,7 +20,7 @@ public static class DateTimeOffsetExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the quarter it lies within.
         /// </summary>
-        public DateTimeOffset StartOfQuarter => new(source.Year, (source.Month + 3 - 1) / 3, 1, 0, 0, 0, source.Offset);
+        public DateTimeOffset StartOfQuarter => new(source.Year, (source.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, source.Offset);
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the year it lies within.
@@ -30,7 +30,7 @@ public static class DateTimeOffsetExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the week it lies within.
         /// </summary>
-        public DateTimeOffset EndOfWeek => source.StartOfWeek.AddDays(6).AddMilliseconds(-1);
+        public DateTimeOffset EndOfWeek => new(source.StartOfWeek.AddDays(6).Year, source.StartOfWeek.AddDays(6).Month, source.StartOfWeek.AddDays(6).Day, 23, 59, 59, 999, source.Offset);
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the month it lies within.
