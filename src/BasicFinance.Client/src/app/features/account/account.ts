@@ -13,14 +13,9 @@ export class Account implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly pageService = inject(PageService);
   private readonly themeService = inject(ThemeService);
-
-  private readonly $routeParams = signal(this.route.snapshot.params);
-
   private readonly accountId = signal(0);
 
   readonly appTheme = this.themeService.appTheme;
-
-  constructor() {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {

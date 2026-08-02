@@ -1,9 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmSeparator } from '@spartan-ng/helm/separator';
-
-type Variant = 'networth' | 'category';
 
 @Component({
   selector: 'app-summary-card',
