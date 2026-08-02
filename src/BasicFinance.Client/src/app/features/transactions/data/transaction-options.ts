@@ -1,13 +1,4 @@
-export interface SelectOption {
-  value: string;
-  label: string;
-}
-
-export const TRANSACTION_TYPE_OPTIONS: SelectOption[] = [
-  { value: '', label: 'All Types' },
-  { value: '1', label: 'Credit' },
-  { value: '2', label: 'Debit' },
-];
+import { SelectOption } from '../../../shared/data/transaction-type-map';
 
 export const TRANSACTION_CATEGORY_OPTIONS: SelectOption[] = [
   { value: '', label: 'All Categories' },

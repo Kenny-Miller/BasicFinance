@@ -8,8 +8,8 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import {
   TRANSACTION_CATEGORY_OPTIONS,
-  TRANSACTION_TYPE_OPTIONS,
 } from '../../data/transaction-options';
+import { TRANSACTION_TYPE_OPTIONS } from '../../../../shared/data/transaction-type-map';
 import { TransactionFilters } from '../../data/transactions-client';
 
 @Component({

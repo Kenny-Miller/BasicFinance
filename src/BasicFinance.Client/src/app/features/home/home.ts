@@ -13,6 +13,7 @@ import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { ACCOUNT_TYPE_CODES } from '../../shared/data/account-type-map';
 import { SummaryCardSkeleton } from '../../shared/ui/cards/summary-card-skeleton/summary-card-skeleton';
 import { SummaryCard } from '../../shared/ui/cards/summary-card/summary-card';
 import { AccountNetWorthBreakdownSkeleton } from './components/account-net-worth-breakdown-skeleton/account-net-worth-breakdown-skeleton';
@@ -63,34 +64,46 @@ export class Home implements OnInit {
 
   readonly currentChecking = computed(
     () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns['CHK']
+      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.CHECKING
+      ]
         ?.balance ?? 0,
   );
   readonly previousChecking = computed(
     () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns['CHK']
+      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.CHECKING
+      ]
         ?.balance ?? 0,
   );
 
   readonly currentSavings = computed(
     () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns['SAV']
+      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.SAVINGS
+      ]
         ?.balance ?? 0,
   );
   readonly previousSavings = computed(
     () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns['SAV']
+      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.SAVINGS
+      ]
         ?.balance ?? 0,
   );
 
   readonly currentInvestments = computed(
     () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns['INV']
+      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.INVESTMENTS
+      ]
         ?.balance ?? 0,
   );
   readonly previousInvestments = computed(
     () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns['INV']
+      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
+        ACCOUNT_TYPE_CODES.INVESTMENTS
+      ]
         ?.balance ?? 0,
   );
 

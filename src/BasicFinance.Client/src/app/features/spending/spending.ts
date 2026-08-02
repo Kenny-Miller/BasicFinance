@@ -8,7 +8,8 @@ import { CategoryPieChart } from './components/category-pie-chart/category-pie-c
 import { PeriodSelector } from './components/period-selector/period-selector';
 import { SpendingSummaryTileSkeleton } from './components/spending-summary-tile-skeleton/spending-summary-tile-skeleton';
 import { SpendingSummaryTile } from './components/spending-summary-tile/spending-summary-tile';
-import { SpendingClient, SpendingPeriod } from './data/spending-client';
+import { SpendingClient } from './data/spending-client';
+import { TimePeriod } from '../../shared/data/time-period';
 
 @Component({
   selector: 'app-spending',
@@ -30,7 +31,7 @@ export class Spending implements OnInit {
   private readonly themeService = inject(ThemeService);
 
   readonly appTheme = this.themeService.appTheme;
-  readonly selectedPeriod = signal<SpendingPeriod>('Monthly');
+  readonly selectedPeriod = signal<TimePeriod>('Monthly');
   readonly startDate = signal(new Date().toISOString().split('T')[0]);
   readonly spendingResource = this.spendingClient.createResource(
     this.selectedPeriod,
@@ -42,7 +43,7 @@ export class Spending implements OnInit {
     this.pageService.setPageSubtitle('View your spending summary and breakdown by category.');
   }
 
-  selectPeriod(period: SpendingPeriod) {
+  selectPeriod(period: TimePeriod) {
     this.selectedPeriod.set(period);
   }
 

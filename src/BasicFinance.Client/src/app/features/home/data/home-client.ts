@@ -4,13 +4,14 @@ import { ListResult } from '../../../shared/api/list-result';
 import { Transaction } from '../../../shared/api/transactions/transactions';
 import { SpendingOverTimeSummary } from '../../../shared/api/spending/spending-over-time-summary';
 import { AccountAnalyticsResponse } from '../../../shared/api/accounts/account-analytics';
+import { DEFAULT_TIME_PERIOD } from '../../../shared/data/time-period';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HomeClient {
   balanceSummaryResource = httpResource<AccountAnalyticsResponse>(
-    () => 'api/accounts/balanceSummary?TimePeriod=Monthly',
+    () => `api/accounts/balanceSummary?TimePeriod=${DEFAULT_TIME_PERIOD}`,
   );
 
   transactionsResource = httpResource<ListResult<Transaction>>(
