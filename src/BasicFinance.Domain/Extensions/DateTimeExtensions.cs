@@ -10,7 +10,7 @@ public static class DateTimeExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the week it lies within.
         /// </summary>
-        public DateTime StartOfWeek => source.AddDays(-(int)source.DayOfWeek);
+        public DateTime StartOfWeek => source.AddDays(-(source.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)source.DayOfWeek - 1));
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the month it lies within.
@@ -20,7 +20,7 @@ public static class DateTimeExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the quarter it lies within.
         /// </summary>
-        public DateTime StartOfQuarter => new(source.Year, (source.Month + 3 - 1) / 3, 1, 0, 0, 0, source.Kind);
+        public DateTime StartOfQuarter => new(source.Year, (source.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, source.Kind);
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the year it lies within.
@@ -30,7 +30,7 @@ public static class DateTimeExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the week it lies within.
         /// </summary>
-        public DateTime EndOfWeek => source.StartOfWeek.AddDays(6).AddMilliseconds(-1);
+        public DateTime EndOfWeek => source.StartOfWeek.AddDays(6).Date.AddDays(1).AddMilliseconds(-1);
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the month it lies within.

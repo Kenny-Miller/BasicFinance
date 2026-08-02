@@ -43,6 +43,11 @@
     <!-- StyleCop -->
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.26.0.140279" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
+    <!-- Testing -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" />
     <!-- Wolverine -->
     <PackageVersion Include="WolverineFx" Version="6.0.1" />
     <PackageVersion Include="WolverineFx.Http.FluentValidation" Version="6.0.0" />
