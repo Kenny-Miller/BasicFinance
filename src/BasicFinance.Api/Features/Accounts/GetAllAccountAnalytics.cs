@@ -16,13 +16,45 @@ namespace BasicFinance.Api.Features.Accounts
     /// </summary>
     public static class GetAllAccountAnalytics
     {
+        /// <summary>
+        /// Query parameters for the <see cref="GetAllAccountAnalytics"/> endpoint.
+        /// </summary>
+        /// <param name="RecordedDate"></param>
+        /// <param name="TimePeriod"></param>
         public record Request(DateTimeOffset? RecordedDate, TimePeriod TimePeriod);
 
+        /// <summary>
+        /// Response Dto for the <see cref="GetAllAccountAnalytics"/> endpoint.
+        /// </summary>
+        /// <param name="CurrentPeriodBreakdown"></param>
+        /// <param name="PreviousPeriodBreakdown"></param>
         public record Response(TotalBalanceBreakdown CurrentPeriodBreakdown, TotalBalanceBreakdown PreviousPeriodBreakdown);
 
+        /// <summary>
+        /// Dto representing the total balance breakdown for a given period.
+        /// </summary>
+        /// <param name="Balance"></param>
+        /// <param name="AccountTypeBreakdowns"></param>
         public record TotalBalanceBreakdown(decimal Balance, Dictionary<string, AccountTypeBreakdown> AccountTypeBreakdowns);
 
+        /// <summary>
+        /// Dto representing the breakdown of balances for a specific account type.
+        /// </summary>
+        /// <param name="Balance"></param>
+        /// <param name="PercentageOfTotalBalance"></param>
+        /// <param name="Accounts"></param>
         public record AccountTypeBreakdown(decimal Balance, decimal PercentageOfTotalBalance, List<AccountDto> Accounts);
+
+        /// <summary>
+        /// Dto representing an individual account record.
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="AccountTypeCode"></param>
+        /// <param name="Institution"></param>
+        /// <param name="AccountName"></param>
+        /// <param name="Balance"></param>
+        /// <param name="PercentageOfTotalBalance"></param>
+        /// <param name="PercentageOfAccountTypeBalance"></param>
         public record AccountDto(
             Guid Id,
             string AccountTypeCode,
@@ -32,6 +64,16 @@ namespace BasicFinance.Api.Features.Accounts
             decimal PercentageOfTotalBalance,
             decimal PercentageOfAccountTypeBalance);
 
+        /// <summary>
+        /// Internal dto representing account data used for calculations and breakdowns.
+        /// </summary>
+        /// <param name="AccountId"></param>
+        /// <param name="AccountTypeCode"></param>
+        /// <param name="Institution"></param>
+        /// <param name="AccountName"></param>
+        /// <param name="Balance"></param>
+        /// <param name="AccountType"></param>
+        /// <param name="BalanceRecordedDate"></param>
         private sealed record AccountData(
             Guid AccountId,
             string AccountTypeCode,
@@ -113,10 +155,17 @@ namespace BasicFinance.Api.Features.Accounts
             return TypedResults.Ok(new Response(currentBreakdown, previousBreakdown));
         }
 
+        /// <summary>
+        /// Builds a total balance breakdown from a list of account data.
+        /// </summary>
+        /// <param name="accounts"></param>
+        /// <returns></returns>
         private static TotalBalanceBreakdown BuildBreakdown(List<AccountData> accounts)
         {
             if (accounts.Count == 0)
-                return new TotalBalanceBreakdown(0m, new Dictionary<string, AccountTypeBreakdown>());
+            {
+                return new(0m, []);
+            }
 
             var netWorth = accounts.Sum(a => IsLiability(a.AccountType) ? -a.Balance : a.Balance);
 
@@ -148,9 +197,14 @@ namespace BasicFinance.Api.Features.Accounts
                 })
                 .ToDictionary(x => x.Key, x => x.Breakdown);
 
-            return new TotalBalanceBreakdown(netWorth, breakdowns);
+            return new(netWorth, breakdowns);
         }
 
+        /// <summary>
+        /// Determines if the given account type is considered a liability.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private static bool IsLiability(AccountType type) => type == AccountType.CreditCard;
     }
 }
