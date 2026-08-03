@@ -2,18 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": [
-      "node",
-      "google.picker"
-    ]
+    "types": ["node", "google.picker"]
   },
-  "include": [
-    "src/**/*.ts",
-    "scripts/*.ts",
-    "config/*.ts",
-    "libs/ui/**/src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.spec.ts"
-  ]
+  "include": ["src/**/*.ts", "scripts/*.ts", "config/*.ts", "libs/ui/**/src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts"]
 }

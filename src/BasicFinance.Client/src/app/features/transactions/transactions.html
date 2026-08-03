@@ -9,7 +9,7 @@
   } @else if (transactions().length > 0) {
     <hlm-item-group>
       @for (transaction of transactions(); track transaction.id; let last = $last) {
-        <app-transaction-card [transaction]="transaction" />
+        <app-transaction-item [transaction]="transaction" />
 
         @if (!last) {
           <hlm-separator />

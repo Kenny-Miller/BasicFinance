@@ -55,12 +55,12 @@ dotnet test tests/BasicFinance.Infrastructure.UnitTests
 dotnet test  # runs all test projects
 ```
 
-| Test Project | Type | What it tests |
-|---|---|---|
-| `BasicFinance.Domain.UnitTests` | Unit | Domain models, extensions (no infra deps) |
-| `BasicFinance.Infrastructure.UnitTests` | Unit | EF Core query extensions (no DB) |
-| `BasicFinance.Api.IntegrationTests` | Integration | API vertical slices via `WebApplicationFactory` + TestContainers |
-| `BasicFinance.DataProcessor.IntegrationTests` | Integration | Wolverine message handlers via TestContainers |
+| Test Project                                  | Type        | What it tests                                                    |
+| --------------------------------------------- | ----------- | ---------------------------------------------------------------- |
+| `BasicFinance.Domain.UnitTests`               | Unit        | Domain models, extensions (no infra deps)                        |
+| `BasicFinance.Infrastructure.UnitTests`       | Unit        | EF Core query extensions (no DB)                                 |
+| `BasicFinance.Api.IntegrationTests`           | Integration | API vertical slices via `WebApplicationFactory` + TestContainers |
+| `BasicFinance.DataProcessor.IntegrationTests` | Integration | Wolverine message handlers via TestContainers                    |
 
 ### Unit Tests
 
@@ -68,7 +68,7 @@ Fast, isolated. Mock all infrastructure (DB, network, file system). See `tests/A
 
 ### Integration Tests
 
-Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Use TestContainers for real infrastructure (PostgreSQL, RabbitMQ). External services (Keycloak, Google SDK) are mocked.
+Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Use TestContainers for real infrastructure (PostgreSQL, RabbitMQ, Keycloak). External services (Google SDK) are mocked.
 
 ### Test Project Naming
 
@@ -86,7 +86,7 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 
 ## Conventions
 
-### C#
+### C #
 
 - `.editorconfig` enforces code style at build (`EnforceCodeStyleInBuild=true`). File-scoped namespaces, `var` preferred, expression-bodied properties, braces required.
 - NuGet versions centralized in `Directory.Packages.props` (CPM enabled, transitive pinning on).
@@ -100,3 +100,14 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 - Auth guard (`authGuard`) protects all routes. OAuth initialized via `provideAppInitializer`.
 - Feature modules follow `features/<domain>/` structure with colocated `*-client.ts` data services.
 - Tests use Jasmine + Karma. Spec files colocated as `*.spec.ts`.
+- All component CSS files are intentionally left empty. Styling is applied via Tailwind CSS v4 utility classes inline in templates.
+
+## Documentation
+
+Project documentation lives in `Documents/` organized in three tiers:
+
+| Folder    | Purpose                                                                                |
+| --------- | -------------------------------------------------------------------------------------- |
+| `Design/` | Loose, exploratory ideas. Hazy or unclear concepts that need refinement.               |
+| `Spec/`   | Refined specifications produced by research, analysis, and review of design documents. |
+| `Task/`   | Concrete, actionable implementation steps derived from specifications.                 |

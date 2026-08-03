@@ -3,12 +3,12 @@ namespace BasicFinance.Domain.Enums
     public enum TimePeriod
     {
         /// <summary>
-        /// Represents a weekl long time period.
+        /// Represents a week long time period.
         /// </summary>
         Weekly = 1,
 
         /// <summary>
-        /// Represents a monthl long time period.
+        /// Represents a month long time period.
         /// </summary>
         Monthly = 2,
 
