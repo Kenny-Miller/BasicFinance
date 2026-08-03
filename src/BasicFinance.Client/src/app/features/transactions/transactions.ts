@@ -12,7 +12,7 @@ import { PageService } from '../../core/page/page.service';
 import { Transaction } from '../../shared/api/transactions/transactions';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions/transactions-list-skeleton/transactions-list-skeleton';
 import { FilterBar } from './components/filter-bar/filter-bar';
-import { TransactionCard } from './components/transaction-card/transaction-card';
+import { TransactionItem } from '../../shared/ui/transactions/transaction-item/transaction-item';
 import { TransactionFilters, TransactionsClient } from './data/transactions-client';
 
 export interface SortOption {
@@ -34,7 +34,7 @@ const SORT_OPTIONS: SortOption[] = [
     HlmSelectImports,
     HlmItemImports,
     FormsModule,
-    TransactionCard,
+    TransactionItem,
     TransactionsListSkeleton,
     HlmSeparatorImports,
     HlmSkeletonImports,
