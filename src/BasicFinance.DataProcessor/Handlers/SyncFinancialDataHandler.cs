@@ -73,12 +73,17 @@ namespace BasicFinance.DataProcessor.Handlers
         private static async Task SyncAccounts(AppDbContext dbContext, ILogger logger, string userId, Guid userGoogleSpreadsheetId, List<AccountGoogleSpreadsheetRow> accountRows)
         {
             var existingAccountsDict = await dbContext.Accounts
-                   .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
-                   .Where(x => x.UserId == userId)
-                   .Where(x => x.IsActive)
-                   .ToDictionaryAsync(x => new { x.FinancialAccountId, x.Institution });
+                    .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
+                    .Where(x => x.UserId == userId)
+                    .Where(x => x.IsActive)
+                    .Include(x => x.Institution)
+                    .ToDictionaryAsync(x => new { x.FinancialAccountId, InstitutionName = x.Institution.Name });
 
-            var accountRowDict = accountRows.ToDictionary(x => new { x.FinancialAccountId, x.Institution });
+            var accountRowDict = accountRows.ToDictionary(x => new { x.FinancialAccountId, InstitutionName = x.Institution });
+
+            var institutionsDict = await dbContext.Institutions
+                .Where(x => x.IsActive)
+                .ToDictionaryAsync(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
             // Update existing accounts and remove accounts that no longer exist in the spreadsheet
             foreach (var (key, existingAccount) in existingAccountsDict)
@@ -131,6 +136,12 @@ namespace BasicFinance.DataProcessor.Handlers
                     continue;
                 }
 
+                if (!institutionsDict.TryGetValue(accountRow.Institution, out var institution))
+                {
+                    LogInstitutionNotFound(logger, userId, accountRow.Institution, accountRow.AccountName);
+                    continue;
+                }
+
                 var accountToCreate = new Account(
                    userGoogleSpreadsheetId,
                    accountType.Value,
@@ -139,7 +150,7 @@ namespace BasicFinance.DataProcessor.Handlers
                    accountRow.Balance,
                    accountRow.Currency,
                    accountRow.Notes,
-                   accountRow.Institution,
+                   institution.InstitutionId,
                    accountRow.FinancialAccountId,
                    accountRow.LastUpdateDated);
                 newAccounts.Add(accountToCreate);
@@ -164,6 +175,7 @@ namespace BasicFinance.DataProcessor.Handlers
                 .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
                 .Where(x => x.UserId == userId)
                 .Where(x => x.IsActive)
+                .Include(x => x.Institution)
                 .ToDictionaryAsync(x => x.AccountName);
 
             var existingTransactionsDict = await dbContext.Transactions
@@ -182,17 +194,17 @@ namespace BasicFinance.DataProcessor.Handlers
                     continue;
                 }
 
-                var transactionExportType = _accountExportToTransactionExportDict.TryGetValue(account.Institution, out var exportType) ? exportType : null;
+                var transactionExportType = _accountExportToTransactionExportDict.TryGetValue(account.Institution.Name, out var exportType) ? exportType : null;
                 if (transactionExportType == null)
                 {
-                    LogTransactionExportTypeNotFound(logger, userId, account.Institution, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
+                    LogTransactionExportTypeNotFound(logger, userId, account.Institution.Name, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
                     continue;
                 }
 
                 var deserializedAccountJson = JsonConvert.DeserializeObject(transactionRow.RawDataJson, transactionExportType);
                 if (deserializedAccountJson is not ITransactionExport export)
                 {
-                    LogTransactionExportTypeDeserializationFailed(logger, userId, account.Institution, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
+                    LogTransactionExportTypeDeserializationFailed(logger, userId, account.Institution.Name, transactionRow.Account, transactionRow.Description, transactionRow.Date, transactionRow.Amount);
                     continue;
                 }
 
@@ -324,6 +336,12 @@ namespace BasicFinance.DataProcessor.Handlers
             Level = LogLevel.Error,
             Message = "Failed to deserialize account export for institution {Institution} for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
         private static partial void LogAccountExportTypeDeserialilzationFailed(ILogger logger, string userId, string institution, string accountName);
+
+        [LoggerMessage(
+            EventName = nameof(LogInstitutionNotFound),
+            Level = LogLevel.Error,
+            Message = "Institution {Institution} not found for user {UserId}. AccountRow {Institution}-{AccountName} will be skipped.")]
+        private static partial void LogInstitutionNotFound(ILogger logger, string userId, string institution, string accountName);
 
         [LoggerMessage(
            EventName = nameof(LogAccountForTransactionNotFound),

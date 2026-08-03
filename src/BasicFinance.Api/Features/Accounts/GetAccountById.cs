@@ -47,13 +47,14 @@ public class GetAccountById
         var account = await dbContext.Accounts
             .AsNoTracking()
             .Include(x => x.AccountType)
+            .Include(x => x.Institution)
             .Where(x => x.AccountId == accountId)
             .Where(x => x.UserId == user.Id)
             .Where(x => x.IsActive)
             .Select(x => new AccountDto(
                 x.AccountId,
                 x.AccountType.AccountTypeCode,
-                x.Institution,
+                x.Institution.Name,
                 x.AccountName,
                 x.Balance,
                 x.BalanceRecordedDate))

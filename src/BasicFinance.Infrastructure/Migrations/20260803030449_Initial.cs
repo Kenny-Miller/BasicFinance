@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BasicFinance.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,6 +27,23 @@ namespace BasicFinance.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AccountTypes", x => x.AccountTypeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Institutions",
+                columns: table => new
+                {
+                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    InstitutionCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    LogoUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Institutions", x => x.InstitutionId);
                 });
 
             migrationBuilder.CreateTable(
@@ -94,7 +111,7 @@ namespace BasicFinance.Infrastructure.Migrations
                     Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Institution = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false),
                     FinancialAccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -108,6 +125,12 @@ namespace BasicFinance.Infrastructure.Migrations
                         column: x => x.AccountTypeId,
                         principalTable: "AccountTypes",
                         principalColumn: "AccountTypeId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Accounts_Institutions_InstitutionId",
+                        column: x => x.InstitutionId,
+                        principalTable: "Institutions",
+                        principalColumn: "InstitutionId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Accounts_UserGoogleSpreadsheets_UserGoogleSpreadsheetId",
@@ -191,6 +214,11 @@ namespace BasicFinance.Infrastructure.Migrations
                 column: "AccountTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Accounts_InstitutionId",
+                table: "Accounts",
+                column: "InstitutionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Accounts_UserGoogleSpreadsheetId",
                 table: "Accounts",
                 column: "UserGoogleSpreadsheetId");
@@ -231,6 +259,9 @@ namespace BasicFinance.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "AccountTypes");
+
+            migrationBuilder.DropTable(
+                name: "Institutions");
 
             migrationBuilder.DropTable(
                 name: "UserGoogleSpreadsheets");

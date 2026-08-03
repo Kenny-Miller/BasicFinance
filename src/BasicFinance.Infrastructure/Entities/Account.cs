@@ -74,11 +74,15 @@ namespace BasicFinance.Infrastructure.Entities
         public DateTimeOffset BalanceRecordedDate { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating the financial institution associated with the account (e.g., "Bank of America", "Chase").
+        /// Gets a value indicating the unique identifier of the financial institution associated with the account.
         /// </summary>
-        [Required]
-        [MaxLength(255)]
-        public required string Institution { get; init; }
+        public Guid InstitutionId { get; init; }
+
+        /// <summary>
+        /// Gets a value indicating the financial institution associated with the account.
+        /// </summary>
+        [ForeignKey(nameof(InstitutionId))]
+        public Institution Institution { get; init; } = null!;
 
         /// <summary>
         /// Gets a value indicating the unique identifier of the financial account associated with the account.
@@ -114,7 +118,7 @@ namespace BasicFinance.Infrastructure.Entities
         /// <param name="balance"></param>
         /// <param name="currency"></param>
         /// <param name="notes"></param>
-        /// <param name="institution"></param>
+        /// <param name="institutionId"></param>
         /// <param name="financialAccountId"></param>
         /// <param name="balanceRecordedDate"></param>
         [SetsRequiredMembers]
@@ -126,7 +130,7 @@ namespace BasicFinance.Infrastructure.Entities
             decimal balance,
             string currency,
             string notes,
-            string institution,
+            Guid institutionId,
             Guid financialAccountId,
             DateTimeOffset balanceRecordedDate)
         {
@@ -138,7 +142,7 @@ namespace BasicFinance.Infrastructure.Entities
             Currency = currency;
             Notes = notes;
             BalanceRecordedDate = balanceRecordedDate;
-            Institution = institution;
+            InstitutionId = institutionId;
             FinancialAccountId = financialAccountId;
         }
 

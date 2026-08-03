@@ -4,6 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BasicFinance.MigrationWorker
 {
+    /// <summary>
+    /// Represents a background service that performs database migrations and seeds initial data into the database
+    /// used by the BasicFinance application.
+    /// </summary>
+    /// <param name="serviceProvider"></param>
+    /// <param name="hostApplicationLifetime"></param>
+    /// <param name="logger"></param>
     public partial class Worker(
         IServiceProvider serviceProvider,
         IHostApplicationLifetime hostApplicationLifetime,
@@ -33,6 +40,7 @@ namespace BasicFinance.MigrationWorker
                     LogNoPendingMigrationsFound(logger);
                 }
 
+                await SeedInstitutionsAsync(dbContext, logger, stoppingToken);
                 await SeedAccountTypesAsync(dbContext, logger, stoppingToken);
                 await SeedTransactionCategoriesAsync(dbContext, logger, stoppingToken);
                 await SeedTransactionTypesAsync(dbContext, logger, stoppingToken);
@@ -49,6 +57,36 @@ namespace BasicFinance.MigrationWorker
             hostApplicationLifetime.StopApplication();
         }
 
+        /// <summary>
+        /// Seeds the Institutions table in the database with initial data if it is empty.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private static async Task SeedInstitutionsAsync(AppDbContext dbContext, ILogger<Worker> logger, CancellationToken cancellationToken)
+        {
+            var institutionsCount = await dbContext.Institutions.CountAsync(cancellationToken);
+            if (institutionsCount == 0)
+            {
+                LogDbSetSeedingStarted(logger, nameof(dbContext.Institutions));
+                dbContext.Institutions.AddRange(
+                    new("WF", "Wells Fargo", null),
+                    new("CHASE", "Chase", null),
+                    new("SCHW", "Charles Schwab", null));
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+                LogDbSetSeedingCompleted(logger, nameof(dbContext.Institutions));
+            }
+        }
+
+        /// <summary>
+        /// Seeds the AccountTypes table in the database with initial data if it is empty.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private static async Task SeedAccountTypesAsync(AppDbContext dbContext, ILogger<Worker> logger, CancellationToken cancellationToken)
         {
             // Seed account types
@@ -67,6 +105,13 @@ namespace BasicFinance.MigrationWorker
             }
         }
 
+        /// <summary>
+        /// Seeds the TransactionTypes table in the database with initial data if it is empty.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private static async Task SeedTransactionTypesAsync(AppDbContext dbContext, ILogger<Worker> logger, CancellationToken cancellationToken)
         {
             // Seed transaction types
@@ -83,6 +128,13 @@ namespace BasicFinance.MigrationWorker
             }
         }
 
+        /// <summary>
+        /// Seeds the TransactionCategories table in the database with initial data if it is empty.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private static async Task SeedTransactionCategoriesAsync(AppDbContext dbContext, ILogger<Worker> logger, CancellationToken cancellationToken)
         {
             // Seed transaction categories
@@ -130,12 +182,20 @@ namespace BasicFinance.MigrationWorker
             }
         }
 
+        /// <summary>
+        /// Logs the start of the database migration process.
+        /// </summary>
+        /// <param name="logger"></param>
         [LoggerMessage(
            EventName = nameof(LogMigrationStarted),
            Level = LogLevel.Information,
            Message = "Starting database migration...")]
         private static partial void LogMigrationStarted(ILogger logger);
 
+        /// <summary>
+        /// Logs that no pending migrations were found in the database.
+        /// </summary>
+        /// <param name="logger"></param>
         [LoggerMessage(
            EventName = nameof(LogNoPendingMigrationsFound),
            Level = LogLevel.Information,
@@ -148,18 +208,33 @@ namespace BasicFinance.MigrationWorker
            Message = "Database migration completed")]
         private static partial void LogMigrationCompleted(ILogger logger);
 
+        /// <summary>
+        /// Logs an error that occurred during the database migration process.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="ex"></param>
         [LoggerMessage(
            EventName = nameof(LogMigrationErrored),
            Level = LogLevel.Error,
            Message = "Database migration failed")]
         private static partial void LogMigrationErrored(ILogger logger, Exception ex);
 
+        /// <summary>
+        /// Logs the start of seeding a specific DbSet in the database.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="dbset"></param>
         [LoggerMessage(
            EventName = nameof(LogDbSetSeedingStarted),
            Level = LogLevel.Information,
            Message = "Seeding {Dbset}...")]
         private static partial void LogDbSetSeedingStarted(ILogger logger, string dbset);
 
+        /// <summary>
+        /// Logs the completion of seeding a specific DbSet in the database.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="dbset"></param>
         [LoggerMessage(
             EventName = nameof(LogDbSetSeedingCompleted),
             Level = LogLevel.Information,
