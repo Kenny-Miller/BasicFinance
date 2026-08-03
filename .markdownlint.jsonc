@@ -1,0 +1,45 @@
+{
+  "default": true,
+  "code-block-style": {
+    "style": "fenced"
+  },
+  "code-fence-style": {
+    "style": "backtick"
+  },
+  "emphasis-style": {
+    "style": "asterisk"
+  },
+  "heading-style": {
+    "style": "atx"
+  },
+  "hr-style": {
+    "style": "---"
+  },
+  "line-length": {
+    "line_length": 120
+  },
+  "link-image-style": {
+    "autolink": false,
+    "collapsed": false,
+    "shortcut": false,
+    "url_inline": false
+  },
+  "no-duplicate-heading": {
+    "siblings_only": true
+  },
+  "ol-prefix": {
+    "style": "ordered"
+  },
+  "strong-style": {
+    "style": "asterisk"
+  },
+  "table-column-style": {
+    "style": "compact"
+  },
+  "table-pipe-style": {
+    "style": "leading_and_trailing"
+  },
+  "ul-style": {
+    "style": "dash"
+  }
+}

@@ -86,7 +86,7 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 
 ## Conventions
 
-### C#
+### C #
 
 - `.editorconfig` enforces code style at build (`EnforceCodeStyleInBuild=true`). File-scoped namespaces, `var` preferred, expression-bodied properties, braces required.
 - NuGet versions centralized in `Directory.Packages.props` (CPM enabled, transitive pinning on).
