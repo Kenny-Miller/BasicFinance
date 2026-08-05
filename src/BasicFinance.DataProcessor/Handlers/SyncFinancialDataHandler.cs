@@ -35,7 +35,7 @@ namespace BasicFinance.DataProcessor.Handlers
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static async Task HandleAsync(SyncFinancialData message, GoogleServiceAccountClient googleClient, AppDbContext dbContext, ILogger logger)
+        public static async Task HandleAsync(SyncFinancialData message, IGoogleServiceAccountClient googleClient, AppDbContext dbContext, ILogger logger)
         {
             // Retrieve the Google Spreadsheet associated with the UserGoogleSpreadsheetId specified in the message.
             var userSpreadsheet = await dbContext.UserGoogleSpreadsheets.SingleAsync(x => x.UserGoogleSpreadsheetId == message.UserGoogleSpreadsheetId);

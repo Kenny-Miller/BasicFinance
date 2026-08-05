@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BasicFinance.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialGeneration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,7 @@ namespace BasicFinance.Infrastructure.Migrations
                 name: "Institutions",
                 columns: table => new
                 {
-                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false),
                     InstitutionCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     LogoUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),

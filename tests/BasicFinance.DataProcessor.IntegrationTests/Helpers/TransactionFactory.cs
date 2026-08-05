@@ -1,0 +1,30 @@
+using BasicFinance.Infrastructure.Entities;
+using TransactionTypeEnum = BasicFinance.Infrastructure.Enums.TransactionType;
+using TransactionCategoryEnum = BasicFinance.Infrastructure.Enums.TransactionCategory;
+
+namespace BasicFinance.DataProcessor.IntegrationTests.Helpers
+{
+    public static class TransactionFactory
+    {
+        public static Transaction Create(
+            string userId = "test-user-id",
+            Guid accountId = default,
+            long financialTransactionId = 0,
+            TransactionTypeEnum transactionType = TransactionTypeEnum.Debit,
+            TransactionCategoryEnum transactionCategory = TransactionCategoryEnum.Uncategorized,
+            DateTimeOffset? date = null,
+            decimal amount = 100.00m,
+            string description = "Test Transaction")
+        {
+            return new Transaction(
+                userId,
+                accountId == default ? Guid.NewGuid() : accountId,
+                financialTransactionId == 0 ? 1234567890L : financialTransactionId,
+                transactionType,
+                transactionCategory,
+                date ?? DateTimeOffset.UtcNow,
+                amount,
+                description);
+        }
+    }
+}

@@ -7,8 +7,7 @@ namespace BasicFinance.Infrastructure.Entities
     public class Institution : IEntity
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid InstitutionId { get; set; }
+        public Guid InstitutionId { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(25)]

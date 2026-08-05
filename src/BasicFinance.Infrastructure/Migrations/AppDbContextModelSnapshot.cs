@@ -154,8 +154,7 @@ namespace BasicFinance.Infrastructure.Migrations
                 {
                     b.Property<Guid>("InstitutionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("InstitutionCode")
                         .IsRequired()

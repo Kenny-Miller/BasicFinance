@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BasicFinance.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260803030449_Initial")]
-    partial class Initial
+    [Migration("20260805030119_InitialGeneration")]
+    partial class InitialGeneration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -157,8 +157,7 @@ namespace BasicFinance.Infrastructure.Migrations
                 {
                     b.Property<Guid>("InstitutionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("InstitutionCode")
                         .IsRequired()
