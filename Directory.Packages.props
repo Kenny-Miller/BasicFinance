@@ -47,6 +47,7 @@
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+    <PackageVersion Include="Respawn" Version="7.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.3.0" />

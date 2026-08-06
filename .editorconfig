@@ -304,7 +304,7 @@ dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_event = false:silent
 
-[**/tests/*.cs]
+[tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
 
 # Xml project files

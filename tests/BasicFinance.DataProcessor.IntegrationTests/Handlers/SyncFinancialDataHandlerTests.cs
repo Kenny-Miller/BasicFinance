@@ -1,3 +1,4 @@
+using BasicFinance.DataProcessor.IntegrationTests.Helpers;
 using BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 using BasicFinance.Domain.Commands;
 using Google.Apis.Sheets.v4.Data;
@@ -21,27 +22,33 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Handlers
             MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
                 .Returns((BatchGetValuesResponse?)null);
 
-            var command = new SyncFinancialData(Guid.NewGuid());
+            var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
 
             // Act
-            var result = await Host.InvokeMessageAndWaitAsync(command);
+            var result = await Host
+                .TrackActivity()
+                .IncludeExternalTransports()
+                .SendMessageAndWaitAsync(command);
 
             // Assert
             await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());
         }
 
         [Fact]
-        public async Task Handle_SpreadsheetNotFound_ReturnsWithoutProcessing2()
+        public async Task Handle_SpreadsheetNotFound_ReturnsWithoutProcessingA()
         {
             // Arrange
             var a = TestFixtureGuid;
             MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
                 .Returns((BatchGetValuesResponse?)null);
 
-            var command = new SyncFinancialData(Guid.NewGuid());
+            var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
 
             // Act
-            var result = await Host.InvokeMessageAndWaitAsync(command);
+            var result = await Host
+                .TrackActivity()
+                .IncludeExternalTransports()
+                .SendMessageAndWaitAsync(command);
 
             // Assert
             await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());

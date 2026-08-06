@@ -1,9 +1,14 @@
 ﻿using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Entities;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Helpers;
 
 public static class DbDataHelper
 {
+    public static readonly Guid TestUserGoogleSpreadsheetId = new("00000000-0000-0000-0000-000000000001");
+    public const string TestUserId = "test-user-id";
+    public const string TestGoogleSheetId = "test-sheet-id";
+
     /// <summary>
     /// Seeds the database with global data such as transaction types, institutions, account types, and transaction categories.
     /// </summary>
@@ -11,6 +16,11 @@ public static class DbDataHelper
     /// <returns></returns>
     public static async Task SeedGlobalDataAsync(AppDbContext dbContext)
     {
+        dbContext.UserGoogleSpreadsheets.Add(new(TestUserId, TestGoogleSheetId, "Test Spreadsheet")
+        {
+            UserGoogleSpreadsheetId = TestUserGoogleSpreadsheetId,
+        });
+
         dbContext.TransactionTypes.AddRange(
                     new("CR", "Credit"),
                     new("DR", "Debit"));

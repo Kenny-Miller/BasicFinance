@@ -1,4 +1,5 @@
-﻿using BasicFinance.DataProcessor.IntegrationTests.Helpers;
+﻿using System.Data.Common;
+using BasicFinance.DataProcessor.IntegrationTests.Helpers;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.SharedServiceDefaults;
@@ -8,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
+using Respawn;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -35,6 +38,16 @@ public class DataProcessorAppFixture : AppFixtureBase
     private static Lazy<Task> LazyStartContainersTask = new(() => Task.WhenAll(
         _sharedPostgreSqlContainer.StartAsync(),
         _sharedRabbitMqContainer.StartAsync()));
+
+    /// <summary>
+    /// Gets a Respawner instance used to reset the database state between test runs.
+    /// </summary>
+    public Respawner Respawner { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the database connection used by the Respawner.
+    /// </summary>
+    private DbConnection _respawnerDbConecction = default!;
 
     /// <inheritdoc/>
     protected override async Task RunPreFactoryInitializationAsync()
@@ -78,11 +91,15 @@ public class DataProcessorAppFixture : AppFixtureBase
         }
 
         await DbDataHelper.SeedGlobalDataAsync(dbContext);
+        _respawnerDbConecction = new NpgsqlConnection(dbContext.Database.GetConnectionString());
+        await _respawnerDbConecction.OpenAsync();
+        Respawner = await Respawner.CreateAsync(_respawnerDbConecction);
     }
 
     /// <inheritdoc/>
     public override async Task DisposeAsync()
     {
+        await _respawnerDbConecction.DisposeAsync();
         await _sharedPostgreSqlContainer.DisposeAsync();
         await _sharedRabbitMqContainer.DisposeAsync();
         await base.DisposeAsync();
@@ -94,16 +111,18 @@ public class DataProcessorAppFixture : AppFixtureBase
     /// <returns></returns>
     private Dictionary<string, string?> GetTestFixtureInMemoryCollectionSettings()
     {
-        var builder = new Npgsql.NpgsqlConnectionStringBuilder(_sharedPostgreSqlContainer.GetConnectionString())
+        var builder = new NpgsqlConnectionStringBuilder(_sharedPostgreSqlContainer.GetConnectionString())
         {
-            Database = $"DB_{TestFixtureGuid}"
+            Database = $"DB_{TestFixtureGuid}",
+            IncludeErrorDetail = true
         };
         var postgreSqlConnectionString = builder.ToString();
 
         return new()
         {
             [$"ConnectionStrings:{ServiceDiscoveryNames.BasicFinanceDb}"] = postgreSqlConnectionString,
-            [$"ConnectionStrings:{ServiceDiscoveryNames.RabbitMq}"] = _sharedRabbitMqContainer.GetConnectionString()
+            [$"ConnectionStrings:{ServiceDiscoveryNames.RabbitMq}"] = _sharedRabbitMqContainer.GetConnectionString(),
+            [$"Wolverine:QueueName"] = $"queue-{TestFixtureGuid}"
         };
     }
 }

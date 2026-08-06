@@ -10,7 +10,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
 
 ## Phase 1 — Domain and Infrastructure Foundations
 
-### T1.1: Create `Institution` entity
+### T1.1: Create `Institution` entity ✅
 
 - **File:** `src/BasicFinance.Infrastructure/Entities/Institution.cs`
 - **Depends on:** Nothing
@@ -20,7 +20,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Implement `IEntity` interface
   - Parameterized constructor plus private parameterless constructor for EF Core
 
-### T1.2: Refactor `Account` entity
+### T1.2: Refactor `Account` entity ✅
 
 - **File:** `src/BasicFinance.Infrastructure/Entities/Account.cs`
 - **Depends on:** T1.1
@@ -29,7 +29,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Add `Guid InstitutionId` and `Institution Institution` navigation with `[ForeignKey]` attribute
   - Update constructor: replace `string institution` parameter with `Guid institutionId`, assign `InstitutionId = institutionId`
 
-### T1.3: Add `Institutions` DbSet to `AppDbContext`
+### T1.3: Add `Institutions` DbSet to `AppDbContext` ✅
 
 - **File:** `src/BasicFinance.Infrastructure/AppDbContext.cs`
 - **Depends on:** T1.1
@@ -39,9 +39,9 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
 
 ---
 
-## Phase 2 — EF Core Migration
+## Phase 2 — EF Core Migration ✅
 
-### T2.1: Remove existing migration files
+### T2.1: Remove existing migration files ✅
 
 - **Location:** `src/BasicFinance.Infrastructure/Migrations/`
 - **Depends on:** T1.1, T1.2, T1.3
@@ -49,7 +49,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Delete all migration files and `AppDbContextModelSnapshot.cs`
   - Database data will be wiped and recreated
 
-### T2.2: Regenerate migration
+### T2.2: Regenerate migration ✅
 
 - **Command:** `dotnet ef migrations add Initial` (run from `src/BasicFinance.Infrastructure`)
 - **Depends on:** T2.1

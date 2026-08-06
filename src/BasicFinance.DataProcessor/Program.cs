@@ -23,7 +23,8 @@ builder.Services.AddSingleton<IGoogleServiceAccountClient, GoogleServiceAccountC
 builder.UseWolverine(x =>
 {
     x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
-    x.ListenToRabbitQueue("test-queue");
+    var queueName = builder.Configuration["Wolverine:QueueName"] ?? "test-queue";
+    x.ListenToRabbitQueue(queueName);
 
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .AutoProvision();

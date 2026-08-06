@@ -18,28 +18,23 @@ public abstract class AppFixtureBase : IAsyncLifetime
     /// Gets or sets the <see cref="Guid"/> representing the fixture instance that can be used to
     /// differentiate between different instances of the fixture in a test run.
     /// </summary>
-    public Guid TestFixtureGuid { get; init; } = Guid.NewGuid();
+    public Guid TestFixtureGuid { get; } = Guid.NewGuid();
 
     /// <summary>
     /// Gets or sets the <see cref="TimeProvider"/> instance to be used for time-related operations in the test fixture.
     /// </summary>
-    public TimeProvider TestFixtureTimeProvider { get; init; } = TimeProvider.System;
-
-    /// <summary>
-    /// Gets the <see cref="WebApplicationFactory{Program}"/> instance used to create application for integration testing.
-    /// </summary>
-    public WebApplicationFactory<Program> Factory => _factory ?? throw new InvalidOperationException("Factory is not initialized");
+    public TimeProvider TestFixtureTimeProvider { get; } = TimeProvider.System;
 
     /// <summary>
     /// Gets or sets the <see cref="WebApplicationFactory{Program}"/> instance used to create application for integration testing.
     /// </summary>
-    private WebApplicationFactory<Program>? _factory;
+    public WebApplicationFactory<Program> Factory { get; private set; } = default!;
 
     /// <inheritdoc/>
     public async Task InitializeAsync()
     {
         await RunPreFactoryInitializationAsync();
-        _factory = RunFactoryInitialization();
+        Factory = RunFactoryInitialization();
         var serviceProvider = MaterializeHost();
         await RunPostFactoryInitializationAsync(serviceProvider);
     }
