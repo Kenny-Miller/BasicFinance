@@ -1,3 +1,4 @@
+using BasicFinance.DataProcessor.IntegrationTests.Helpers;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
 
-public abstract class DataProcessorTestFixture : IClassFixture<DataProcessorClassFixture>, IAsyncLifetime, IAsyncDisposable
+public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessorClassFixture>, IAsyncLifetime, IAsyncDisposable
 {
     protected IHost Host { get; private set; } = default!;
     protected AppDbContext DbContext { get; private set; } = default!;
@@ -15,7 +16,7 @@ public abstract class DataProcessorTestFixture : IClassFixture<DataProcessorClas
     private readonly DataProcessorClassFixture _fixture;
     private IServiceScope _serviceScope { get; set; } = default!;
 
-    protected DataProcessorTestFixture(DataProcessorClassFixture fixture)
+    protected DataProcessorTestFixtureBase(DataProcessorClassFixture fixture)
     {
         _fixture = fixture;
     }
@@ -30,6 +31,8 @@ public abstract class DataProcessorTestFixture : IClassFixture<DataProcessorClas
         await Host.StartAsync();
 
         DbContext = _serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await DbDataHelper.SeedGlobalDataAsync(DbContext);
+
         MockGoogleServiceAccountClient = _serviceScope.ServiceProvider.GetRequiredService<IGoogleServiceAccountClient>();
     }
 
