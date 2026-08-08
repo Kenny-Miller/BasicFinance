@@ -17,7 +17,7 @@ namespace BasicFinance.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -51,10 +51,8 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<Guid>("FinancialAccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Institution")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                    b.Property<Guid>("InstitutionId")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -80,6 +78,8 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.HasKey("AccountId");
 
                     b.HasIndex("AccountTypeId");
+
+                    b.HasIndex("InstitutionId");
 
                     b.HasIndex("UserGoogleSpreadsheetId");
 
@@ -148,6 +148,40 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.HasKey("AccountTypeId");
 
                     b.ToTable("AccountTypes");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Institution", b =>
+                {
+                    b.Property<Guid>("InstitutionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InstitutionCode")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset>("SystemCreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SystemModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("InstitutionId");
+
+                    b.ToTable("Institutions");
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Transaction", b =>
@@ -315,6 +349,12 @@ namespace BasicFinance.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BasicFinance.Infrastructure.Entities.Institution", "Institution")
+                        .WithMany("Accounts")
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BasicFinance.Infrastructure.Entities.UserGoogleSpreadsheet", "UserGoogleSpreadsheet")
                         .WithMany("Accounts")
                         .HasForeignKey("UserGoogleSpreadsheetId")
@@ -322,6 +362,8 @@ namespace BasicFinance.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("AccountType");
+
+                    b.Navigation("Institution");
 
                     b.Navigation("UserGoogleSpreadsheet");
                 });
@@ -372,6 +414,11 @@ namespace BasicFinance.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
+                {
+                    b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Institution", b =>
                 {
                     b.Navigation("Accounts");
                 });

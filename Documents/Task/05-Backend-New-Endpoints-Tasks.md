@@ -10,17 +10,17 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
 
 ## Phase 1 — Domain and Infrastructure Foundations
 
-### T1.1: Create `Institution` entity
+### T1.1: Create `Institution` entity ✅
 
 - **File:** `src/BasicFinance.Infrastructure/Entities/Institution.cs`
 - **Depends on:** Nothing
 - **Details:**
-  - Properties: `InstitutionId` (Guid, PK), `InstitutionCode` (string, required, max 25, e.g. "WF"), `Name` (string, required, max 255), `LogoUrl` (string?, max 500), `Notes` (string?, max 255)
+  - Properties: `InstitutionId` (Guid, PK), `InstitutionCode` (string, required, max 25, e.g. "WF"), `Name` (string, required, max 255), `LogoUrl` (string?, max 500),
   - `ICollection<Account> Accounts` navigation property
   - Implement `IEntity` interface
   - Parameterized constructor plus private parameterless constructor for EF Core
 
-### T1.2: Refactor `Account` entity
+### T1.2: Refactor `Account` entity ✅
 
 - **File:** `src/BasicFinance.Infrastructure/Entities/Account.cs`
 - **Depends on:** T1.1
@@ -29,7 +29,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Add `Guid InstitutionId` and `Institution Institution` navigation with `[ForeignKey]` attribute
   - Update constructor: replace `string institution` parameter with `Guid institutionId`, assign `InstitutionId = institutionId`
 
-### T1.3: Add `Institutions` DbSet to `AppDbContext`
+### T1.3: Add `Institutions` DbSet to `AppDbContext` ✅
 
 - **File:** `src/BasicFinance.Infrastructure/AppDbContext.cs`
 - **Depends on:** T1.1
@@ -37,37 +37,11 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Add `public DbSet<Institution> Institutions { get; init; } = null!;`
   - Do NOT add `OnModelCreating` configuration
 
-### T1.4: Add `AddPeriod` extension to `DateTimeExtensions`
-
-- **File:** `src/BasicFinance.Domain/Extensions/DateTimeExtensions.cs`
-- **Depends on:** Nothing
-- **Details:**
-  - Method signature: `public static DateTime AddPeriod(this DateTime date, TimePeriod timePeriod)`
-  - Weekly maps to `AddDays(7)`, Monthly to `AddMonths(1)`, Quarterly to `AddMonths(3)`, Yearly to `AddYears(1)`
-  - Throw `ArgumentOutOfRangeException` on unknown enum value
-
-### T1.5: Add `AddPeriod` extension to `DateTimeOffsetExtensions`
-
-- **File:** `src/BasicFinance.Domain/Extensions/DateTimeOffsetExtensions.cs`
-- **Depends on:** Nothing
-- **Details:**
-  - Same logic as T1.4 but for `DateTimeOffset`
-  - Method signature: `public static DateTimeOffset AddPeriod(this DateTimeOffset date, TimePeriod timePeriod)`
-
-### T1.6: Create `PeriodBoundaryHelper`
-
-- **File:** `src/BasicFinance.Domain/Helpers/PeriodBoundaryHelper.cs`
-- **Depends on:** T1.4, T1.5
-- **Details:**
-  - `GetCurrentAndPreviousPeriod(DateTime now, TimePeriod)` returns `(DateTimeRange CurrentPeriod, DateTimeRange PreviousPeriod)`
-  - `GetCurrentAndPreviousPeriod(DateTimeOffset now, TimePeriod)` returns `(DateTimeOffsetRange CurrentPeriod, DateTimeOffsetRange PreviousPeriod)`
-  - `GetExpectedDaysInPeriod(DateTime now, TimePeriod)` returns int (7 for weekly, days in month for monthly, quarter days for quarterly, 365 or 366 for yearly)
-
 ---
 
-## Phase 2 — EF Core Migration
+## Phase 2 — EF Core Migration ✅
 
-### T2.1: Remove existing migration files
+### T2.1: Remove existing migration files ✅
 
 - **Location:** `src/BasicFinance.Infrastructure/Migrations/`
 - **Depends on:** T1.1, T1.2, T1.3
@@ -75,7 +49,7 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
   - Delete all migration files and `AppDbContextModelSnapshot.cs`
   - Database data will be wiped and recreated
 
-### T2.2: Regenerate migration
+### T2.2: Regenerate migration ✅
 
 - **Command:** `dotnet ef migrations add Initial` (run from `src/BasicFinance.Infrastructure`)
 - **Depends on:** T2.1
@@ -85,6 +59,32 @@ Concrete, actionable implementation tasks derived from [Backend New Endpoints Sp
 ---
 
 ## Phase 3 — Update Existing Endpoints and DataProcessor
+
+### T3.0a: Add `AddPeriod` extension to `DateTimeExtensions`
+
+- **File:** `src/BasicFinance.Domain/Extensions/DateTimeExtensions.cs`
+- **Depends on:** Nothing
+- **Details:**
+  - Method signature: `public static DateTime AddPeriod(this DateTime date, TimePeriod timePeriod)`
+  - Weekly maps to `AddDays(7)`, Monthly to `AddMonths(1)`, Quarterly to `AddMonths(3)`, Yearly to `AddYears(1)`
+  - Throw `ArgumentOutOfRangeException` on unknown enum value
+
+### T3.0b: Add `AddPeriod` extension to `DateTimeOffsetExtensions`
+
+- **File:** `src/BasicFinance.Domain/Extensions/DateTimeOffsetExtensions.cs`
+- **Depends on:** Nothing
+- **Details:**
+  - Same logic as T1.4 but for `DateTimeOffset`
+  - Method signature: `public static DateTimeOffset AddPeriod(this DateTimeOffset date, TimePeriod timePeriod)`
+
+### T3.0c: Create `PeriodBoundaryHelper`
+
+- **File:** `src/BasicFinance.Domain/Helpers/PeriodBoundaryHelper.cs`
+- **Depends on:** T1.4, T1.5
+- **Details:**
+  - `GetCurrentAndPreviousPeriod(DateTime now, TimePeriod)` returns `(DateTimeRange CurrentPeriod, DateTimeRange PreviousPeriod)`
+  - `GetCurrentAndPreviousPeriod(DateTimeOffset now, TimePeriod)` returns `(DateTimeOffsetRange CurrentPeriod, DateTimeOffsetRange PreviousPeriod)`
+  - `GetExpectedDaysInPeriod(DateTime now, TimePeriod)` returns int (7 for weekly, days in month for monthly, quarter days for quarterly, 365 or 366 for yearly)
 
 ### T3.1: Update `ListAccounts` endpoint
 

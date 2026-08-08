@@ -107,13 +107,14 @@ namespace BasicFinance.Api.Features.Accounts
 
             var currentPeriodAccountData = await dbContext.Accounts
                 .AsNoTracking()
+                .Include(a => a.Institution)
                 .Where(a => a.UserId == user.Id)
                 .Where(a => a.IsActive)
                 .Where(a => a.BalanceRecordedDate >= currentRange.RangeStartDate && a.BalanceRecordedDate < currentRange.RangeEndDate)
                 .Select(a => new AccountData(
                     a.AccountId,
                     a.AccountType.AccountTypeCode,
-                    a.Institution,
+                    a.Institution.Name,
                     a.AccountName,
                     a.Balance,
                     (AccountType)a.AccountTypeId,
@@ -133,6 +134,7 @@ namespace BasicFinance.Api.Features.Accounts
 
             var previousPeriodAccountData = await dbContext.AccountBalanceHistories
                 .AsNoTracking()
+                .Include(h => h.Account.Institution)
                 .Join(
                     latestDatesQuery,
                     h => new { h.AccountId, h.BalanceRecordedDate },
@@ -141,7 +143,7 @@ namespace BasicFinance.Api.Features.Accounts
                 .Select(h => new AccountData(
                     h.AccountId,
                     h.Account.AccountType.AccountTypeCode,
-                    h.Account.Institution,
+                    h.Account.Institution.Name,
                     h.Account.AccountName,
                     h.Balance,
                     (AccountType)h.Account.AccountTypeId,

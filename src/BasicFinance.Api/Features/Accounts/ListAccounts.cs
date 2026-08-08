@@ -71,6 +71,7 @@ namespace BasicFinance.Api.Features.Accounts
 
             var baseQuery = dbContext.Accounts
                 .AsNoTracking()
+                .Include(x => x.Institution)
                 .Where(x => x.UserId == user.Id)
                 .Where(x => x.IsActive);
 
@@ -85,7 +86,7 @@ namespace BasicFinance.Api.Features.Accounts
                 .Select(x => new AccountDto(
                     x.AccountId,
                     x.AccountType.AccountTypeCode,
-                    x.Institution,
+                    x.Institution.Name,
                     x.AccountName,
                     x.Balance,
                     x.BalanceRecordedDate))
@@ -104,9 +105,9 @@ namespace BasicFinance.Api.Features.Accounts
                 query = query.Where(x => x.AccountType.AccountTypeCode == request.AccountTypeCode);
             }
 
-            if (string.IsNullOrEmpty(request.Institution))
+            if (!string.IsNullOrEmpty(request.Institution))
             {
-                query = query.Where(x => x.Institution == request.Institution);
+                query = query.Where(x => x.Institution.Name == request.Institution);
             }
 
             return query;
@@ -119,7 +120,7 @@ namespace BasicFinance.Api.Features.Accounts
         {
             [nameof(AccountDto.Id)] = x => x.AccountId,
             [nameof(AccountDto.AccountTypeCode)] = x => x.AccountType.AccountTypeCode,
-            [nameof(AccountDto.Institution)] = x => x.Institution,
+            [nameof(AccountDto.Institution)] = x => x.Institution.Name,
             [nameof(AccountDto.AccountName)] = x => x.AccountName,
             [nameof(AccountDto.Balance)] = x => x.Balance,
             [nameof(AccountDto.BalanceRecordedDate)] = x => x.BalanceRecordedDate,

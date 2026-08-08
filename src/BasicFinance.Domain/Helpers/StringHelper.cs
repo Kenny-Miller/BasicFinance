@@ -11,7 +11,7 @@ namespace BasicFinance.Infrastructure.Helpers
         /// <returns></returns>
         public static string NormalizeWhiteSpace(string str)
         {
-            var strBuilder = new StringBuilder(str);
+            var strBuilder = new StringBuilder();
             var prevIsWhiteSpace = false;
             foreach (var c in str)
             {

@@ -13,6 +13,7 @@ namespace BasicFinance.Infrastructure
         public DbSet<Transaction> Transactions { get; init; } = null!;
         public DbSet<TransactionCategory> TransactionCategories { get; init; } = null!;
         public DbSet<TransactionType> TransactionTypes { get; init; } = null!;
+        public DbSet<Institution> Institutions { get; init; } = null!;
 
         /// <summary>
         /// Shared instance of the <see cref="TrimWhitespaceInterceptor"/> to be used by all DbContext instances. Will 

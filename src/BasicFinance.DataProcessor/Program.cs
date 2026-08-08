@@ -4,7 +4,6 @@ using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.ServiceDefaults;
 using BasicFinance.SharedServiceDefaults;
 using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using Wolverine;
 using Wolverine.RabbitMQ;
 
@@ -19,25 +18,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.EnrichNpgsqlDbContext<AppDbContext>();
 
 builder.Services.AddGoogleServiceAccountCredentials();
-builder.Services.AddSingleton<GoogleServiceAccountClient>();
+builder.Services.AddSingleton<IGoogleServiceAccountClient, GoogleServiceAccountClient>();
 
-builder.Host.UseWolverine(x =>
+builder.UseWolverine(x =>
 {
     x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
-    x.ListenToRabbitQueue("test-queue");
+    var queueName = builder.Configuration["Wolverine:QueueName"] ?? "test-queue";
+    x.ListenToRabbitQueue(queueName);
+
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .AutoProvision();
     x.UseRuntimeCompilation();
 });
 
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
-
-app.UseHttpsRedirection();
-app.MapDefaultEndpoints();
-
 await app.RunAsync();
