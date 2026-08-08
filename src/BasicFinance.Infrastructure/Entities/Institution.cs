@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace BasicFinance.Infrastructure.Entities
@@ -7,7 +6,7 @@ namespace BasicFinance.Infrastructure.Entities
     public class Institution : IEntity
     {
         [Key]
-        public Guid InstitutionId { get; set; } = Guid.NewGuid();
+        public Guid InstitutionId { get; set; }
 
         [Required]
         [MaxLength(25)]
