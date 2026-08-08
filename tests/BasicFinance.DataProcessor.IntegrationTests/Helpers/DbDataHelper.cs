@@ -1,5 +1,4 @@
 ﻿using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Helpers;
 
@@ -13,8 +12,9 @@ public static class DbDataHelper
     /// Seeds the database with global data such as transaction types, institutions, account types, and transaction categories.
     /// </summary>
     /// <param name="dbContext"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task SeedGlobalDataAsync(AppDbContext dbContext)
+    public static async Task SeedGlobalDataAsync(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
         dbContext.UserGoogleSpreadsheets.Add(new(TestUserId, TestGoogleSheetId, "Test Spreadsheet")
         {
@@ -71,6 +71,6 @@ public static class DbDataHelper
                    new("REIMBURSEMENT", "Reimbursement"),
                    new("SAVINGS", "Savings Transfer"));
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

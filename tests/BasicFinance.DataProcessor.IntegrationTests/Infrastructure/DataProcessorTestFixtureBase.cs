@@ -3,6 +3,7 @@ using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSubstitute;
 using Xunit;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
@@ -38,10 +39,9 @@ public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessor
 
     public async ValueTask DisposeAsync()
     {
+        MockGoogleServiceAccountClient.ClearReceivedCalls();
         await DbContext.DisposeAsync();
-        await Host.StopAsync();
         _serviceScope?.Dispose();
-
         GC.SuppressFinalize(this);
     }
 }

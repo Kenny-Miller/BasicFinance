@@ -22,7 +22,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     public async Task Handle_SpreadsheetNotFound_ReturnsWithoutProcessing()
     {
         // Arrange
-        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
             .Returns((BatchGetValuesResponse?)null);
 
         var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
@@ -34,9 +37,12 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .SendMessageAndWaitAsync(command);
 
         // Assert
-        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
 
-        var accounts = await DbContext.Accounts.ToListAsync();
+        var accounts = await DbContext.Accounts.ToListAsync(TestContext.Current.CancellationToken);
         Assert.Empty(accounts);
     }
 
@@ -59,7 +65,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
                 rawDataJson)
             .Build();
 
-        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
             .Returns(response);
 
         var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
@@ -71,10 +80,13 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .SendMessageAndWaitAsync(command);
 
         // Assert
-        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
 
         var account = await DbContext.Accounts
-            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId);
+            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(account);
         Assert.Equal("Test Checking", account.AccountName);
@@ -109,7 +121,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
                 transactionRawDataJson)
             .Build();
 
-        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
             .Returns(response);
 
         var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
@@ -121,10 +136,13 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .SendMessageAndWaitAsync(command);
 
         // Assert
-        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
 
         var transaction = await DbContext.Transactions
-            .FirstOrDefaultAsync(t => t.FinancialTransactionId == 12345);
+            .FirstOrDefaultAsync(t => t.FinancialTransactionId == 12345, TestContext.Current.CancellationToken);
 
         Assert.NotNull(transaction);
         Assert.Equal("Test Purchase", transaction.Description);
@@ -133,17 +151,17 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     }
 
     [Fact]
-    public async Task Handle_RemoveAccountFromSpreadsheet_DeactivatesAccount()
+    public async Task Handle_RemoveAccountFromSpreadsheet_HardDeletesAccount()
     {
         // Arrange - seed an account that will be removed
         var financialAccountId = Guid.NewGuid();
         var accountRawDataJson = WellsFargoExportHelpers.CreateAccountExportJson();
 
         var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
-            .FirstAsync(u => u.UserGoogleSpreadsheetId == DbDataHelper.TestUserGoogleSpreadsheetId);
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == DbDataHelper.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
 
         var institution = await DbContext.Institutions
-            .FirstAsync(i => i.Name == "Wells Fargo");
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
 
         var seedAccount = new Account(
             userSpreadsheet.UserGoogleSpreadsheetId,
@@ -158,10 +176,13 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             DateTime.UtcNow);
 
         DbContext.Accounts.Add(seedAccount);
-        await DbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act - send empty spreadsheet (no accounts)
-        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
             .Returns(new SpreadsheetDataBuilder().Build());
 
         var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
@@ -172,11 +193,15 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .SendMessageAndWaitAsync(command);
 
         // Assert
-        var account = await DbContext.Accounts
-            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId);
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
 
-        Assert.NotNull(account);
-        Assert.False(account.IsActive);
+        var account = await DbContext.Accounts
+            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
+
+        Assert.Null(account);
     }
 
     [Fact]
@@ -198,7 +223,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
                 rawDataJson)
             .Build();
 
-        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>())
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
             .Returns(response);
 
         var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
@@ -210,10 +235,13 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .SendMessageAndWaitAsync(command);
 
         // Assert
-        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>());
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
 
         var account = await DbContext.Accounts
-            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId);
+            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
 
         Assert.Null(account);
     }
