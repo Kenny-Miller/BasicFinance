@@ -1,24 +1,15 @@
-﻿using BasicFinance.Infrastructure;
+using BasicFinance.DataProcessor.IntegrationTests.Constants;
+using BasicFinance.Infrastructure;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Helpers;
 
-public static class DbDataHelper
+public static class DbSeedHelper
 {
-    public static readonly Guid TestUserGoogleSpreadsheetId = new("00000000-0000-0000-0000-000000000001");
-    public const string TestUserId = "test-user-id";
-    public const string TestGoogleSheetId = "test-sheet-id";
-
-    /// <summary>
-    /// Seeds the database with global data such as transaction types, institutions, account types, and transaction categories.
-    /// </summary>
-    /// <param name="dbContext"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     public static async Task SeedGlobalDataAsync(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        dbContext.UserGoogleSpreadsheets.Add(new(TestUserId, TestGoogleSheetId, "Test Spreadsheet")
+        dbContext.UserGoogleSpreadsheets.Add(new(TestConstants.TestUserId, TestConstants.TestGoogleSheetId, "Test Spreadsheet")
         {
-            UserGoogleSpreadsheetId = TestUserGoogleSpreadsheetId,
+            UserGoogleSpreadsheetId = TestConstants.TestUserGoogleSpreadsheetId,
         });
 
         dbContext.TransactionTypes.AddRange(

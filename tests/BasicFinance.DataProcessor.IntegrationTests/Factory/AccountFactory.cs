@@ -1,7 +1,7 @@
 using BasicFinance.Infrastructure.Entities;
 using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.Helpers
+namespace BasicFinance.DataProcessor.IntegrationTests.Factory
 {
     public static class AccountFactory
     {

@@ -32,7 +32,7 @@ public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessor
         await Host.StartAsync();
 
         DbContext = _serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await DbDataHelper.SeedGlobalDataAsync(DbContext);
+        await DbSeedHelper.SeedGlobalDataAsync(DbContext);
 
         MockGoogleServiceAccountClient = _serviceScope.ServiceProvider.GetRequiredService<IGoogleServiceAccountClient>();
     }

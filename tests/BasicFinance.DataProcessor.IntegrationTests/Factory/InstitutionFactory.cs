@@ -1,7 +1,7 @@
 using BasicFinance.Infrastructure.Entities;
 using BasicFinance.Infrastructure.Enums;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.Helpers
+namespace BasicFinance.DataProcessor.IntegrationTests.Factory
 {
     public static class InstitutionFactory
     {

@@ -1,7 +1,7 @@
-using BasicFinance.DataProcessor.IntegrationTests.Helpers;
+using BasicFinance.DataProcessor.IntegrationTests.Constants;
+using BasicFinance.DataProcessor.IntegrationTests.Factory;
 using BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
 using BasicFinance.Domain.Commands;
-using BasicFinance.Infrastructure.Entities;
 using Google.Apis.Sheets.v4.Data;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -28,7 +28,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             Arg.Any<CancellationToken>())
             .Returns((BatchGetValuesResponse?)null);
 
-        var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
         var result = await Host
@@ -51,9 +51,9 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     {
         // Arrange
         var financialAccountId = Guid.NewGuid();
-        var rawDataJson = WellsFargoExportHelpers.CreateAccountExportJson();
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
 
-        var response = new SpreadsheetDataBuilder()
+        var response = new SpreadsheetDataFactory()
             .AddAccountRow(
                 "Test Checking",
                 1000m,
@@ -71,7 +71,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             Arg.Any<CancellationToken>())
             .Returns(response);
 
-        var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
         var result = await Host
@@ -99,10 +99,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     {
         // Arrange
         var financialAccountId = Guid.NewGuid();
-        var accountRawDataJson = WellsFargoExportHelpers.CreateAccountExportJson();
-        var transactionRawDataJson = WellsFargoExportHelpers.CreateTransactionExportJson(12345);
+        var accountRawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
+        var transactionRawDataJson = GoogleSpreadsheetExportFactory.CreateTransactionExportJson(12345);
 
-        var response = new SpreadsheetDataBuilder()
+        var response = new SpreadsheetDataFactory()
             .AddAccountRow(
                 "Test Checking",
                 1000m,
@@ -127,7 +127,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             Arg.Any<CancellationToken>())
             .Returns(response);
 
-        var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
         var result = await Host
@@ -155,18 +155,18 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     {
         // Arrange - seed an account that will be removed
         var financialAccountId = Guid.NewGuid();
-        var accountRawDataJson = WellsFargoExportHelpers.CreateAccountExportJson();
+        var accountRawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
 
         var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
-            .FirstAsync(u => u.UserGoogleSpreadsheetId == DbDataHelper.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
 
         var institution = await DbContext.Institutions
             .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
 
-        var seedAccount = new Account(
+        var seedAccount = AccountFactory.Create(
             userSpreadsheet.UserGoogleSpreadsheetId,
             AccountType.Checking,
-            DbDataHelper.TestUserId,
+            TestConstants.TestUserId,
             "To Be Removed",
             500m,
             "USD",
@@ -183,9 +183,9 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             Arg.Any<string>(),
             Arg.Any<IReadOnlyList<string>>(),
             Arg.Any<CancellationToken>())
-            .Returns(new SpreadsheetDataBuilder().Build());
+            .Returns(new SpreadsheetDataFactory().Build());
 
-        var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         var result = await Host
             .TrackActivity()
@@ -209,9 +209,9 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     {
         // Arrange
         var financialAccountId = Guid.NewGuid();
-        var rawDataJson = WellsFargoExportHelpers.CreateAccountExportJson();
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
 
-        var response = new SpreadsheetDataBuilder()
+        var response = new SpreadsheetDataFactory()
             .AddAccountRow(
                 "Unknown Account",
                 1000m,
@@ -226,7 +226,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
             .Returns(response);
 
-        var command = new SyncFinancialData(DbDataHelper.TestUserGoogleSpreadsheetId);
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
         var result = await Host

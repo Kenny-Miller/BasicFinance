@@ -1,6 +1,6 @@
 using BasicFinance.Infrastructure.Entities;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.Helpers
+namespace BasicFinance.DataProcessor.IntegrationTests.Factory
 {
     public static class UserGoogleSpreadsheetFactory
     {
