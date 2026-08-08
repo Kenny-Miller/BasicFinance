@@ -33,7 +33,8 @@ namespace BasicFinance.Infrastructure.Migrations
                 name: "Institutions",
                 columns: table => new
                 {
-                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InstitutionId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     InstitutionCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     LogoUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -111,7 +112,7 @@ namespace BasicFinance.Infrastructure.Migrations
                     Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    InstitutionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InstitutionId = table.Column<int>(type: "integer", nullable: false),
                     FinancialAccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),

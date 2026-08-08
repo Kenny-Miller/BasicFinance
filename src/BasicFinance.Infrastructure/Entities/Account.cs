@@ -76,7 +76,7 @@ namespace BasicFinance.Infrastructure.Entities
         /// <summary>
         /// Gets a value indicating the unique identifier of the financial institution associated with the account.
         /// </summary>
-        public Guid InstitutionId { get; init; }
+        public int InstitutionId { get; init; }
 
         /// <summary>
         /// Gets a value indicating the financial institution associated with the account.
@@ -130,7 +130,7 @@ namespace BasicFinance.Infrastructure.Entities
             decimal balance,
             string currency,
             string notes,
-            Guid institutionId,
+            int institutionId,
             Guid financialAccountId,
             DateTimeOffset balanceRecordedDate)
         {
