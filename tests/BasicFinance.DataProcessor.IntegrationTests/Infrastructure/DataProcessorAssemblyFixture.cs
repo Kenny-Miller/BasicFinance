@@ -2,8 +2,8 @@ using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-[assembly: AssemblyFixture(typeof(BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2.DataProcessorAssemblyFixture))]
-namespace BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
+[assembly: AssemblyFixture(typeof(BasicFinance.DataProcessor.IntegrationTests.Infrastructure.DataProcessorAssemblyFixture))]
+namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
 public sealed class DataProcessorAssemblyFixture : IAsyncLifetime, IAsyncDisposable
 {
@@ -20,12 +20,12 @@ public sealed class DataProcessorAssemblyFixture : IAsyncLifetime, IAsyncDisposa
     /// <summary>
     /// Gets a shared instance of the assembly wide PostgreSQL container for the running integration tests.
     /// </summary>
-    private PostgreSqlContainer _postgreSQL = new PostgreSqlBuilder("postgres:17-alpine").Build();
+    private readonly PostgreSqlContainer _postgreSQL = new PostgreSqlBuilder("postgres:17-alpine").Build();
 
     /// <summary>
     /// Gets a shared instance of the assembly wide RabbitMQ container for the running integration tests.
     /// </summary>
-    private RabbitMqContainer _rabbitMq = new RabbitMqBuilder("rabbitmq:3-management-alpine").Build();
+    private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder("rabbitmq:3-management-alpine").Build();
 
     /// <inheritdoc/>
     public async ValueTask InitializeAsync()

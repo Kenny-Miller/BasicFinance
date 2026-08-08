@@ -1,6 +1,6 @@
 using BasicFinance.Infrastructure.Entities;
-using TransactionTypeEnum = BasicFinance.Infrastructure.Enums.TransactionType;
 using TransactionCategoryEnum = BasicFinance.Infrastructure.Enums.TransactionCategory;
+using TransactionTypeEnum = BasicFinance.Infrastructure.Enums.TransactionType;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Factory
 {

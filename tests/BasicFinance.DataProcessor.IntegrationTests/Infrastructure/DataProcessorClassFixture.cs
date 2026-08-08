@@ -11,7 +11,7 @@ using Npgsql;
 using Respawn;
 using Xunit;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
+namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
 public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
 {

@@ -1,6 +1,6 @@
 using BasicFinance.DataProcessor.IntegrationTests.Constants;
 using BasicFinance.DataProcessor.IntegrationTests.Factory;
-using BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
+using BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 using BasicFinance.Domain.Commands;
 using Google.Apis.Sheets.v4.Data;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +31,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);

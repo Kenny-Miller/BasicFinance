@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using Xunit;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.InfrastructureV2;
+namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
 public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessorClassFixture>, IAsyncLifetime, IAsyncDisposable
 {
@@ -15,7 +15,7 @@ public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessor
     protected IGoogleServiceAccountClient MockGoogleServiceAccountClient { get; private set; } = default!;
 
     private readonly DataProcessorClassFixture _fixture;
-    private IServiceScope _serviceScope { get; set; } = default!;
+    private IServiceScope _serviceScope = default!;
 
     protected DataProcessorTestFixtureBase(DataProcessorClassFixture fixture)
     {

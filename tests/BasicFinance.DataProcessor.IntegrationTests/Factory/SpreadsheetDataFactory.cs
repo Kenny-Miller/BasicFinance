@@ -68,12 +68,12 @@ public class SpreadsheetDataFactory
                 new ValueRange
                 {
                     Range = "Accounts!A1:I100",
-                    Values = _accountRows.Cast<IList<object>>().ToList()
+                    Values = [.. _accountRows.Cast<IList<object>>()]
                 },
                 new ValueRange
                 {
                     Range = "Transactions!A1:G100",
-                    Values = _transactionRows.Cast<IList<object>>().ToList()
+                    Values = [.. _transactionRows.Cast<IList<object>>()]
                 }
             ]
         };
