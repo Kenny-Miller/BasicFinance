@@ -13,7 +13,7 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
             decimal balance = 1000.00m,
             string currency = "USD",
             string? notes = null,
-            Guid institutionId = default,
+            int institutionId = 1,
             Guid financialAccountId = default,
             DateTimeOffset? balanceRecordedDate = null)
         {
@@ -25,7 +25,7 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
                 balance,
                 currency,
                 notes ?? string.Empty,
-                institutionId == default ? Guid.NewGuid() : institutionId,
+                institutionId,
                 financialAccountId == default ? Guid.NewGuid() : financialAccountId,
                 balanceRecordedDate ?? DateTimeOffset.UtcNow);
         }

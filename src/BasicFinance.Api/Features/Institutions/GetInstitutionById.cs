@@ -21,7 +21,7 @@ public class GetInstitutionById
     /// <param name="Name"></param>
     /// <param name="LogoUrl"></param>
     public record InstitutionDto(
-        Guid Id,
+        int Id,
         string InstitutionCode,
         string Name,
         string? LogoUrl);
@@ -37,9 +37,9 @@ public class GetInstitutionById
     /// or <see cref="BadRequest"/> on failure.
     /// </returns>
     [Authorize]
-    [WolverineGet("api/institutions/{institutionId:guid}")]
+    [WolverineGet("api/institutions/{institutionId:int}")]
     public static async Task<Results<Ok<InstitutionDto>, BadRequest<string>>> HandleAsync(
-        [FromRoute] Guid institutionId,
+        [FromRoute] int institutionId,
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {

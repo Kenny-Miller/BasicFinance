@@ -6,7 +6,7 @@ namespace BasicFinance.Infrastructure.Entities
     public class Institution : IEntity
     {
         [Key]
-        public Guid InstitutionId { get; set; }
+        public int InstitutionId { get; set; }
 
         [Required]
         [MaxLength(25)]

@@ -38,7 +38,7 @@ namespace BasicFinance.Api.Features.Institutions
         /// <param name="Name"></param>
         /// <param name="LogoUrl"></param>
         public record InstitutionDto(
-            Guid Id,
+            int Id,
             string InstitutionCode,
             string Name,
             string? LogoUrl);

@@ -51,8 +51,8 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<Guid>("FinancialAccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("InstitutionId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -152,9 +152,11 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Institution", b =>
                 {
-                    b.Property<Guid>("InstitutionId")
+                    b.Property<int>("InstitutionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("InstitutionId"));
 
                     b.Property<string>("InstitutionCode")
                         .IsRequired()

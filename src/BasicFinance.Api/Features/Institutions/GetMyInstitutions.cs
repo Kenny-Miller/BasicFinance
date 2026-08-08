@@ -17,7 +17,7 @@ namespace BasicFinance.Api.Features.Institutions
         /// </summary>
         /// <param name="InstitutionId"></param>
         /// <param name="Name"></param>
-        public record InstitutionDto(Guid InstitutionId, string Name);
+        public record InstitutionDto(int InstitutionId, string Name);
 
         /// <summary>
         /// Retrieves distinct institutions for the authenticated user.
