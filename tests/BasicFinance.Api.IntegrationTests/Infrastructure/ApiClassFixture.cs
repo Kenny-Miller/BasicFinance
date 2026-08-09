@@ -1,3 +1,4 @@
+using BasicFinance.Api.IntegrationTests.Constants;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.SharedServiceDefaults;
@@ -11,52 +12,31 @@ using Npgsql;
 using Respawn;
 using Xunit;
 
-namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
+namespace BasicFinance.Api.IntegrationTests.Infrastructure;
 
-public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
+public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
 {
-    /// <summary>
-    /// Gets a unique identifier for the class fixture instance.
-    /// </summary>
     public Guid ClassFixtureGuid { get; } = Guid.NewGuid();
 
-    /// <summary>
-    /// Gets the shared assembly fixture that manages the lifecycle of the PostgreSQL and RabbitMQ containers for the integration tests.
-    /// </summary>
-    private DataProcessorAssemblyFixture _assemblyFixture = default!;
+    public string TestUserId { get; } = TestConstants.TestUserId;
 
-    /// <summary>
-    /// Gets the application factory used to create and configure the test server for integration tests.
-    /// </summary>
+    private ApiAssemblyFixture _assemblyFixture = default!;
+
     private WebApplicationFactory<Program> _factory = default!;
 
-    /// <summary>
-    /// Gets the database connection used by the class fixture.
-    /// </summary>
     private NpgsqlConnection _classFixtureDbConnection = default!;
 
-    /// <summary>
-    /// Gets a Respawner instance used to reset the database state between test runs.
-    /// </summary>
     private Respawner _respawner = default!;
 
-    /// <summary>
-    /// Creates a new service scope from the application factory's service provider.
-    /// </summary>
-    /// <returns></returns>
     public IServiceScope CreateServiceScope() => _factory.Services.CreateScope();
 
-    /// <summary>
-    /// Reset the db back to it's initial state.
-    /// </summary>
-    /// <returns></returns>
     public Task ResetDatabaseAsync() => _respawner.ResetAsync(_classFixtureDbConnection);
 
     /// <inheritdoc/>
     public async ValueTask InitializeAsync()
     {
-        _assemblyFixture = await TestContext.Current.GetFixture<DataProcessorAssemblyFixture>()
-           ?? throw new InvalidOperationException("Failed to get the assembly fixture.");
+        _assemblyFixture = await TestContext.Current.GetFixture<ApiAssemblyFixture>()
+            ?? throw new InvalidOperationException("Failed to get the assembly fixture.");
 
         var builder = new NpgsqlConnectionStringBuilder(_assemblyFixture.PostgreSqlConnectionString)
         {
@@ -78,7 +58,7 @@ public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
 
         await _classFixtureDbConnection.OpenAsync();
 
-        var options = new RespawnerOptions() { WithReseed = true };
+        var options = new RespawnerOptions { WithReseed = true };
         _respawner = await Respawner.CreateAsync(_classFixtureDbConnection, options);
     }
 
@@ -99,12 +79,15 @@ public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
         return new WebApplicationFactory<Program>()
             .WithWebHostBuilder(webHostBuilder =>
             {
+                webHostBuilder.UseSetting("ASPNETCORE_ENVIRONMENT", "Development");
+
                 webHostBuilder.ConfigureAppConfiguration((_, config) =>
                 {
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         [$"ConnectionStrings:{ServiceDiscoveryNames.BasicFinanceDb}"] = _classFixtureDbConnection.ConnectionString,
                         [$"ConnectionStrings:{ServiceDiscoveryNames.RabbitMq}"] = _assemblyFixture.RabbitMqConnectionString,
+                        [$"ConnectionStrings:{ServiceDiscoveryNames.Keycloak}"] = _assemblyFixture.KeycloakBaseAddress,
                         [$"Wolverine:QueueName"] = $"queue-{ClassFixtureGuid}"
                     });
                 });
@@ -115,5 +98,9 @@ public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
                     services.AddSingleton(_ => NSubstitute.Substitute.For<IGoogleServiceAccountClient>());
                 });
             });
+    }
+    public HttpClient CreateClient()
+    {
+        return _factory.CreateClient();
     }
 }
