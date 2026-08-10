@@ -1,14 +1,20 @@
 using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Testcontainers.Keycloak;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-[assembly: AssemblyFixture(typeof(BasicFinance.Api.IntegrationTests.Infrastructure.ApiAssemblyFixture))]
-namespace BasicFinance.Api.IntegrationTests.Infrastructure;
+[assembly: AssemblyFixture(typeof(ApiAssemblyFixture))]
+namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
 public sealed class ApiAssemblyFixture : IAsyncLifetime, IAsyncDisposable
 {
+    /// <summary>
+    /// Gets the provisioned Keycloak user credentials (user ID and access token).
+    /// </summary>
+    public KeycloakUserDto KeycloakUser { get; private set; } = default!;
+
     /// <summary>
     /// Gets the connection string to the Postregres container.
     /// </summary>
@@ -38,8 +44,7 @@ public sealed class ApiAssemblyFixture : IAsyncLifetime, IAsyncDisposable
     /// Gets the Keycloak container used by the assembly test fixture.
     /// </summary>
     private readonly KeycloakContainer _keycloak = new KeycloakBuilder("quay.io/keycloak/keycloak:26.0")
-        .WithUsername("admin")
-        .WithPassword("admin")
+        .WithRealm(Path.Combine(AppContext.BaseDirectory, "Realms", "IntegrationTestRealm.json"))
         .Build();
 
     /// <inheritdoc/>
@@ -50,7 +55,16 @@ public sealed class ApiAssemblyFixture : IAsyncLifetime, IAsyncDisposable
             _rabbitMq.StartAsync(),
             _keycloak.StartAsync());
 
-        await KeycloakHelper.ProvisionTestRealmAsync(_keycloak.GetBaseAddress());
+        try
+        {
+
+            KeycloakUser = await
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("For more on this error consult the server log"))
+        {
+            var logs = await _keycloak.GetLogsAsync();
+            throw new InvalidOperationException($"Keycloak container error logs: {logs}");
+        }
     }
 
     /// <inheritdoc/>

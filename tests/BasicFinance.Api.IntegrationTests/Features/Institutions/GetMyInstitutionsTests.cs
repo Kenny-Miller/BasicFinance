@@ -1,9 +1,7 @@
-using BasicFinance.Api.IntegrationTests.Factory;
-using BasicFinance.Api.IntegrationTests.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Xunit;
-using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 using MyInstitutionDto = BasicFinance.Api.IntegrationTests.Helpers.MyInstitutionDto;
 
 namespace BasicFinance.Api.IntegrationTests.Features.Institutions;

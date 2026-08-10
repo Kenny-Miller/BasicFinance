@@ -1,6 +1,6 @@
 using BasicFinance.Infrastructure.Entities;
 
-namespace BasicFinance.Api.IntegrationTests.Factory;
+namespace BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 
 public static class InstitutionFactory
 {

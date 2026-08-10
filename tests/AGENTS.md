@@ -172,7 +172,7 @@ BasicFinance.Domain.UnitTests/
 
 ## Integration Tests
 
-Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure but mock external services (Keycloak, Google SDK).
+Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure (PostgreSQL, RabbitMQ, Keycloak) but mock external services (Google SDK).
 
 ### When to write an integration test
 - Testing a vertical slice endpoint (e.g., `GET /api/accounts`)
@@ -187,84 +187,39 @@ Integration tests verify the full pipeline: endpoint → middleware → DbContex
 
 ### TestContainers setup
 
-Use `Testcontainers` NuGet packages for PostgreSQL and RabbitMQ. Share containers across test classes via `ICollectionFixture`:
+Use `Testcontainers` NuGet packages for PostgreSQL, RabbitMQ, and Keycloak. Containers are shared across test classes via `AssemblyFixture` on `ApiAssemblyFixture`:
 
-```csharp
-public class TestContainerFixture : ICollectionFixture<TestContainerFixture>
-{
-    public static readonly IContainer PostgreSQL = new Containers.Builder()
-        .WithImage("postgres:17-alpine")
-        .WithEnvironment("POSTGRES_USER", "test")
-        .WithEnvironment("POSTGRES_PASSWORD", "test")
-        .WithEnvironment("POSTGRES_DB", "basicfinance_test")
-        .WithPortBinding(5432, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
-        .Build();
+- **PostgreSQL** (`postgres:17-alpine`) — real database for EF Core
+- **RabbitMQ** (`rabbitmq:3-management-alpine`) — real message broker for Wolverine
+- **Keycloak** (`quay.io/keycloak/keycloak:26.0`) — real auth server with imported test realm
 
-    public static readonly IContainer RabbitMQ = new Containers.Builder()
-        .WithImage("rabbitmq:4-management")
-        .WithPortBinding(5672, true)
-        .WithPortBinding(15672, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5672))
-        .Build();
+The Keycloak container imports `Realms/IntegrationTestRealm.json` at startup via `KeycloakBuilder.WithRealm()`. This realm pre-configures the `basic-hub` realm with a `test-client` (confidential, directAccessGrants) and a `test-user` (password: `test-password`).
 
-    static TestContainerFixture()
-    {
-        PostgreSQL.Start();
-        RabbitMQ.Start();
-    }
-}
-```
+### Authentication
+
+Real JWT tokens are issued by the Keycloak container. `KeycloakHelper.GetTestUserTokenAsync()` is called once at assembly initialization:
+
+1. Gets an admin token via password grant on the `master` realm
+2. Queries the Keycloak admin API to resolve the test user's UUID
+3. Gets a user access token via password grant on the `basic-hub` realm using `test-client`
+
+The resulting `KeycloakUserDto` (user ID + access token) is stored on `ApiAssemblyFixture`. Each test class's `ApiClassFixture` reads these values, and `CreateClient()` adds the Bearer header to the `HttpClient`.
+
+The JWT issuer is overridden per test class to match the dynamic Keycloak container address. The `test-client` has an audience mapper that includes `"account"` in the token's `aud` claim, matching the API's `AddKeycloakJwtBearer` audience configuration.
+
+**Do not mock Keycloak authentication.** The test realm file (`Realms/IntegrationTestRealm.json`) is the source of truth for test auth configuration.
 
 ### WebApplicationFactory
 
-Create a custom factory inheriting `WebApplicationFactory<Program>` to configure test services:
+`ApiClassFixture` creates a `WebApplicationFactory<Program>` that:
+- Overrides connection strings to point to test containers
+- Overrides JWT issuer to match the Keycloak container address
+- Mocks `IGoogleServiceAccountClient` via NSubstitute
+- Runs EF Core migrations on startup
 
-```csharp
-public class TestApplicationFactory : WebApplicationFactory<Program>
-{
-    protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder builder)
-    {
-        base.ConfigureHostApplicationBuilder(builder);
+### Database isolation
 
-        // Replace production DB with TestContainers PostgreSQL
-        var postgresPort = TestContainerFixture.PostgreSQL.GetMappedPublicPort(5432);
-        builder.Configuration["ConnectionStrings:AppDbContext"] =
-            $"Host=localhost;Port={postgresPort};Database=basicfinance_test;Username=test;Password=test";
-
-        // Mock Keycloak authentication
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = "TestScheme";
-        }).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", options => { });
-
-        // Mock Google services
-        builder.Services.Replace(new ServiceDescriptor(IGoogleUserClient, Mock.Of<IGoogleUserClient>()));
-    }
-}
-```
-
-### Mocking Keycloak authentication
-
-Use a custom `AuthenticationHandler<TOptions>` to bypass Keycloak:
-
-```csharp
-public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-{
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
-            new Claim(ClaimTypes.Name, "test-user"),
-        };
-        var identity = new ClaimsIdentity(claims, "TestScheme");
-        var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, "TestScheme");
-        return Task.FromResult(AuthenticateResult.Success(ticket));
-    }
-}
-```
+Each test class gets its own PostgreSQL database (`DB_{guid}`). `Respawner` resets the database before each test. `ApiTestFixtureBase` handles DB reset and global data seeding (institutions, categories, etc.).
 
 ### Integration test naming
 
@@ -275,35 +230,29 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 Same Arrange-Act-Assert pattern, but Arrange includes DB seeding:
 
 ```csharp
-public class ListAccountsTests : IClassFixture<TestApplicationFactory>
+public class ListAccountsTests : ApiTestFixtureBase
 {
-    readonly HttpClient _client;
-    readonly TestApplicationFactory _factory;
-
-    public ListAccountsTests(TestApplicationFactory factory)
+    public ListAccountsTests(ApiClassFixture fixture)
+        : base(fixture)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
-    public async Task ListAccounts_AuthenticatedUser_ReturnsAccountList()
+    public async Task ListAccounts_UserHasAccounts_ReturnsAccountList()
     {
-        // Arrange — seed test data via DbContext
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Accounts.Add(AccountFactory.Create());
-            await db.SaveChangesAsync();
-        }
+        // Arrange
+        var account = AccountFactory.Create(TestUserId, accountName: "Test Account");
+        DbContext.Accounts.Add(account);
+        await DbContext.SaveChangesAsync();
 
         // Act
-        var response = await _client.GetAsync("/api/accounts");
+        var response = await HttpClient.GetAsync("/api/Accounts/");
 
         // Assert
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>();
-        Assert.NotEmpty(result!.Items);
+        Assert.NotNull(result);
+        Assert.Contains(result.Items, a => a.AccountName == "Test Account");
     }
 }
 ```
@@ -316,7 +265,8 @@ public class ListAccountsTests : IClassFixture<TestApplicationFactory>
 
 ### What NOT to do in integration tests
 - Test framework behavior (assume ASP.NET Core, EF Core, xUnit work correctly)
-- Connect to real Keycloak or Google APIs (mock these)
+- Mock Keycloak authentication (use real Keycloak container)
+- Connect to real Google APIs (mock `IGoogleServiceAccountClient`)
 - Use in-memory database or SQLite (use real PostgreSQL via TestContainers)
 
 ## Code Style

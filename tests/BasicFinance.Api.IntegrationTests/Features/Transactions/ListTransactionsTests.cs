@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using BasicFinance.Api.IntegrationTests.Factory;
-using BasicFinance.Api.IntegrationTests.Infrastructure;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using BasicFinance.Domain.Queries;
 using Xunit;
 using TransactionDto = BasicFinance.Api.IntegrationTests.Helpers.TransactionDto;

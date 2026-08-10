@@ -1,9 +1,7 @@
-using BasicFinance.Api.IntegrationTests.Factory;
-using BasicFinance.Api.IntegrationTests.Infrastructure;
-using BasicFinance.Domain.Queries;
-using BasicFinance.Infrastructure.Entities;
-using System.Linq;
 using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
+using BasicFinance.Domain.Queries;
 using Xunit;
 using InstitutionDto = BasicFinance.Api.IntegrationTests.Helpers.InstitutionDto;
 

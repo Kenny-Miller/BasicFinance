@@ -3,7 +3,7 @@ using BasicFinance.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace BasicFinance.Api.IntegrationTests.Infrastructure;
+namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
 public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyncLifetime, IAsyncDisposable
 {

@@ -2,7 +2,7 @@ using BasicFinance.Infrastructure.Entities;
 using TransactionCategoryEnum = BasicFinance.Infrastructure.Enums.TransactionCategory;
 using TransactionTypeEnum = BasicFinance.Infrastructure.Enums.TransactionType;
 
-namespace BasicFinance.Api.IntegrationTests.Factory;
+namespace BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 
 public static class TransactionFactory
 {

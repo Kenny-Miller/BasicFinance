@@ -1,7 +1,7 @@
-using BasicFinance.Api.IntegrationTests.Constants;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.SharedServiceDefaults;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +12,17 @@ using Npgsql;
 using Respawn;
 using Xunit;
 
-namespace BasicFinance.Api.IntegrationTests.Infrastructure;
+namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
 public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
 {
     public Guid ClassFixtureGuid { get; } = Guid.NewGuid();
 
-    public string TestUserId { get; } = TestConstants.TestUserId;
+    public string TestUserId { get; private set; } = default!;
 
     private ApiAssemblyFixture _assemblyFixture = default!;
+
+    private string _accessToken = default!;
 
     private WebApplicationFactory<Program> _factory = default!;
 
@@ -37,6 +39,9 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
     {
         _assemblyFixture = await TestContext.Current.GetFixture<ApiAssemblyFixture>()
             ?? throw new InvalidOperationException("Failed to get the assembly fixture.");
+
+        TestUserId = _assemblyFixture.KeycloakUser.UserId;
+        _accessToken = _assemblyFixture.KeycloakUser.AccessToken;
 
         var builder = new NpgsqlConnectionStringBuilder(_assemblyFixture.PostgreSqlConnectionString)
         {
@@ -96,11 +101,20 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
                 {
                     services.RemoveAll<IGoogleServiceAccountClient>();
                     services.AddSingleton(_ => NSubstitute.Substitute.For<IGoogleServiceAccountClient>());
+
+                    services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+                    {
+                        var issuer = $"{_assemblyFixture.KeycloakBaseAddress}/realms/basic-hub";
+                        options.TokenValidationParameters.ValidIssuers = [issuer];
+                    });
                 });
             });
     }
+
     public HttpClient CreateClient()
     {
-        return _factory.CreateClient();
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new("Bearer", _accessToken);
+        return client;
     }
 }

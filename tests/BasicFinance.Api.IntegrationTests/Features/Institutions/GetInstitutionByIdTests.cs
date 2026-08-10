@@ -1,5 +1,5 @@
-using BasicFinance.Api.IntegrationTests.Factory;
-using BasicFinance.Api.IntegrationTests.Infrastructure;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
 using Xunit;

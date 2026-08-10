@@ -1,0 +1,48 @@
+{
+    "realm": "basic-hub",
+    "displayName": "Basic Hub",
+    "enabled": true,
+    "clients": [
+        {
+            "clientId": "basic-finance-public",
+            "enabled": true,
+            "publicClient": false,
+            "directAccessGrantsEnabled": true
+        }
+    ],
+    "users": [
+        {
+            "username": "testuser",
+            "enabled": true,
+            "credentials": [
+                {
+                    "temporary": false,
+                    "type": "password",
+                    "value": "testpassword"
+                }
+            ]
+        },
+        {
+            "username": "testuser2",
+            "enabled": true,
+            "credentials": [
+                {
+                    "temporary": false,
+                    "type": "password",
+                    "value": "testpassword2"
+                }
+            ]
+        },
+        {
+            "username": "testuser3",
+            "enabled": true,
+            "credentials": [
+                {
+                    "temporary": false,
+                    "type": "password",
+                    "value": "testpassword3"
+                }
+            ]
+        }
+    ]
+}
