@@ -18,7 +18,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers.Keycloak" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.RabbitMq" />
     <PackageReference Include="Testcontainers.XunitV3" />
@@ -32,10 +31,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BasicFinance.Api\BasicFinance.Api.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Realms\IntegrationTestRealm.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

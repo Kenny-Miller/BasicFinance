@@ -1,11 +1,8 @@
+using System.Net.Http.Json;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
-using BasicFinance.Infrastructure.Entities;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
 using Xunit;
 using AccountDto = BasicFinance.Api.IntegrationTests.Helpers.AccountDto;
-using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 
 namespace BasicFinance.Api.IntegrationTests.Features.Accounts;
 
@@ -20,7 +17,7 @@ public class GetMyAccountsTests : ApiTestFixtureBase
     public async Task GetMyAccounts_UserHasAccounts_ReturnsAccountList()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, accountName: "My Checking", balance: 5000m);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "My Checking", balance: 5000m);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -56,8 +53,8 @@ public class GetMyAccountsTests : ApiTestFixtureBase
     public async Task GetMyAccounts_OnlyActiveAccountsIncluded_ExcludesInactive()
     {
         // Arrange
-        var activeAccount = AccountFactory.Create(TestUserId, accountName: "Active Account");
-        var inactiveAccount = AccountFactory.Create(TestUserId, accountName: "Inactive Account");
+        var activeAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Active Account");
+        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Account");
         inactiveAccount.IsActive = false;
 
         DbContext.Accounts.AddRange(activeAccount, inactiveAccount);

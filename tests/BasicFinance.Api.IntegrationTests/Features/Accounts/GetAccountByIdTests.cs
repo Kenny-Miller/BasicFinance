@@ -17,7 +17,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
     public async Task GetAccountById_ExistingAccount_ReturnsOk()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, accountName: "My Account", balance: 7500m);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "My Account", balance: 7500m);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -49,7 +49,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
     public async Task GetAccountById_DeactivatedAccount_ReturnsBadRequest()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, accountName: "Inactive Account");
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Account");
         account.IsActive = false;
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);

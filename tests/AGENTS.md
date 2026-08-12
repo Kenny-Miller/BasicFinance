@@ -5,7 +5,7 @@
 | Tool | Purpose |
 |---|---|
 | **xUnit** | Test framework. All test projects use `xunit` + `xunit.runner.visualstudio`. |
-| **Moq** | Mocking library. Used for stubs and verifying interactions. |
+| **Nsubstitute** | Mocking library. Used for stubs and verifying interactions. |
 | **Microsoft.NET.Test.Sdk** | Test runner / discovery. |
 | **Testcontainers** | Real infrastructure (PostgreSQL, RabbitMQ) for integration tests. |
 
@@ -172,7 +172,7 @@ BasicFinance.Domain.UnitTests/
 
 ## Integration Tests
 
-Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure (PostgreSQL, RabbitMQ, Keycloak) but mock external services (Google SDK).
+Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure (PostgreSQL, RabbitMQ) but mock external services (Google SDK) and authentication.
 
 ### When to write an integration test
 - Testing a vertical slice endpoint (e.g., `GET /api/accounts`)
@@ -187,33 +187,22 @@ Integration tests verify the full pipeline: endpoint → middleware → DbContex
 
 ### TestContainers setup
 
-Use `Testcontainers` NuGet packages for PostgreSQL, RabbitMQ, and Keycloak. Containers are shared across test classes via `AssemblyFixture` on `ApiAssemblyFixture`:
+Use `Testcontainers` NuGet packages for PostgreSQL and RabbitMQ. Containers are shared across test classes via `AssemblyFixture` on `ApiAssemblyFixture`:
 
 - **PostgreSQL** (`postgres:17-alpine`) — real database for EF Core
 - **RabbitMQ** (`rabbitmq:3-management-alpine`) — real message broker for Wolverine
-- **Keycloak** (`quay.io/keycloak/keycloak:26.0`) — real auth server with imported test realm
-
-The Keycloak container imports `Realms/IntegrationTestRealm.json` at startup via `KeycloakBuilder.WithRealm()`. This realm pre-configures the `basic-hub` realm with a `test-client` (confidential, directAccessGrants) and a `test-user` (password: `test-password`).
 
 ### Authentication
 
-Real JWT tokens are issued by the Keycloak container. `KeycloakHelper.GetTestUserTokenAsync()` is called once at assembly initialization:
+A fake `AuthenticationHandler` (`TestAuthenticationHandler`) replaces the real JWT bearer handler during tests. It returns a fixed `ClaimsPrincipal` with a static test user ID (`ApiAssemblyFixture.TestUserId`), bypassing JWT validation. This keeps tests fast and removes the Keycloak container dependency.
 
-1. Gets an admin token via password grant on the `master` realm
-2. Queries the Keycloak admin API to resolve the test user's UUID
-3. Gets a user access token via password grant on the `basic-hub` realm using `test-client`
-
-The resulting `KeycloakUserDto` (user ID + access token) is stored on `ApiAssemblyFixture`. Each test class's `ApiClassFixture` reads these values, and `CreateClient()` adds the Bearer header to the `HttpClient`.
-
-The JWT issuer is overridden per test class to match the dynamic Keycloak container address. The `test-client` has an audience mapper that includes `"account"` in the token's `aud` claim, matching the API's `AddKeycloakJwtBearer` audience configuration.
-
-**Do not mock Keycloak authentication.** The test realm file (`Realms/IntegrationTestRealm.json`) is the source of truth for test auth configuration.
+The auth scheme name remains `"keycloak"` (`ServiceDiscoveryNames.Keycloak`) to match the API's configured scheme. `ApiClassFixture` registers the test handler via `ConfigureTestServices`.
 
 ### WebApplicationFactory
 
 `ApiClassFixture` creates a `WebApplicationFactory<Program>` that:
 - Overrides connection strings to point to test containers
-- Overrides JWT issuer to match the Keycloak container address
+- Replaces JWT authentication with `TestAuthenticationHandler`
 - Mocks `IGoogleServiceAccountClient` via NSubstitute
 - Runs EF Core migrations on startup
 
@@ -265,7 +254,6 @@ public class ListAccountsTests : ApiTestFixtureBase
 
 ### What NOT to do in integration tests
 - Test framework behavior (assume ASP.NET Core, EF Core, xUnit work correctly)
-- Mock Keycloak authentication (use real Keycloak container)
 - Connect to real Google APIs (mock `IGoogleServiceAccountClient`)
 - Use in-memory database or SQLite (use real PostgreSQL via TestContainers)
 

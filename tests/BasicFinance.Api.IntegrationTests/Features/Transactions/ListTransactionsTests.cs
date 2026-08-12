@@ -18,11 +18,11 @@ public class ListTransactionsTests : ApiTestFixtureBase
     public async Task ListTransactions_UserHasTransactions_ReturnsTransactionList()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId);
+        var account = AccountFactory.Create(AuthenticatedUserId);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var transaction = TransactionFactory.Create(TestUserId, account.AccountId, description: "Test Purchase");
+        var transaction = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Test Purchase");
         DbContext.Transactions.Add(transaction);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -42,13 +42,13 @@ public class ListTransactionsTests : ApiTestFixtureBase
     public async Task ListTransactions_WithPagination_ReturnsPaginatedResults()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId);
+        var account = AccountFactory.Create(AuthenticatedUserId);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         for (var i = 0; i < 5; i++)
         {
-            DbContext.Transactions.Add(TransactionFactory.Create(TestUserId, account.AccountId, description: $"Transaction {i}"));
+            DbContext.Transactions.Add(TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: $"Transaction {i}"));
         }
 
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -68,13 +68,13 @@ public class ListTransactionsTests : ApiTestFixtureBase
     public async Task ListTransactions_FilterByAccountId_ReturnsFilteredResults()
     {
         // Arrange
-        var account1 = AccountFactory.Create(TestUserId, accountName: "Account 1");
-        var account2 = AccountFactory.Create(TestUserId, accountName: "Account 2");
+        var account1 = AccountFactory.Create(AuthenticatedUserId, accountName: "Account 1");
+        var account2 = AccountFactory.Create(AuthenticatedUserId, accountName: "Account 2");
         DbContext.Accounts.AddRange(account1, account2);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        DbContext.Transactions.Add(TransactionFactory.Create(TestUserId, account1.AccountId, description: "Tx for Account 1"));
-        DbContext.Transactions.Add(TransactionFactory.Create(TestUserId, account2.AccountId, description: "Tx for Account 2"));
+        DbContext.Transactions.Add(TransactionFactory.Create(AuthenticatedUserId, account1.AccountId, description: "Tx for Account 1"));
+        DbContext.Transactions.Add(TransactionFactory.Create(AuthenticatedUserId, account2.AccountId, description: "Tx for Account 2"));
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -95,12 +95,12 @@ public class ListTransactionsTests : ApiTestFixtureBase
     public async Task ListTransactions_FilterByMinAmount_ReturnsFilteredResults()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId);
+        var account = AccountFactory.Create(AuthenticatedUserId);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        DbContext.Transactions.Add(TransactionFactory.Create(TestUserId, account.AccountId, amount: 50m, description: "Small Purchase"));
-        DbContext.Transactions.Add(TransactionFactory.Create(TestUserId, account.AccountId, amount: 250m, description: "Large Purchase"));
+        DbContext.Transactions.Add(TransactionFactory.Create(AuthenticatedUserId, account.AccountId, amount: 50m, description: "Small Purchase"));
+        DbContext.Transactions.Add(TransactionFactory.Create(AuthenticatedUserId, account.AccountId, amount: 250m, description: "Large Purchase"));
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act

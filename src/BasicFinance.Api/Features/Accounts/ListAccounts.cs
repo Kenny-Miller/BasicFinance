@@ -100,7 +100,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         private static IQueryable<Account> ApplyFilters(IQueryable<Account> query, Request request)
         {
-            if (string.IsNullOrEmpty(request.AccountTypeCode))
+            if (!string.IsNullOrEmpty(request.AccountTypeCode))
             {
                 query = query.Where(x => x.AccountType.AccountTypeCode == request.AccountTypeCode);
             }

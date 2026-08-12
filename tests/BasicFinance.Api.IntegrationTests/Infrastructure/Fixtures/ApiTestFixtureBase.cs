@@ -11,7 +11,7 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
 
     protected AppDbContext DbContext { get; private set; } = default!;
 
-    protected string TestUserId => _fixture.TestUserId;
+    protected string AuthenticatedUserId { get; private set; } = default!;
 
     private readonly ApiClassFixture _fixture;
 
@@ -27,12 +27,14 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
     {
         await _fixture.ResetDatabaseAsync();
 
+        AuthenticatedUserId = _fixture.AuthenticatedUserId;
         _serviceScope = _fixture.CreateServiceScope();
 
         DbContext = _serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await DbSeedHelper.SeedGlobalDataAsync(DbContext, _fixture.TestUserId);
+        await DbSeedHelper.SeedGlobalDataAsync(DbContext, AuthenticatedUserId);
 
         HttpClient = _fixture.CreateClient();
+        AddAuthenticatedUserHeader();
     }
 
     /// <inheritdoc/>
@@ -42,5 +44,10 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
         await DbContext.DisposeAsync();
         _serviceScope?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void AddAuthenticatedUserHeader()
+    {
+        HttpClient.DefaultRequestHeaders.Add(ApiAuthenticationHandler.AuthenticationHeader, AuthenticatedUserId);
     }
 }

@@ -17,7 +17,7 @@ public class GetMyInstitutionsTests : ApiTestFixtureBase
     public async Task GetMyInstitutions_UserHasAccounts_ReturnsAssociatedInstitutions()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, institutionId: 1);
+        var account = AccountFactory.Create(AuthenticatedUserId, institutionId: 1);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -52,8 +52,8 @@ public class GetMyInstitutionsTests : ApiTestFixtureBase
     public async Task GetMyInstitutions_OnlyActiveAccountsCount_ReturnsCorrectInstitutions()
     {
         // Arrange
-        var activeAccount = AccountFactory.Create(TestUserId, institutionId: 1);
-        var inactiveAccount = AccountFactory.Create(TestUserId, institutionId: 2);
+        var activeAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: 1);
+        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: 2);
         inactiveAccount.IsActive = false;
 
         DbContext.Accounts.AddRange(activeAccount, inactiveAccount);

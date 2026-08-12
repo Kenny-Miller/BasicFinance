@@ -1,7 +1,7 @@
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.SharedServiceDefaults;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +18,9 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
 {
     public Guid ClassFixtureGuid { get; } = Guid.NewGuid();
 
-    public string TestUserId { get; private set; } = default!;
+    public string AuthenticatedUserId { get; } = Guid.NewGuid().ToString();
 
     private ApiAssemblyFixture _assemblyFixture = default!;
-
-    private string _accessToken = default!;
 
     private WebApplicationFactory<Program> _factory = default!;
 
@@ -32,6 +30,8 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
 
     public IServiceScope CreateServiceScope() => _factory.Services.CreateScope();
 
+    public HttpClient CreateClient() => _factory.CreateClient();
+
     public Task ResetDatabaseAsync() => _respawner.ResetAsync(_classFixtureDbConnection);
 
     /// <inheritdoc/>
@@ -39,9 +39,6 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
     {
         _assemblyFixture = await TestContext.Current.GetFixture<ApiAssemblyFixture>()
             ?? throw new InvalidOperationException("Failed to get the assembly fixture.");
-
-        TestUserId = _assemblyFixture.KeycloakUser.UserId;
-        _accessToken = _assemblyFixture.KeycloakUser.AccessToken;
 
         var builder = new NpgsqlConnectionStringBuilder(_assemblyFixture.PostgreSqlConnectionString)
         {
@@ -92,7 +89,6 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
                     {
                         [$"ConnectionStrings:{ServiceDiscoveryNames.BasicFinanceDb}"] = _classFixtureDbConnection.ConnectionString,
                         [$"ConnectionStrings:{ServiceDiscoveryNames.RabbitMq}"] = _assemblyFixture.RabbitMqConnectionString,
-                        [$"ConnectionStrings:{ServiceDiscoveryNames.Keycloak}"] = _assemblyFixture.KeycloakBaseAddress,
                         [$"Wolverine:QueueName"] = $"queue-{ClassFixtureGuid}"
                     });
                 });
@@ -102,19 +98,9 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
                     services.RemoveAll<IGoogleServiceAccountClient>();
                     services.AddSingleton(_ => NSubstitute.Substitute.For<IGoogleServiceAccountClient>());
 
-                    services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-                    {
-                        var issuer = $"{_assemblyFixture.KeycloakBaseAddress}/realms/basic-hub";
-                        options.TokenValidationParameters.ValidIssuers = [issuer];
-                    });
+                    services.AddAuthentication(ServiceDiscoveryNames.Keycloak)
+                        .AddScheme<AuthenticationSchemeOptions, ApiAuthenticationHandler>(ServiceDiscoveryNames.Keycloak, null);
                 });
             });
-    }
-
-    public HttpClient CreateClient()
-    {
-        var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new("Bearer", _accessToken);
-        return client;
     }
 }

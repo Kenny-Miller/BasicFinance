@@ -19,7 +19,7 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_UserHasAccounts_ReturnsAccountList()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, accountName: "Test Account", balance: 2500m);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Test Account", balance: 2500m);
         DbContext.Accounts.Add(account);
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -41,7 +41,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         // Arrange
         for (var i = 0; i < 5; i++)
         {
-            DbContext.Accounts.Add(AccountFactory.Create(TestUserId, accountName: $"Account {i}"));
+            DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountName: $"Account {i}"));
         }
 
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -61,8 +61,8 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_FilterByAccountTypeCode_ReturnsFilteredResults()
     {
         // Arrange
-        DbContext.Accounts.Add(AccountFactory.Create(TestUserId, accountType: AccountTypeEnum.Checking, accountName: "Checking Account"));
-        DbContext.Accounts.Add(AccountFactory.Create(TestUserId, accountType: AccountTypeEnum.Savings, accountName: "Savings Account"));
+        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Checking, accountName: "Checking Account"));
+        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Savings, accountName: "Savings Account"));
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -83,8 +83,8 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_FilterByInstitution_ReturnsFilteredResults()
     {
         // Arrange
-        DbContext.Accounts.Add(AccountFactory.Create(TestUserId, institutionId: 1, accountName: "WF Account"));
-        DbContext.Accounts.Add(AccountFactory.Create(TestUserId, institutionId: 2, accountName: "Chase Account"));
+        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, institutionId: 1, accountName: "WF Account"));
+        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, institutionId: 2, accountName: "Chase Account"));
         await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
