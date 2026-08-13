@@ -1,4 +1,6 @@
-using System.Net.Http.Json;
+using System.Net;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Xunit;
@@ -17,36 +19,31 @@ public class GetTransactionByIdTests : ApiTestFixtureBase
     public async Task GetTransactionById_ExistingTransaction_ReturnsOk()
     {
         // Arrange
+        const string description = "Specific Purchase";
+        const decimal amount = 42.50m;
         var account = AccountFactory.Create(AuthenticatedUserId);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var transaction = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Specific Purchase", amount: 42.50m);
-        DbContext.Transactions.Add(transaction);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var transactionId = transaction.TransactionId;
+        await DbContext.SeedAsync(account, CancellationToken);
+        var transaction = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: description, amount: amount);
+        await DbContext.SeedAsync(transaction, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/transactions/{transactionId}", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<TransactionDto>($"/api/transactions/{transaction.TransactionId}", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<TransactionDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.Equal("Specific Purchase", result.Description);
-        Assert.Equal(42.50m, result.Amount);
+        Assert.Equal(description, result.Description);
+        Assert.Equal(amount, result.Amount);
+        Assert.Equal("Debit", result.TransactionTypeName);
+        Assert.Equal(account.AccountName, result.AccountName);
     }
 
     [Fact]
     public async Task GetTransactionById_NonExistentTransaction_ReturnsBadRequest()
     {
         // Act
-        var response = await HttpClient.GetAsync("/api/transactions/00000000-0000-0000-0000-000000000000", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/transactions/{TestConstants.ZeroGuid}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -54,20 +51,15 @@ public class GetTransactionByIdTests : ApiTestFixtureBase
     {
         // Arrange
         var account = AccountFactory.Create(AuthenticatedUserId);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
+        await DbContext.SeedAsync(account, CancellationToken);
         var transaction = TransactionFactory.Create(AuthenticatedUserId, account.AccountId);
         transaction.IsActive = false;
-        DbContext.Transactions.Add(transaction);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var transactionId = transaction.TransactionId;
+        await DbContext.SeedAsync(transaction, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/transactions/{transactionId}", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/transactions/{transaction.TransactionId}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

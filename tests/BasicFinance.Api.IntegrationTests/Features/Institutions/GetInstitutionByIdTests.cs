@@ -1,7 +1,8 @@
+using System.Net;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
 using Xunit;
 using InstitutionDto = BasicFinance.Api.IntegrationTests.Helpers.InstitutionDto;
 
@@ -19,19 +20,13 @@ public class GetInstitutionByIdTests : ApiTestFixtureBase
     {
         // Arrange
         var institution = InstitutionFactory.Create("Test Institution", "TEST");
-        DbContext.Institutions.Add(institution);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var institutionId = institution.InstitutionId;
+        await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/institutions/{institutionId}", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<InstitutionDto>($"/api/institutions/{institution.InstitutionId}", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<InstitutionDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
+        Assert.Equal(institution.InstitutionId, result.Id);
         Assert.Equal("TEST", result.InstitutionCode);
         Assert.Equal("Test Institution", result.Name);
     }
@@ -40,10 +35,10 @@ public class GetInstitutionByIdTests : ApiTestFixtureBase
     public async Task GetInstitutionById_NonExistentInstitution_ReturnsBadRequest()
     {
         // Act
-        var response = await HttpClient.GetAsync("/api/institutions/99999", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/institutions/{TestConstants.NonExistentInstitutionId}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -52,15 +47,12 @@ public class GetInstitutionByIdTests : ApiTestFixtureBase
         // Arrange
         var institution = InstitutionFactory.Create("Inactive Institution", "INACTIVE");
         institution.IsActive = false;
-        DbContext.Institutions.Add(institution);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var institutionId = institution.InstitutionId;
+        await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/institutions/{institutionId}", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/institutions/{institution.InstitutionId}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

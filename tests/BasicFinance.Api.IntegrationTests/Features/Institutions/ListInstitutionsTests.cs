@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using BasicFinance.Domain.Queries;
@@ -18,54 +19,70 @@ public class ListInstitutionsTests : ApiTestFixtureBase
     public async Task ListInstitutions_NoFilter_ReturnsAllActiveInstitutions()
     {
         // Arrange
-        DbContext.Institutions.Add(InstitutionFactory.Create("Test Institution", "TEST"));
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var institution = InstitutionFactory.Create("Test Institution", "TEST");
+        await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/institutions/", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<InstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.True(result.Items.Count() >= 4);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(4, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.Equal(4, result.Items.Count());
+        Assert.Contains(result.Items, i => i.Name == "Test Institution");
     }
 
     [Fact]
     public async Task ListInstitutions_WithPagination_ReturnsPaginatedResults()
     {
         // Arrange
-        DbContext.Institutions.Add(InstitutionFactory.Create("Another Institution", "ANOTHER"));
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var institution = InstitutionFactory.Create("Another Institution", "ANOTHER");
+        await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/institutions/?page=1&pageSize=2", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?page=1&pageSize=2", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<InstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(2, result.PageSize);
+        Assert.Equal(4, result.TotalCount);
+        Assert.Equal(2, result.PageCount);
         Assert.Equal(2, result.Items.Count());
     }
 
     [Fact]
-    public async Task ListInstitutions_WithSorting_SortsByName()
+    public async Task ListInstitutions_WithSorting_SortsByNameAsc()
     {
         // Arrange
+        var zebraInstitution = InstitutionFactory.Create("Zebra Bank", "ZEB");
+        var alphaInstitution = InstitutionFactory.Create("Alpha Bank", "ALP");
+        await DbContext.SeedRangeAsync([zebraInstitution, alphaInstitution], CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/institutions/?sortField=Name&sortDirection=Asc", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?sortField=Name&sortDirection=Asc", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<InstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-
+        Assert.Equal(5, result.TotalCount);
         var names = result.Items.Select(i => i.Name).ToList();
-        var sortedNames = names.Order().ToList();
-        Assert.Equal(sortedNames, names);
+        Assert.Equal("Alpha Bank", names[0]);
+    }
+
+    [Fact]
+    public async Task ListInstitutions_WithSorting_SortsByNameDesc()
+    {
+        // Arrange
+        var zebraInstitution = InstitutionFactory.Create("Zebra Bank", "ZEB");
+        var alphaInstitution = InstitutionFactory.Create("Alpha Bank", "ALP");
+        await DbContext.SeedRangeAsync([zebraInstitution, alphaInstitution], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?sortField=Name&sortDirection=Desc", CancellationToken);
+
+        // Assert
+        Assert.Equal(5, result.TotalCount);
+        var names = result.Items.Select(i => i.Name).ToList();
+        Assert.Equal("Zebra Bank", names[0]);
     }
 }

@@ -9,6 +9,6 @@ public static class InstitutionFactory
         string institutionCode = "WF",
         string? logoUrl = null)
     {
-        return new Institution(institutionCode, name, logoUrl);
+        return new(institutionCode, name, logoUrl);
     }
 }

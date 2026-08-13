@@ -1,17 +1,14 @@
 using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 
 namespace BasicFinance.Api.IntegrationTests.Helpers;
 
 public static class DbSeedHelper
 {
-    private static readonly Guid TestUserGoogleSpreadsheetId = new("00000000-0000-0000-0000-000000000001");
-
     public static async Task SeedGlobalDataAsync(AppDbContext dbContext, string userId, CancellationToken cancellationToken = default)
     {
         dbContext.UserGoogleSpreadsheets.Add(new(userId, "test-sheet-id", "Test Spreadsheet")
         {
-            UserGoogleSpreadsheetId = TestUserGoogleSpreadsheetId,
+            UserGoogleSpreadsheetId = TestConstants.TestUserGoogleSpreadsheetId,
         });
 
         dbContext.TransactionTypes.AddRange(

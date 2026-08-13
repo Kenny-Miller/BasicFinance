@@ -1,3 +1,4 @@
+using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Infrastructure.Entities;
 using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 
@@ -5,8 +6,6 @@ namespace BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 
 public static class AccountFactory
 {
-    private static readonly Guid TestUserGoogleSpreadsheetId = new("00000000-0000-0000-0000-000000000001");
-
     public static Account Create(
         string userId,
         AccountTypeEnum accountType = AccountTypeEnum.Checking,
@@ -14,12 +13,12 @@ public static class AccountFactory
         decimal balance = 1000.00m,
         string currency = "USD",
         string? notes = null,
-        int institutionId = 1,
+        int institutionId = TestConstants.WellsFargoInstitutionId,
         Guid? financialAccountId = null,
         DateTimeOffset? balanceRecordedDate = null)
     {
         return new Account(
-            TestUserGoogleSpreadsheetId,
+            TestConstants.TestUserGoogleSpreadsheetId,
             accountType,
             userId,
             accountName,
@@ -29,5 +28,24 @@ public static class AccountFactory
             institutionId,
             financialAccountId ?? Guid.NewGuid(),
             balanceRecordedDate ?? DateTimeOffset.UtcNow);
+    }
+
+    public static IEnumerable<Account> CreateBatch(
+        int count,
+        string userId,
+        string namePrefix = "Account",
+        AccountTypeEnum accountType = AccountTypeEnum.Checking,
+        decimal balance = 1000.00m,
+        int institutionId = TestConstants.WellsFargoInstitutionId)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            yield return Create(
+                userId,
+                accountType: accountType,
+                accountName: $"{namePrefix} {i}",
+                balance: balance,
+                institutionId: institutionId);
+        }
     }
 }

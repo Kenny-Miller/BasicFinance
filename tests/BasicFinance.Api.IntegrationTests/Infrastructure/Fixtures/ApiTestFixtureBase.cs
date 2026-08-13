@@ -1,4 +1,5 @@
 using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Handlers;
 using BasicFinance.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -12,6 +13,11 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
     protected AppDbContext DbContext { get; private set; } = default!;
 
     protected string AuthenticatedUserId { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets the CancellationToken supplied by the current <see cref="TestContext"/> instance. 
+    /// </summary>
+    protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
     private readonly ApiClassFixture _fixture;
 
@@ -31,7 +37,7 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
         _serviceScope = _fixture.CreateServiceScope();
 
         DbContext = _serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await DbSeedHelper.SeedGlobalDataAsync(DbContext, AuthenticatedUserId);
+        await DbSeedHelper.SeedGlobalDataAsync(DbContext, AuthenticatedUserId, CancellationToken);
 
         HttpClient = _fixture.CreateClient();
         AddAuthenticatedUserHeader();
@@ -43,9 +49,13 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
         HttpClient.Dispose();
         await DbContext.DisposeAsync();
         _serviceScope?.Dispose();
+
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Add a mock authentication header used to bypass api authorization.
+    /// </summary>
     public void AddAuthenticatedUserHeader()
     {
         HttpClient.DefaultRequestHeaders.Add(ApiAuthenticationHandler.AuthenticationHeader, AuthenticatedUserId);

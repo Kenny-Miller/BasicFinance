@@ -216,7 +216,7 @@ Each test class gets its own PostgreSQL database (`DB_{guid}`). `Respawner` rese
 
 ### Integration test structure
 
-Same Arrange-Act-Assert pattern, but Arrange includes DB seeding:
+Same Arrange-Act-Assert pattern, but Arrange includes DB seeding. Use the fluent helpers in `Helpers/` to reduce boilerplate:
 
 ```csharp
 public class ListAccountsTests : ApiTestFixtureBase
@@ -230,21 +230,51 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_UserHasAccounts_ReturnsAccountList()
     {
         // Arrange
-        var account = AccountFactory.Create(TestUserId, accountName: "Test Account");
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync();
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Test Account");
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/");
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>();
-        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalCount);
         Assert.Contains(result.Items, a => a.AccountName == "Test Account");
     }
 }
 ```
+
+### Fluent helpers
+
+The `Helpers/` directory provides extension methods to reduce boilerplate:
+
+| Helper | Purpose |
+|--------|---------|
+| `DbContext.SeedAsync(entity)` | Add entity and call `SaveChangesAsync` in one call |
+| `DbContext.SeedRangeAsync(entities)` | Add multiple entities and call `SaveChangesAsync` |
+| `HttpClient.GetResultAsync<T>(uri)` | GET request, ensure success, deserialize JSON |
+| `AccountFactory.CreateBatch(count, ...)` | Create multiple accounts without loops in tests |
+| `TransactionFactory.CreateBatch(count, ...)` | Create multiple transactions without loops in tests |
+
+### Test constants
+
+Shared test values live in `Helpers/TestConstants`:
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `TestUserGoogleSpreadsheetId` | Fixed GUID | Used by factories and seed helper |
+| `WellsFargoInstitutionId` | `1` | Seed data institution ID |
+| `ChaseInstitutionId` | `2` | Seed data institution ID |
+| `ZeroGuid` | `"0000...0000"` | Non-existent entity ID for error tests |
+| `NonExistentInstitutionId` | `99999` | Non-existent institution for error tests |
+
+### Assertions
+
+- Use `Assert.All(collection, item => Assert.Equal(...))` instead of `foreach` loops.
+- Use `Assert.Empty(collection)` for empty list assertions.
+- Use `Assert.Equal(expected, actual)` instead of soft assertions like `Assert.True(count >= N)`.
+- Always assert `ListResult` metadata (`Page`, `PageSize`, `TotalCount`, `PageCount`) on every list endpoint test.
+- Never hide assertions inside helper methods. Assertions must be visible in the Assert section of the test. For error status tests, use `HttpClient.GetAsync()` in Act and `Assert.Equal(HttpStatusCode.*, response.StatusCode)` in Assert.
+- Seed data variables should be declared before being passed to `DbContext.SeedAsync()` for clarity and reusability within the test.
 
 ### What to assert in integration tests
 - HTTP status codes
@@ -260,3 +290,4 @@ public class ListAccountsTests : ApiTestFixtureBase
 ## Code Style
 
 Follow the same `.editorconfig` rules as the source projects: file-scoped namespaces, `var` preferred, expression-bodied members where concise, braces required on control flow.
+

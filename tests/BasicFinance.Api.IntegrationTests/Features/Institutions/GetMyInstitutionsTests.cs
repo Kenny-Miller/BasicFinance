@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Xunit;
@@ -17,34 +18,23 @@ public class GetMyInstitutionsTests : ApiTestFixtureBase
     public async Task GetMyInstitutions_UserHasAccounts_ReturnsAssociatedInstitutions()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, institutionId: 1);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var account = AccountFactory.Create(AuthenticatedUserId, institutionId: TestConstants.WellsFargoInstitutionId);
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/my/institutions", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<MyInstitutionDto>>("/api/my/institutions", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<MyInstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.Contains(result, i => i.InstitutionId == 1);
+        Assert.Contains(result, i => i.InstitutionId == TestConstants.WellsFargoInstitutionId);
     }
 
     [Fact]
     public async Task GetMyInstitutions_UserHasNoAccounts_ReturnsEmptyList()
     {
-        // Arrange
-
         // Act
-        var response = await HttpClient.GetAsync("/api/my/institutions", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<MyInstitutionDto>>("/api/my/institutions", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<MyInstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
         Assert.Empty(result);
     }
 
@@ -52,22 +42,16 @@ public class GetMyInstitutionsTests : ApiTestFixtureBase
     public async Task GetMyInstitutions_OnlyActiveAccountsCount_ReturnsCorrectInstitutions()
     {
         // Arrange
-        var activeAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: 1);
-        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: 2);
+        var activeAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: TestConstants.WellsFargoInstitutionId);
+        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: TestConstants.ChaseInstitutionId);
         inactiveAccount.IsActive = false;
-
-        DbContext.Accounts.AddRange(activeAccount, inactiveAccount);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await DbContext.SeedRangeAsync([activeAccount, inactiveAccount], CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/my/institutions", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<MyInstitutionDto>>("/api/my/institutions", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<MyInstitutionDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
         Assert.Single(result);
-        Assert.Equal(1, result[0].InstitutionId);
+        Assert.Equal(TestConstants.WellsFargoInstitutionId, result[0].InstitutionId);
     }
 }

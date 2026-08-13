@@ -1,4 +1,6 @@
-using System.Net.Http.Json;
+using System.Net;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Xunit;
@@ -17,49 +19,43 @@ public class GetAccountByIdTests : ApiTestFixtureBase
     public async Task GetAccountById_ExistingAccount_ReturnsOk()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "My Account", balance: 7500m);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var accountId = account.AccountId;
+        const string accountName = "My Account";
+        const decimal balance = 7500m;
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/Accounts/{accountId}", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/Accounts/{account.AccountId}", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<AccountDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.Equal("My Account", result.AccountName);
-        Assert.Equal(7500m, result.Balance);
+        Assert.Equal(accountName, result.AccountName);
+        Assert.Equal(balance, result.Balance);
+        Assert.Equal("CHK", result.AccountTypeCode);
+        Assert.Equal("Wells Fargo", result.Institution);
     }
 
     [Fact]
     public async Task GetAccountById_NonExistentAccount_ReturnsBadRequest()
     {
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/00000000-0000-0000-0000-000000000000", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/Accounts/{TestConstants.ZeroGuid}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task GetAccountById_DeactivatedAccount_ReturnsBadRequest()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Account");
+        var account = AccountFactory.Create(AuthenticatedUserId);
         account.IsActive = false;
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var accountId = account.AccountId;
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/Accounts/{accountId}", TestContext.Current.CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/Accounts/{account.AccountId}", CancellationToken);
 
         // Assert
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

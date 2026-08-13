@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using BasicFinance.Domain.Queries;
@@ -19,41 +20,40 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_UserHasAccounts_ReturnsAccountList()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Test Account", balance: 2500m);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        const string accountName = "Test Account";
+        const decimal balance = 2500m;
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.True(result.Items.Any());
-        Assert.Contains(result.Items, a => a.AccountName == "Test Account");
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.Single(result.Items);
+        Assert.Contains(result.Items, a => a.AccountName == accountName);
+        Assert.Contains(result.Items, a => a.Balance == balance);
+        Assert.Contains(result.Items, a => a.AccountTypeCode == "CHK");
     }
 
     [Fact]
     public async Task ListAccounts_WithPagination_ReturnsPaginatedResults()
     {
         // Arrange
-        for (var i = 0; i < 5; i++)
-        {
-            DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountName: $"Account {i}"));
-        }
-
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var accounts = AccountFactory.CreateBatch(5, AuthenticatedUserId).ToList();
+        await DbContext.SeedRangeAsync(accounts, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/?page=1&pageSize=2", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?page=1&pageSize=2", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(2, result.PageSize);
+        Assert.Equal(5, result.TotalCount);
+        Assert.Equal(3, result.PageCount);
         Assert.Equal(2, result.Items.Count());
     }
 
@@ -61,57 +61,87 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_FilterByAccountTypeCode_ReturnsFilteredResults()
     {
         // Arrange
-        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Checking, accountName: "Checking Account"));
-        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Savings, accountName: "Savings Account"));
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var checkingAccount = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Checking);
+        var savingsAccount = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.Savings);
+        await DbContext.SeedRangeAsync([checkingAccount, savingsAccount], CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/?accountTypeCode=CHK", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?accountTypeCode=CHK", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        foreach (var account in result.Items)
-        {
-            Assert.Equal("CHK", account.AccountTypeCode);
-        }
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.All(result.Items, account => Assert.Equal("CHK", account.AccountTypeCode));
     }
 
     [Fact]
     public async Task ListAccounts_FilterByInstitution_ReturnsFilteredResults()
     {
         // Arrange
-        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, institutionId: 1, accountName: "WF Account"));
-        DbContext.Accounts.Add(AccountFactory.Create(AuthenticatedUserId, institutionId: 2, accountName: "Chase Account"));
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var wfAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: TestConstants.WellsFargoInstitutionId);
+        var chaseAccount = AccountFactory.Create(AuthenticatedUserId, institutionId: TestConstants.ChaseInstitutionId);
+        await DbContext.SeedRangeAsync([wfAccount, chaseAccount], CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/?institution=Wells+Fargo", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?institution=Wells+Fargo", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        foreach (var account in result.Items)
-        {
-            Assert.Equal("Wells Fargo", account.Institution);
-        }
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.All(result.Items, account => Assert.Equal("Wells Fargo", account.Institution));
     }
 
     [Fact]
     public async Task ListAccounts_UserHasNoAccounts_ReturnsEmptyList()
     {
         // Act
-        var response = await HttpClient.GetAsync("/api/Accounts/", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(0, result.TotalCount);
+        Assert.Equal(0, result.PageCount);
         Assert.Empty(result.Items);
+    }
+
+    [Fact]
+    public async Task ListAccounts_WithSorting_SortsByAccountNameAsc()
+    {
+        // Arrange
+        var zebraAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Zebra Account");
+        var alphaAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Alpha Account");
+        var middleAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Middle Account");
+        await DbContext.SeedRangeAsync([zebraAccount, alphaAccount, middleAccount], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=AccountName&sortDirection=Asc", CancellationToken);
+
+        // Assert
+        Assert.Equal(3, result.TotalCount);
+        var names = result.Items.Select(a => a.AccountName).ToList();
+        Assert.Equal("Alpha Account", names[0]);
+        Assert.Equal("Middle Account", names[1]);
+        Assert.Equal("Zebra Account", names[2]);
+    }
+
+    [Fact]
+    public async Task ListAccounts_WithSorting_SortsByBalanceDesc()
+    {
+        // Arrange
+        var lowBalance = AccountFactory.Create(AuthenticatedUserId, balance: 100m);
+        var highBalance = AccountFactory.Create(AuthenticatedUserId, balance: 10000m);
+        var midBalance = AccountFactory.Create(AuthenticatedUserId, balance: 5000m);
+        await DbContext.SeedRangeAsync([lowBalance, highBalance, midBalance], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Balance&sortDirection=Desc", CancellationToken);
+
+        // Assert
+        Assert.Equal(3, result.TotalCount);
+        var balances = result.Items.Select(a => a.Balance).ToList();
+        Assert.Equal(10000m, balances[0]);
+        Assert.Equal(5000m, balances[1]);
+        Assert.Equal(100m, balances[2]);
     }
 }

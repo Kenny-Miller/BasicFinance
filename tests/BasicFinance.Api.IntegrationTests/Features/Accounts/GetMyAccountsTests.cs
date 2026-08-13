@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using BasicFinance.Api.IntegrationTests.Helpers;
+using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 using Xunit;
@@ -17,35 +18,27 @@ public class GetMyAccountsTests : ApiTestFixtureBase
     public async Task GetMyAccounts_UserHasAccounts_ReturnsAccountList()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "My Checking", balance: 5000m);
-        DbContext.Accounts.Add(account);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        const string accountName = "My Checking";
+        const decimal balance = 5000m;
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/my/accounts", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.Contains(result, a => a.AccountName == "My Checking");
-        Assert.Contains(result, a => a.Balance == 5000m);
+        Assert.Contains(result, a => a.AccountName == accountName);
+        Assert.Contains(result, a => a.Balance == balance);
+        Assert.Single(result);
     }
 
     [Fact]
     public async Task GetMyAccounts_UserHasNoAccounts_ReturnsEmptyList()
     {
-        // Arrange
-
         // Act
-        var response = await HttpClient.GetAsync("/api/my/accounts", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
         Assert.Empty(result);
     }
 
@@ -56,18 +49,12 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         var activeAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Active Account");
         var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Account");
         inactiveAccount.IsActive = false;
-
-        DbContext.Accounts.AddRange(activeAccount, inactiveAccount);
-        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await DbContext.SeedRangeAsync([activeAccount, inactiveAccount], CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync("/api/my/accounts", TestContext.Current.CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<List<AccountDto>>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal("Active Account", result[0].AccountName);
     }
