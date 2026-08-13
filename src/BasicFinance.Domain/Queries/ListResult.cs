@@ -31,6 +31,11 @@
         /// </summary>
         public int TotalCount { get; init; }
 
+        public ListResult()
+        {
+            // For JsonDeserialization
+        }
+
         /// <summary>
         /// Constructs a new instance of the <see cref="ListResult{T}"/> class.
         /// </summary>

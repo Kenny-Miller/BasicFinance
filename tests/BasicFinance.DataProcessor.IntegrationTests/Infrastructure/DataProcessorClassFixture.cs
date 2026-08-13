@@ -89,7 +89,11 @@ public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
         await _factory.DisposeAsync();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Creates the <see cref="WebApplicationFactory{TEntryPoint}"/> configured with
+    /// integration test fixture settings.
+    /// </summary>
+    /// <returns></returns>
     private WebApplicationFactory<Program> CreateClassFixtureFactory()
     {
         return new WebApplicationFactory<Program>()

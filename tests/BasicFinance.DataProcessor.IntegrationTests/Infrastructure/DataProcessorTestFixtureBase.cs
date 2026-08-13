@@ -22,6 +22,7 @@ public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessor
         _fixture = fixture;
     }
 
+    /// <inheritdoc/>
     public async ValueTask InitializeAsync()
     {
         await _fixture.ResetDatabaseAsync();
@@ -37,6 +38,7 @@ public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessor
         MockGoogleServiceAccountClient = _serviceScope.ServiceProvider.GetRequiredService<IGoogleServiceAccountClient>();
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         MockGoogleServiceAccountClient.ClearReceivedCalls();

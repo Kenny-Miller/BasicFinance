@@ -5,7 +5,7 @@
 | Tool | Purpose |
 |---|---|
 | **xUnit** | Test framework. All test projects use `xunit` + `xunit.runner.visualstudio`. |
-| **Moq** | Mocking library. Used for stubs and verifying interactions. |
+| **Nsubstitute** | Mocking library. Used for stubs and verifying interactions. |
 | **Microsoft.NET.Test.Sdk** | Test runner / discovery. |
 | **Testcontainers** | Real infrastructure (PostgreSQL, RabbitMQ) for integration tests. |
 
@@ -172,7 +172,7 @@ BasicFinance.Domain.UnitTests/
 
 ## Integration Tests
 
-Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure but mock external services (Keycloak, Google SDK).
+Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure (PostgreSQL, RabbitMQ) but mock external services (Google SDK) and authentication.
 
 ### When to write an integration test
 - Testing a vertical slice endpoint (e.g., `GET /api/accounts`)
@@ -187,84 +187,28 @@ Integration tests verify the full pipeline: endpoint → middleware → DbContex
 
 ### TestContainers setup
 
-Use `Testcontainers` NuGet packages for PostgreSQL and RabbitMQ. Share containers across test classes via `ICollectionFixture`:
+Use `Testcontainers` NuGet packages for PostgreSQL and RabbitMQ. Containers are shared across test classes via `AssemblyFixture` on `ApiAssemblyFixture`:
 
-```csharp
-public class TestContainerFixture : ICollectionFixture<TestContainerFixture>
-{
-    public static readonly IContainer PostgreSQL = new Containers.Builder()
-        .WithImage("postgres:17-alpine")
-        .WithEnvironment("POSTGRES_USER", "test")
-        .WithEnvironment("POSTGRES_PASSWORD", "test")
-        .WithEnvironment("POSTGRES_DB", "basicfinance_test")
-        .WithPortBinding(5432, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
-        .Build();
+- **PostgreSQL** (`postgres:17-alpine`) — real database for EF Core
+- **RabbitMQ** (`rabbitmq:3-management-alpine`) — real message broker for Wolverine
 
-    public static readonly IContainer RabbitMQ = new Containers.Builder()
-        .WithImage("rabbitmq:4-management")
-        .WithPortBinding(5672, true)
-        .WithPortBinding(15672, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5672))
-        .Build();
+### Authentication
 
-    static TestContainerFixture()
-    {
-        PostgreSQL.Start();
-        RabbitMQ.Start();
-    }
-}
-```
+A fake `AuthenticationHandler` (`TestAuthenticationHandler`) replaces the real JWT bearer handler during tests. It returns a fixed `ClaimsPrincipal` with a static test user ID (`ApiAssemblyFixture.TestUserId`), bypassing JWT validation. This keeps tests fast and removes the Keycloak container dependency.
+
+The auth scheme name remains `"keycloak"` (`ServiceDiscoveryNames.Keycloak`) to match the API's configured scheme. `ApiClassFixture` registers the test handler via `ConfigureTestServices`.
 
 ### WebApplicationFactory
 
-Create a custom factory inheriting `WebApplicationFactory<Program>` to configure test services:
+`ApiClassFixture` creates a `WebApplicationFactory<Program>` that:
+- Overrides connection strings to point to test containers
+- Replaces JWT authentication with `TestAuthenticationHandler`
+- Mocks `IGoogleServiceAccountClient` via NSubstitute
+- Runs EF Core migrations on startup
 
-```csharp
-public class TestApplicationFactory : WebApplicationFactory<Program>
-{
-    protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder builder)
-    {
-        base.ConfigureHostApplicationBuilder(builder);
+### Database isolation
 
-        // Replace production DB with TestContainers PostgreSQL
-        var postgresPort = TestContainerFixture.PostgreSQL.GetMappedPublicPort(5432);
-        builder.Configuration["ConnectionStrings:AppDbContext"] =
-            $"Host=localhost;Port={postgresPort};Database=basicfinance_test;Username=test;Password=test";
-
-        // Mock Keycloak authentication
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = "TestScheme";
-        }).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", options => { });
-
-        // Mock Google services
-        builder.Services.Replace(new ServiceDescriptor(IGoogleUserClient, Mock.Of<IGoogleUserClient>()));
-    }
-}
-```
-
-### Mocking Keycloak authentication
-
-Use a custom `AuthenticationHandler<TOptions>` to bypass Keycloak:
-
-```csharp
-public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-{
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
-            new Claim(ClaimTypes.Name, "test-user"),
-        };
-        var identity = new ClaimsIdentity(claims, "TestScheme");
-        var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, "TestScheme");
-        return Task.FromResult(AuthenticateResult.Success(ticket));
-    }
-}
-```
+Each test class gets its own PostgreSQL database (`DB_{guid}`). `Respawner` resets the database before each test. `ApiTestFixtureBase` handles DB reset and global data seeding (institutions, categories, etc.).
 
 ### Integration test naming
 
@@ -272,41 +216,65 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 
 ### Integration test structure
 
-Same Arrange-Act-Assert pattern, but Arrange includes DB seeding:
+Same Arrange-Act-Assert pattern, but Arrange includes DB seeding. Use the fluent helpers in `Helpers/` to reduce boilerplate:
 
 ```csharp
-public class ListAccountsTests : IClassFixture<TestApplicationFactory>
+public class ListAccountsTests : ApiTestFixtureBase
 {
-    readonly HttpClient _client;
-    readonly TestApplicationFactory _factory;
-
-    public ListAccountsTests(TestApplicationFactory factory)
+    public ListAccountsTests(ApiClassFixture fixture)
+        : base(fixture)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
-    public async Task ListAccounts_AuthenticatedUser_ReturnsAccountList()
+    public async Task ListAccounts_UserHasAccounts_ReturnsAccountList()
     {
-        // Arrange — seed test data via DbContext
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Accounts.Add(AccountFactory.Create());
-            await db.SaveChangesAsync();
-        }
+        // Arrange
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Test Account");
+        await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await _client.GetAsync("/api/accounts");
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<ListResult<AccountDto>>();
-        Assert.NotEmpty(result!.Items);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Contains(result.Items, a => a.AccountName == "Test Account");
     }
 }
 ```
+
+### Fluent helpers
+
+The `Helpers/` directory provides extension methods to reduce boilerplate:
+
+| Helper | Purpose |
+|--------|---------|
+| `DbContext.SeedAsync(entity)` | Add entity and call `SaveChangesAsync` in one call |
+| `DbContext.SeedRangeAsync(entities)` | Add multiple entities and call `SaveChangesAsync` |
+| `HttpClient.GetResultAsync<T>(uri)` | GET request, ensure success, deserialize JSON |
+| `AccountFactory.CreateBatch(count, ...)` | Create multiple accounts without loops in tests |
+| `TransactionFactory.CreateBatch(count, ...)` | Create multiple transactions without loops in tests |
+
+### Test constants
+
+Shared test values live in `Helpers/TestConstants`:
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `TestUserGoogleSpreadsheetId` | Fixed GUID | Used by factories and seed helper |
+| `WellsFargoInstitutionId` | `1` | Seed data institution ID |
+| `ChaseInstitutionId` | `2` | Seed data institution ID |
+| `ZeroGuid` | `"0000...0000"` | Non-existent entity ID for error tests |
+| `NonExistentInstitutionId` | `99999` | Non-existent institution for error tests |
+
+### Assertions
+
+- Use `Assert.All(collection, item => Assert.Equal(...))` instead of `foreach` loops.
+- Use `Assert.Empty(collection)` for empty list assertions.
+- Use `Assert.Equal(expected, actual)` instead of soft assertions like `Assert.True(count >= N)`.
+- Always assert `ListResult` metadata (`Page`, `PageSize`, `TotalCount`, `PageCount`) on every list endpoint test.
+- Never hide assertions inside helper methods. Assertions must be visible in the Assert section of the test. For error status tests, use `HttpClient.GetAsync()` in Act and `Assert.Equal(HttpStatusCode.*, response.StatusCode)` in Assert.
+- Seed data variables should be declared before being passed to `DbContext.SeedAsync()` for clarity and reusability within the test.
 
 ### What to assert in integration tests
 - HTTP status codes
@@ -316,9 +284,10 @@ public class ListAccountsTests : IClassFixture<TestApplicationFactory>
 
 ### What NOT to do in integration tests
 - Test framework behavior (assume ASP.NET Core, EF Core, xUnit work correctly)
-- Connect to real Keycloak or Google APIs (mock these)
+- Connect to real Google APIs (mock `IGoogleServiceAccountClient`)
 - Use in-memory database or SQLite (use real PostgreSQL via TestContainers)
 
 ## Code Style
 
 Follow the same `.editorconfig` rules as the source projects: file-scoped namespaces, `var` preferred, expression-bodied members where concise, braces required on control flow.
+
