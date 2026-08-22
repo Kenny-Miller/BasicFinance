@@ -31,19 +31,6 @@ namespace BasicFinance.Api.Features.Institutions
             string? SortDirection) : IPagedQuery, ISortedQuery;
 
         /// <summary>
-        /// Dto containing <see cref="Institution"/> data.
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="InstitutionCode"></param>
-        /// <param name="Name"></param>
-        /// <param name="LogoUrl"></param>
-        public record InstitutionDto(
-            int Id,
-            string InstitutionCode,
-            string Name,
-            string? LogoUrl);
-
-        /// <summary>
         /// Retrieves active <see cref="Institution"/>s based on the provided search criteria.
         /// </summary>
         /// <param name="request">The request query parameters.</param>
@@ -72,11 +59,7 @@ namespace BasicFinance.Api.Features.Institutions
                 .OrderBy(sortExpressionSelector, request)
                     .ThenBy(x => x.Name, request)
                 .Paginate(request)
-                .Select(x => new InstitutionDto(
-                    x.InstitutionId,
-                    x.InstitutionCode,
-                    x.Name,
-                    x.LogoUrl))
+                .Select(x => new InstitutionDto(x.InstitutionId, x.InstitutionCode, x.Name, x.LogoUrl))
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new ListResult<InstitutionDto>(institutions, request.Page, request.PageSize, totalCount));
@@ -88,7 +71,7 @@ namespace BasicFinance.Api.Features.Institutions
         private static readonly FrozenDictionary<string, Expression<Func<Institution, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Institution, object>>>(StringComparer.OrdinalIgnoreCase)
         {
             [nameof(InstitutionDto.Id)] = x => x.InstitutionId,
-            [nameof(InstitutionDto.InstitutionCode)] = x => x.InstitutionCode,
+            [nameof(InstitutionDto.Code)] = x => x.InstitutionCode,
             [nameof(InstitutionDto.Name)] = x => x.Name,
         }.ToFrozenDictionary();
     }

@@ -12,19 +12,8 @@ namespace BasicFinance.Api.Features.Accounts;
 /// <summary>
 /// Contains all logic associated with the <see cref="GetAccountById"/> Endpoint.
 /// </summary>
-public class GetAccountById
+public static class GetAccountById
 {
-    /// <summary>
-    /// Dto containing <see cref="Account"/> data.
-    /// </summary>
-    /// <param name="Id"></param>
-    /// <param name="AccountTypeCode"></param>
-    /// <param name="Institution"></param>
-    /// <param name="AccountName"></param>
-    /// <param name="Balance"></param>
-    /// <param name="BalanceRecordedDate"></param>
-    public record AccountDto(Guid Id, string AccountTypeCode, string Institution, string AccountName, decimal Balance, DateTimeOffset BalanceRecordedDate);
-
     /// <summary>
     /// Gets a <see cref="Account"/>s associated with the authenticated user and the specified Id.
     /// </summary>
@@ -53,9 +42,9 @@ public class GetAccountById
             .Where(x => x.IsActive)
             .Select(x => new AccountDto(
                 x.AccountId,
+                x.AccountName,
                 x.AccountType.AccountTypeCode,
                 x.Institution.Name,
-                x.AccountName,
                 x.Balance,
                 x.BalanceRecordedDate))
             .SingleOrDefaultAsync(cancellationToken);

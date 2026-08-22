@@ -12,27 +12,8 @@ namespace BasicFinance.Api.Features.Transactions;
 /// <summary>
 /// Contains all logic associated with the <see cref="GetTransactionById"/> Endpoint.
 /// </summary>
-public class GetTransactionById
+public static class GetTransactionById
 {
-    /// <summary>
-    /// Dto containing <see cref="Transaction"/> data.
-    /// </summary>
-    /// <param name="Id"></param>
-    /// <param name="TransactionTypeName"></param>
-    /// <param name="TransactionCategoryName"></param>
-    /// <param name="AccountName"></param>
-    /// <param name="Date"></param>
-    /// <param name="Amount"></param>
-    /// <param name="Description"></param>
-    public record TransactionDto(
-        Guid Id,
-        string TransactionTypeName,
-        string TransactionCategoryName,
-        string AccountName,
-        DateTimeOffset Date,
-        decimal Amount,
-        string Description);
-
     /// <summary>
     /// Gets a <see cref="Transaction"/>s associated with the authenticated user and the specified Id.
     /// </summary>

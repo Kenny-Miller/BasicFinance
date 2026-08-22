@@ -11,21 +11,8 @@ namespace BasicFinance.Api.Features.Institutions;
 /// <summary>
 /// Contains all logic associated with the <see cref="GetInstitutionById"/> Endpoint.
 /// </summary>
-public class GetInstitutionById
+public static class GetInstitutionById
 {
-    /// <summary>
-    /// Dto containing <see cref="Institution"/> data.
-    /// </summary>
-    /// <param name="Id"></param>
-    /// <param name="InstitutionCode"></param>
-    /// <param name="Name"></param>
-    /// <param name="LogoUrl"></param>
-    public record InstitutionDto(
-        int Id,
-        string InstitutionCode,
-        string Name,
-        string? LogoUrl);
-
     /// <summary>
     /// Gets an <see cref="Institution"/> with the specified Id.
     /// </summary>
@@ -47,11 +34,7 @@ public class GetInstitutionById
             .AsNoTracking()
             .Where(x => x.InstitutionId == institutionId)
             .Where(x => x.IsActive)
-            .Select(x => new InstitutionDto(
-                x.InstitutionId,
-                x.InstitutionCode,
-                x.Name,
-                x.LogoUrl))
+            .Select(i => new InstitutionDto(i.InstitutionId, i.InstitutionCode, i.Name, i.LogoUrl))
             .SingleOrDefaultAsync(cancellationToken);
 
         return institution != null

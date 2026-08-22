@@ -13,16 +13,9 @@ namespace BasicFinance.Api.Features.Institutions
     public static class GetMyInstitutions
     {
         /// <summary>
-        /// Dto representing an institution.
-        /// </summary>
-        /// <param name="InstitutionId"></param>
-        /// <param name="Name"></param>
-        public record InstitutionDto(int InstitutionId, string Name);
-
-        /// <summary>
         /// Retrieves distinct institutions for the authenticated user.
         /// Only includes institutions that have at least one active account belonging to the user.
-        /// </summary>s
+        /// </summary>
         /// <param name="user">The authenticated user performing the request.</param>
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted data.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
@@ -40,7 +33,7 @@ namespace BasicFinance.Api.Features.Institutions
                 .AsNoTracking()
                 .Where(i => i.IsActive)
                 .Where(i => i.Accounts.Any(a => a.UserId == user.Id && a.IsActive))
-                .Select(i => new InstitutionDto(i.InstitutionId, i.Name))
+                .Select(i => new InstitutionDto(i.InstitutionId, i.InstitutionCode, i.Name, i.LogoUrl))
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(institutions);

@@ -1,6 +1,5 @@
 ﻿using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +12,6 @@ namespace BasicFinance.Api.Features.Accounts
     /// </summary>
     public static class GetMyAccounts
     {
-        /// <summary>
-        /// Dto containing <see cref="Account"/> data.
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="AccountTypeCode"></param>
-        /// <param name="Institution"></param>
-        /// <param name="AccountName"></param>
-        /// <param name="Balance"></param>
-        /// <param name="BalanceRecordedDate"></param>
-        public record AccountDto(Guid Id, string AccountTypeCode, string Institution, string AccountName, decimal Balance, DateTimeOffset BalanceRecordedDate);
-
         /// <summary>
         /// Retrieves distinct institutions for the authenticated user.
         /// Only includes institutions that have at least one active account belonging to the user.
@@ -47,9 +35,9 @@ namespace BasicFinance.Api.Features.Accounts
                 .Where(a => a.UserId == user.Id)
                 .Select(x => new AccountDto(
                     x.AccountId,
+                    x.AccountName,
                     x.AccountType.AccountTypeCode,
                     x.Institution.Name,
-                    x.AccountName,
                     x.Balance,
                     x.BalanceRecordedDate))
                 .ToListAsync(cancellationToken);

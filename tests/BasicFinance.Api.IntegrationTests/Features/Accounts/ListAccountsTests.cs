@@ -34,7 +34,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         Assert.Equal(1, result.TotalCount);
         Assert.Equal(1, result.PageCount);
         Assert.Single(result.Items);
-        Assert.Contains(result.Items, a => a.AccountName == accountName);
+        Assert.Contains(result.Items, a => a.Name == accountName);
         Assert.Contains(result.Items, a => a.Balance == balance);
         Assert.Contains(result.Items, a => a.AccountTypeCode == "CHK");
     }
@@ -115,11 +115,11 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([zebraAccount, alphaAccount, middleAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=AccountName&sortDirection=Asc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Name&sortDirection=Asc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
-        var names = result.Items.Select(a => a.AccountName).ToList();
+        var names = result.Items.Select(a => a.Name).ToList();
         Assert.Equal("Alpha Account", names[0]);
         Assert.Equal("Middle Account", names[1]);
         Assert.Equal("Zebra Account", names[2]);

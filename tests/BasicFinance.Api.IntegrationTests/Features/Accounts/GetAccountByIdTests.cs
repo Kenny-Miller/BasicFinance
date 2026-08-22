@@ -28,7 +28,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<AccountDto>($"/api/Accounts/{account.AccountId}", CancellationToken);
 
         // Assert
-        Assert.Equal(accountName, result.AccountName);
+        Assert.Equal(accountName, result.Name);
         Assert.Equal(balance, result.Balance);
         Assert.Equal("CHK", result.AccountTypeCode);
         Assert.Equal("Wells Fargo", result.Institution);

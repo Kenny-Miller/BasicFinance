@@ -8,9 +8,9 @@ public static class DateTimeExtensions
     extension(DateTime source)
     {
         /// <summary>
-        /// Gets a value containing <paramref name="source"/> adjusted to the start of the week it lies within.
+        /// Gets a value containing <paramref name="source"/> adjusted to the start of the week it lies within, at midnight (00:00:00).
         /// </summary>
-        public DateTime StartOfWeek => source.AddDays(-(source.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)source.DayOfWeek - 1));
+        public DateTime StartOfWeek => source.AddDays(-(source.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)source.DayOfWeek - 1)).Date;
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the month it lies within.
@@ -79,7 +79,7 @@ public static class DateTimeExtensions
         {
             return timePeriod switch
             {
-                TimePeriod.Weekly => source.StartOfWeek.AddDays(offset * 7).AddDays(6).AddMilliseconds(-1),
+                TimePeriod.Weekly => source.StartOfWeek.AddDays(offset * 7).AddDays(7).AddMilliseconds(-1),
                 TimePeriod.Monthly => source.StartOfMonth.AddMonths(offset).AddMonths(1).AddMilliseconds(-1),
                 TimePeriod.Quarterly => source.StartOfQuarter.AddMonths(offset * 3).AddMonths(3).AddMilliseconds(-1),
                 TimePeriod.Yearly => source.StartOfYear.AddYears(offset).AddYears(1).AddMilliseconds(-1),

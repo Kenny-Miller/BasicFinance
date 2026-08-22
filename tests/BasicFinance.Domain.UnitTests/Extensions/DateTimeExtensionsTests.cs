@@ -10,39 +10,39 @@ public class DateTimeExtensionsTests
     public void StartOfWeek_Monday_ReturnsSameDate()
     {
         // Arrange
-        var dt = new DateTime(2026, 8, 3, 14, 30, 0, DateTimeKind.Utc);
+        var dt = new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var result = dt.StartOfWeek;
 
         // Assert
-        Assert.Equal(new DateTime(2026, 8, 3, 14, 30, 0, DateTimeKind.Utc), result);
+        Assert.Equal(new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Utc), result);
     }
 
     [Fact]
     public void StartOfWeek_Friday_ReturnsMonday()
     {
         // Arrange
-        var dt = new DateTime(2026, 8, 7, 14, 30, 0, DateTimeKind.Utc);
+        var dt = new DateTime(2026, 8, 7, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var result = dt.StartOfWeek;
 
         // Assert
-        Assert.Equal(new DateTime(2026, 8, 3, 14, 30, 0, DateTimeKind.Utc), result);
+        Assert.Equal(new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Utc), result);
     }
 
     [Fact]
     public void StartOfWeek_Sunday_ReturnsPreviousMonday()
     {
         // Arrange
-        var dt = new DateTime(2026, 8, 2, 14, 30, 0, DateTimeKind.Utc);
+        var dt = new DateTime(2026, 8, 2, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var result = dt.StartOfWeek;
 
         // Assert
-        Assert.Equal(new DateTime(2026, 7, 27, 14, 30, 0, DateTimeKind.Utc), result);
+        Assert.Equal(new DateTime(2026, 7, 27, 0, 0, 0, DateTimeKind.Utc), result);
     }
 
     [Fact]

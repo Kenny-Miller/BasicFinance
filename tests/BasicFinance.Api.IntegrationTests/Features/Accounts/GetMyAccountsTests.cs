@@ -27,7 +27,7 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        Assert.Contains(result, a => a.AccountName == accountName);
+        Assert.Contains(result, a => a.Name == accountName);
         Assert.Contains(result, a => a.Balance == balance);
         Assert.Single(result);
     }
@@ -56,6 +56,6 @@ public class GetMyAccountsTests : ApiTestFixtureBase
 
         // Assert
         Assert.Single(result);
-        Assert.Equal("Active Account", result[0].AccountName);
+        Assert.Equal("Active Account", result[0].Name);
     }
 }
