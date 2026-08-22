@@ -36,17 +36,6 @@ namespace BasicFinance.Api.Features.Accounts
             string? Institution) : IPagedQuery, ISortedQuery;
 
         /// <summary>
-        /// Dto containing <see cref="Account"/> data.
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="AccountTypeCode"></param>
-        /// <param name="Institution"></param>
-        /// <param name="AccountName"></param>
-        /// <param name="Balance"></param>
-        /// <param name="BalanceRecordedDate"></param>
-        public record AccountDto(Guid Id, string AccountTypeCode, string Institution, string AccountName, decimal Balance, DateTimeOffset BalanceRecordedDate);
-
-        /// <summary>
         /// Retrieves <see cref="Account"/>s associated with the authenticated user
         /// based on the provided search criteria.
         /// </summary>
@@ -66,7 +55,7 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var sortField = request.SortField ?? nameof(AccountDto.AccountName);
+            var sortField = request.SortField ?? nameof(AccountDto.Name);
             var sortExpressionSelector = SortFieldExpressionSelectors.GetValueOrDefault(sortField, x => x.AccountName);
 
             var baseQuery = dbContext.Accounts
@@ -85,9 +74,9 @@ namespace BasicFinance.Api.Features.Accounts
                 .Paginate(request)
                 .Select(x => new AccountDto(
                     x.AccountId,
+                    x.AccountName,
                     x.AccountType.AccountTypeCode,
                     x.Institution.Name,
-                    x.AccountName,
                     x.Balance,
                     x.BalanceRecordedDate))
                 .ToListAsync(cancellationToken);
@@ -119,9 +108,9 @@ namespace BasicFinance.Api.Features.Accounts
         private static readonly FrozenDictionary<string, Expression<Func<Account, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Account, object>>>(StringComparer.OrdinalIgnoreCase)
         {
             [nameof(AccountDto.Id)] = x => x.AccountId,
+            [nameof(AccountDto.Name)] = x => x.AccountName,
             [nameof(AccountDto.AccountTypeCode)] = x => x.AccountType.AccountTypeCode,
             [nameof(AccountDto.Institution)] = x => x.Institution.Name,
-            [nameof(AccountDto.AccountName)] = x => x.AccountName,
             [nameof(AccountDto.Balance)] = x => x.Balance,
             [nameof(AccountDto.BalanceRecordedDate)] = x => x.BalanceRecordedDate,
         }.ToFrozenDictionary();

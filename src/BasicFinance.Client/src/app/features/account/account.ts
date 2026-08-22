@@ -19,7 +19,7 @@ export class Account implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
-      this.accountId.set(parseInt(params['id'] ?? '0'));
+      this.accountId.set(parseInt(params['institutionId'] ?? '0'));
       console.log('fetching data');
 
       this.pageService.setPageTitle(`My Account: ${this.accountId()}`);

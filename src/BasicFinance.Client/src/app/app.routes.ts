@@ -22,7 +22,7 @@ export const routes: Routes = [
     title: 'Settings',
   },
   {
-    path: 'Accounts/:id',
+    path: 'Accounts/:institutionId',
     component: Account,
     canActivate: [authGuard],
     title: 'Account',
