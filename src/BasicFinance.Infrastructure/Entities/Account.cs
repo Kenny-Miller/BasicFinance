@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 
 namespace BasicFinance.Infrastructure.Entities
 {
@@ -50,12 +49,6 @@ namespace BasicFinance.Infrastructure.Entities
         public required string AccountName { get; init; }
 
         /// <summary>
-        /// Gets a value indicating the current balance of the account.
-        /// </summary>
-        [Precision(18, 2)]
-        public decimal Balance { get; private set; }
-
-        /// <summary>
         /// Gets a value indicating the currency of the account balance (e.g., "USD", "EUR").
         /// </summary>
         [Required]
@@ -67,11 +60,6 @@ namespace BasicFinance.Infrastructure.Entities
         /// </summary>
         [MaxLength(255)]
         public string? Notes { get; init; }
-
-        /// <summary>
-        /// Gets a value indicating the date and time when the account balance was recorded.
-        /// </summary>
-        public DateTimeOffset BalanceRecordedDate { get; private set; }
 
         /// <summary>
         /// Gets a value indicating the unique identifier of the financial institution associated with the account.
@@ -99,9 +87,9 @@ namespace BasicFinance.Infrastructure.Entities
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// Navigation collection of <see cref="AccountBalanceHistory"/> entries associated with this account.
+        /// Navigation collection of <see cref="AccountLedger"/> entries associated with this account.
         /// </summary>
-        public ICollection<AccountBalanceHistory> AccountBalanceHistory { get; set; } = [];
+        public ICollection<AccountLedger> Ledger { get; set; } = [];
 
         /// <summary>
         /// Navigation collection of <see cref="Transaction"/> entries associated with this account.
@@ -115,33 +103,27 @@ namespace BasicFinance.Infrastructure.Entities
         /// <param name="accountType"></param>
         /// <param name="userId"></param>
         /// <param name="accountName"></param>
-        /// <param name="balance"></param>
         /// <param name="currency"></param>
         /// <param name="notes"></param>
         /// <param name="institutionId"></param>
         /// <param name="financialAccountId"></param>
-        /// <param name="balanceRecordedDate"></param>
         [SetsRequiredMembers]
         public Account(
             Guid userGoogleSpreadsheetId,
             Enums.AccountType accountType,
             string userId,
             string accountName,
-            decimal balance,
             string currency,
             string notes,
             int institutionId,
-            Guid financialAccountId,
-            DateTimeOffset balanceRecordedDate)
+            Guid financialAccountId)
         {
             UserGoogleSpreadsheetId = userGoogleSpreadsheetId;
             AccountTypeId = (int)accountType;
             UserId = userId;
             AccountName = accountName;
-            Balance = balance;
             Currency = currency;
             Notes = notes;
-            BalanceRecordedDate = balanceRecordedDate;
             InstitutionId = institutionId;
             FinancialAccountId = financialAccountId;
         }
@@ -155,15 +137,16 @@ namespace BasicFinance.Infrastructure.Entities
         }
 
         /// <summary>
-        /// Updates the balance and the date the balance was recorded for the account.
+        /// Marks the account as active or inactive, recording the modification date when inactivated.
         /// </summary>
-        /// <param name="newBalance"></param>
-        /// <param name="balanceRecordedDate"></param>
-        public void UpdateBalance(decimal newBalance, DateTimeOffset balanceRecordedDate)
+        /// <param name="isActive">Whether the account is active.</param>
+        public void SetIsActive(bool isActive)
         {
-            Balance = newBalance;
-            BalanceRecordedDate = balanceRecordedDate;
-            SystemModifiedDate = DateTimeOffset.UtcNow;
+            IsActive = isActive;
+            if (!isActive)
+            {
+                SystemModifiedDate = DateTimeOffset.UtcNow;
+            }
         }
     }
 }

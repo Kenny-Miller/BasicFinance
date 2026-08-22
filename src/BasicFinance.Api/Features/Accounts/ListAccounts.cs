@@ -1,6 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Linq.Expressions;
-using BasicFinance.Api.Common.Authentication;
+﻿using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Queries;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Entities;
@@ -56,29 +54,21 @@ namespace BasicFinance.Api.Features.Accounts
             CancellationToken cancellationToken)
         {
             var sortField = request.SortField ?? nameof(AccountDto.Name);
-            var sortExpressionSelector = SortFieldExpressionSelectors.GetValueOrDefault(sortField, x => x.AccountName);
 
-            var baseQuery = dbContext.Accounts
-                .AsNoTracking()
-                .Include(x => x.Institution)
-                .Where(x => x.UserId == user.Id)
-                .Where(x => x.IsActive);
+            var baseAccounts = ApplyFilters(
+                dbContext.Accounts
+                    .AsNoTracking()
+                    .Where(x => x.UserId == user.Id)
+                    .Where(x => x.IsActive),
+                request);
 
-            baseQuery = ApplyFilters(baseQuery, request);
+            var totalCount = await baseAccounts.CountAsync(cancellationToken);
 
-            var totalCount = await baseQuery.CountAsync(cancellationToken);
-
-            var accounts = await baseQuery
-                .OrderBy(sortExpressionSelector, request)
-                    .ThenBy(x => x.AccountName, request)
-                .Paginate(request)
-                .Select(x => new AccountDto(
-                    x.AccountId,
-                    x.AccountName,
-                    x.AccountType.AccountTypeCode,
-                    x.Institution.Name,
-                    x.Balance,
-                    x.BalanceRecordedDate))
+            var accounts = await BuildPagedQuery(
+                    baseAccounts,
+                    AccountLedgerQueries.LatestPerAccountForUser(dbContext, user.Id),
+                    sortField,
+                    request)
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new ListResult<AccountDto>(accounts, request.Page, request.PageSize, totalCount));
@@ -103,16 +93,50 @@ namespace BasicFinance.Api.Features.Accounts
         }
 
         /// <summary>
-        /// Reference dictionary mapping sortable field names to their corresponding selectors for the <see cref="Account"/>.
+        /// Left-joins the base accounts to their most recent ledger entry and applies
+        /// sort, tie-break sort, pagination, and the final projection. The join projects
+        /// to an anonymous type so that ordering and pagination are translated to SQL.
         /// </summary>
-        private static readonly FrozenDictionary<string, Expression<Func<Account, object>>> SortFieldExpressionSelectors = new Dictionary<string, Expression<Func<Account, object>>>(StringComparer.OrdinalIgnoreCase)
+        private static IQueryable<AccountDto> BuildPagedQuery(
+            IQueryable<Account> baseAccounts,
+            IQueryable<AccountLedger> latestLedger,
+            string sortField,
+            Request request)
         {
-            [nameof(AccountDto.Id)] = x => x.AccountId,
-            [nameof(AccountDto.Name)] = x => x.AccountName,
-            [nameof(AccountDto.AccountTypeCode)] = x => x.AccountType.AccountTypeCode,
-            [nameof(AccountDto.Institution)] = x => x.Institution.Name,
-            [nameof(AccountDto.Balance)] = x => x.Balance,
-            [nameof(AccountDto.BalanceRecordedDate)] = x => x.BalanceRecordedDate,
-        }.ToFrozenDictionary();
+            var items =
+                from a in baseAccounts
+                join lg in latestLedger on a.AccountId equals lg.AccountId into joined
+                from lg in joined.DefaultIfEmpty()
+                select new
+                {
+                    a.AccountId,
+                    a.AccountName,
+                    AccountTypeCode = a.AccountType.AccountTypeCode,
+                    Institution = a.Institution.Name,
+                    Balance = lg != null ? lg.Balance : 0m,
+                    BalanceRecordedDate = lg != null ? lg.BalanceRecordedDate : DateTimeOffset.MinValue
+                };
+
+            var sorted = sortField switch
+            {
+                nameof(AccountDto.Id) => items.OrderBy(x => x.AccountId, request),
+                nameof(AccountDto.AccountTypeCode) => items.OrderBy(x => x.AccountTypeCode, request),
+                nameof(AccountDto.Institution) => items.OrderBy(x => x.Institution, request),
+                nameof(AccountDto.Balance) => items.OrderBy(x => x.Balance, request),
+                nameof(AccountDto.BalanceRecordedDate) => items.OrderBy(x => x.BalanceRecordedDate, request),
+                _ => items.OrderBy(x => x.AccountName, request)
+            };
+
+            return sorted
+                .ThenBy(x => x.AccountName, request)
+                .Paginate(request)
+                .Select(x => new AccountDto(
+                    x.AccountId,
+                    x.AccountName,
+                    x.AccountTypeCode,
+                    x.Institution,
+                    x.Balance,
+                    x.BalanceRecordedDate));
+        }
     }
 }

@@ -2,6 +2,7 @@ using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -75,7 +76,7 @@ namespace BasicFinance.Api.Features.Accounts
 
         /// <summary>
         /// Retrieves the account balance summary for the authenticated user.
-        /// Both periods are sourced from the most recent active balance history
+        /// Both periods are sourced from the most recent balance ledger entry
         /// on or before each period's end (last known balances are carried forward).
         /// </summary>
         /// <param name="request">The request containing the recorded date and time period.</param>
@@ -106,18 +107,26 @@ namespace BasicFinance.Api.Features.Accounts
 
             var resolution = (request.TimePeriod ?? TimePeriod.Monthly).ToPeriodResolution(request.RecordedDate, timeProvider.GetUtcNow());
 
-            var scopedHistories = dbContext.AccountBalanceHistories
+            var currentScoped = dbContext.AccountLedgers
                 .AsNoTracking()
-                .Where(h => h.IsActive &&
-                            h.Account.UserId == user.Id &&
-                            h.Account.IsActive);
+                .Where(l => l.Account.UserId == user.Id)
+                .WhereAccountActiveDuring(
+                    resolution.CurrentRange.RangeStartDate,
+                    resolution.CurrentRange.RangeEndDate);
 
-            var currentSnapshots = await AccountBalanceHistoryQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                scopedHistories,
+            var previousScoped = dbContext.AccountLedgers
+                .AsNoTracking()
+                .Where(l => l.Account.UserId == user.Id)
+                .WhereAccountActiveDuring(
+                    resolution.PreviousRange.RangeStartDate,
+                    resolution.PreviousRange.RangeEndDate);
+
+            var currentSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
+                currentScoped,
                 resolution.CurrentRange.RangeEndDate,
                 cancellationToken);
-            var previousSnapshots = await AccountBalanceHistoryQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                scopedHistories,
+            var previousSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
+                previousScoped,
                 resolution.PreviousRange.RangeEndDate,
                 cancellationToken);
 
@@ -138,26 +147,26 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         /// <param name="accounts"></param>
         /// <returns></returns>
-        private static TotalBalanceBreakdown BuildBreakdown(List<AccountBalanceHistoryQueries.Snapshot> accounts)
+        private static TotalBalanceBreakdown BuildBreakdown(List<AccountLedgerQueries.Snapshot> accounts)
         {
             if (accounts.Count == 0)
             {
                 return new(0m, []);
             }
 
-            var netWorth = accounts.Sum(a => AccountBalanceHistoryQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance);
+            var netWorth = accounts.Sum(a => AccountLedgerQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance);
 
             var breakdowns = accounts
                 .GroupBy(a => a.AccountTypeCode)
                 .Select(g =>
                 {
-                    var typeBalance = g.Sum(a => AccountBalanceHistoryQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance);
+                    var typeBalance = g.Sum(a => AccountLedgerQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance);
                     var typeAbsoluteBalance = g.Sum(a => a.Balance);
                     var percentageOfTotal = netWorth != 0 ? (typeBalance / netWorth) * 100m : 0m;
 
                     var accountList = g.Select(a =>
                     {
-                        var signedBalance = AccountBalanceHistoryQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance;
+                        var signedBalance = AccountLedgerQueries.IsLiability(a.AccountType) ? -a.Balance : a.Balance;
                         var pctOfTotal = netWorth != 0 ? Math.Round((signedBalance / netWorth) * 100m, 0) : 0m;
                         var pctOfType = typeAbsoluteBalance != 0 ? Math.Round((a.Balance / typeAbsoluteBalance) * 100m, 0) : 0m;
                         return new AccountDto(

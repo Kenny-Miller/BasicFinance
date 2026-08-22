@@ -33,18 +33,19 @@ public static class GetAccountById
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var account = await dbContext.Accounts
+        var baseAccounts = dbContext.Accounts
             .AsNoTracking()
-            .Include(x => x.AccountType)
-            .Include(x => x.Institution)
             .Where(x => x.AccountId == accountId)
             .Where(x => x.UserId == user.Id)
-            .Where(x => x.IsActive)
+            .Where(x => x.IsActive);
+
+        var account = await baseAccounts
+            .WithLatestLedger(AccountLedgerQueries.LatestPerAccountForUser(dbContext, user.Id))
             .Select(x => new AccountDto(
                 x.AccountId,
                 x.AccountName,
-                x.AccountType.AccountTypeCode,
-                x.Institution.Name,
+                x.AccountTypeCode,
+                x.Institution,
                 x.Balance,
                 x.BalanceRecordedDate))
             .SingleOrDefaultAsync(cancellationToken);

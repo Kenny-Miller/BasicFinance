@@ -17,6 +17,12 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     private static readonly DateTimeOffset PreviousMonthRecordedDate = new(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset PreviousQuarterRecordedDate = new(2026, 6, 15, 12, 0, 0, TimeSpan.Zero);
 
+    /// <summary>
+    /// Account creation date before the previous period's end so the account
+    /// counts as active during both periods (carry-forward scoping).
+    /// </summary>
+    private static readonly DateTimeOffset AccountCreatedDate = new(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+
     public GetAccountBalanceSummaryTests(ApiClassFixture fixture)
         : base(fixture)
     {
@@ -27,10 +33,10 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     {
         // Arrange
         var now = DateTimeOffset.UtcNow;
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Monthly Default Checking", balance: 1000m);
-        var history = AccountBalanceHistoryFactory.CreateFor(account);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Monthly Default Checking");
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 1000m);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedAsync(history, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<BalanceSummaryResponseDto>(EndpointUrl, CancellationToken);
@@ -52,11 +58,11 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     public async Task GetAllAccountAnalytics_LatestHistoryOnOrBeforePeriodEnd_ReturnsLatestBalancesPerPeriod()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Current Checking", balance: 1200m);
-        var previousHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 1500m, balanceRecordedDate: PreviousMonthRecordedDate);
-        var currentHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 1200m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Current Checking", systemCreatedDate: AccountCreatedDate);
+        var previousLedger = AccountLedgerFactory.CreateFor(account, balance: 1500m, balanceRecordedDate: PreviousMonthRecordedDate);
+        var currentLedger = AccountLedgerFactory.CreateFor(account, balance: 1200m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedRangeAsync([previousHistory, currentHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([previousLedger, currentLedger], CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Monthly");
@@ -74,10 +80,10 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     public async Task GetAllAccountAnalytics_NoHistoryInCurrentPeriod_CarriesForwardLastKnownBalance()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Carried Forward Checking", balance: 900m);
-        var history = AccountBalanceHistoryFactory.CreateFor(account, balance: 900m, balanceRecordedDate: PreviousMonthRecordedDate);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Carried Forward Checking", systemCreatedDate: AccountCreatedDate);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 900m, balanceRecordedDate: PreviousMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedAsync(history, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Monthly");
@@ -91,11 +97,11 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     public async Task GetAllAccountAnalytics_QuarterlyPeriod_ReturnsQuarterlyBoundariesAndBalances()
     {
         // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Quarterly Checking", balance: 1300m);
-        var previousQuarterHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 700m, balanceRecordedDate: PreviousQuarterRecordedDate);
-        var currentQuarterHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 1300m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Quarterly Checking", systemCreatedDate: AccountCreatedDate);
+        var previousQuarterLedger = AccountLedgerFactory.CreateFor(account, balance: 700m, balanceRecordedDate: PreviousQuarterRecordedDate);
+        var currentQuarterLedger = AccountLedgerFactory.CreateFor(account, balance: 1300m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedRangeAsync([previousQuarterHistory, currentQuarterHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([previousQuarterLedger, currentQuarterLedger], CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Quarterly");
@@ -113,13 +119,13 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     public async Task GetAllAccountAnalytics_InactiveAccountHistory_IsExcluded()
     {
         // Arrange
-        var activeAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Active Checking", balance: 500m);
-        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Checking", balance: 999m);
+        var activeAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Active Checking");
+        var inactiveAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Inactive Checking");
         inactiveAccount.IsActive = false;
-        var activeHistory = AccountBalanceHistoryFactory.CreateFor(activeAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
-        var inactiveHistory = AccountBalanceHistoryFactory.CreateFor(inactiveAccount, balance: 999m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var activeLedger = AccountLedgerFactory.CreateFor(activeAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var inactiveLedger = AccountLedgerFactory.CreateFor(inactiveAccount, balance: 999m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedRangeAsync([activeAccount, inactiveAccount], CancellationToken);
-        await DbContext.SeedRangeAsync([activeHistory, inactiveHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([activeLedger, inactiveLedger], CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Monthly");
@@ -135,12 +141,12 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     {
         // Arrange
         var otherUserId = Guid.NewGuid().ToString();
-        var myAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Mine Checking", balance: 500m);
-        var otherAccount = AccountFactory.Create(otherUserId, accountName: "Other Checking", balance: 777m);
-        var myHistory = AccountBalanceHistoryFactory.CreateFor(myAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
-        var otherHistory = AccountBalanceHistoryFactory.CreateFor(otherAccount, balance: 777m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var myAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Mine Checking");
+        var otherAccount = AccountFactory.Create(otherUserId, accountName: "Other Checking");
+        var myLedger = AccountLedgerFactory.CreateFor(myAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var otherLedger = AccountLedgerFactory.CreateFor(otherAccount, balance: 777m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedRangeAsync([myAccount, otherAccount], CancellationToken);
-        await DbContext.SeedRangeAsync([myHistory, otherHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([myLedger, otherLedger], CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Monthly");
@@ -155,12 +161,12 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
     public async Task GetAllAccountAnalytics_CreditCardBalance_IsTreatedAsLiability()
     {
         // Arrange
-        var checkingAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Checking Liability", balance: 500m);
-        var creditAccount = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.CreditCard, accountName: "Credit Liability", balance: 200m);
-        var checkingHistory = AccountBalanceHistoryFactory.CreateFor(checkingAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
-        var creditHistory = AccountBalanceHistoryFactory.CreateFor(creditAccount, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var checkingAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Checking Liability");
+        var creditAccount = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.CreditCard, accountName: "Credit Liability");
+        var checkingLedger = AccountLedgerFactory.CreateFor(checkingAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var creditLedger = AccountLedgerFactory.CreateFor(creditAccount, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedRangeAsync([checkingAccount, creditAccount], CancellationToken);
-        await DbContext.SeedRangeAsync([checkingHistory, creditHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([checkingLedger, creditLedger], CancellationToken);
 
         // Act
         var result = await GetResultAsync(AnchorDate, "Monthly");

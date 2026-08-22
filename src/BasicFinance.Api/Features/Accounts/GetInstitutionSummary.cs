@@ -3,6 +3,7 @@ using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Enums;
+using BasicFinance.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +50,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Retrieves account-level summary for a specific institution.
         /// Validates that the authenticated user owns at least one active account at the institution.
-        /// Period totals are sourced from the most recent active balance history
+        /// Period totals are sourced from the most recent balance ledger entry
         /// on or before each period's end (last known balances are carried forward).
         /// </summary>
         /// <param name="institutionId">The unique identifier of the institution.</param>
@@ -86,59 +87,80 @@ namespace BasicFinance.Api.Features.Accounts
             var institution = await dbContext.Institutions
                 .AsNoTracking()
                 .Where(i => i.InstitutionId == institutionId)
-                .Select(i => new
-                {
-                    InstitutionName = i.Name,
-                    Accounts = i.Accounts
-                        .Where(a => a.UserId == user.Id && a.IsActive)
-                        .Select(a => new
-                        {
-                            a.AccountId,
-                            a.AccountName,
-                            a.AccountTypeId,
-                            a.AccountType.AccountTypeCode,
-                            a.Balance,
-                            a.BalanceRecordedDate
-                        })
-                        .ToList()
-                })
+                .Where(i => i.Accounts.Any(a => a.UserId == user.Id && a.IsActive))
+                .Select(i => i.Name)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (institution == null || institution.Accounts.Count == 0)
+            if (institution == null)
             {
                 return TypedResults.BadRequest("Institution not found or you have no accounts at this institution.");
             }
 
-            var accountIds = institution.Accounts.Select(a => a.AccountId).ToHashSet();
-
-            var accountDetails = institution.Accounts
-                .Select(a => new AccountDto(
+            var accountRows = await dbContext.Accounts
+                .AsNoTracking()
+                .Where(a => a.InstitutionId == institutionId)
+                .Where(a => a.UserId == user.Id)
+                .Where(a => a.IsActive)
+                .Select(a => new
+                {
                     a.AccountId,
                     a.AccountName,
-                    a.AccountTypeCode,
-                    institution.InstitutionName,
-                    AccountBalanceHistoryQueries.IsLiability((AccountType)a.AccountTypeId) ? -a.Balance : a.Balance,
-                    a.BalanceRecordedDate
-                ))
+                    a.AccountTypeId,
+                    a.AccountType.AccountTypeCode
+                })
+                .ToListAsync(cancellationToken);
+
+            var accountIds = accountRows.Select(a => a.AccountId).ToHashSet();
+
+            var latestLedger = await dbContext.AccountLedgers
+                .AsNoTracking()
+                .Where(l => accountIds.Contains(l.AccountId))
+                .WithLatestPerAccount()
+                .ToDictionaryAsync(l => l.AccountId, cancellationToken);
+
+            var accountDetails = accountRows
+                .Select(a =>
+                {
+                    latestLedger.TryGetValue(a.AccountId, out var entry);
+                    var balance = entry?.Balance ?? 0m;
+                    var recordedDate = entry?.BalanceRecordedDate ?? DateTimeOffset.MinValue;
+                    return new AccountDto(
+                        a.AccountId,
+                        a.AccountName,
+                        a.AccountTypeCode,
+                        institution,
+                        AccountLedgerQueries.IsLiability((AccountType)a.AccountTypeId) ? -balance : balance,
+                        recordedDate
+                    );
+                })
                 .ToList();
 
-            var scopedHistories = dbContext.AccountBalanceHistories
+            var currentScoped = dbContext.AccountLedgers
                 .AsNoTracking()
-                .Where(h => h.IsActive &&
-                            accountIds.Contains(h.AccountId));
+                .Where(l => accountIds.Contains(l.AccountId))
+                .WhereAccountActiveDuring(
+                    resolution.CurrentRange.RangeStartDate,
+                    resolution.CurrentRange.RangeEndDate);
 
-            var currentSnapshots = await AccountBalanceHistoryQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                scopedHistories,
+            var previousScoped = dbContext.AccountLedgers
+                .AsNoTracking()
+                .Where(l => accountIds.Contains(l.AccountId))
+                .WhereAccountActiveDuring(
+                    resolution.PreviousRange.RangeStartDate,
+                    resolution.PreviousRange.RangeEndDate);
+
+            var currentSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
+                currentScoped,
                 resolution.CurrentRange.RangeEndDate,
                 cancellationToken);
-            var previousSnapshots = await AccountBalanceHistoryQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                scopedHistories,
+            var previousSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
+                previousScoped,
                 resolution.PreviousRange.RangeEndDate,
                 cancellationToken);
 
             var response = new InstitutionSummaryResponse(
                 institutionId,
-                institution.InstitutionName,
+                institution,
                 accountDetails,
                 CalculateTypeTotals(currentSnapshots),
                 CalculateTypeTotals(previousSnapshots),
@@ -155,7 +177,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// Aggregates account-type totals from a list of account snapshots.
         /// Credit card balances are treated as liabilities (negative).
         /// </summary>
-        static Dictionary<string, decimal> CalculateTypeTotals(List<AccountBalanceHistoryQueries.Snapshot> snapshots)
+        static Dictionary<string, decimal> CalculateTypeTotals(List<AccountLedgerQueries.Snapshot> snapshots)
         {
             if (snapshots.Count == 0)
             {
@@ -166,7 +188,7 @@ namespace BasicFinance.Api.Features.Accounts
                 .GroupBy(s => s.AccountTypeCode)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Sum(s => AccountBalanceHistoryQueries.IsLiability(s.AccountType) ? -s.Balance : s.Balance)
+                    g => g.Sum(s => AccountLedgerQueries.IsLiability(s.AccountType) ? -s.Balance : s.Balance)
                 );
         }
     }

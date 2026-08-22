@@ -20,8 +20,10 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         // Arrange
         const string accountName = "My Checking";
         const decimal balance = 5000m;
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance);
         await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);

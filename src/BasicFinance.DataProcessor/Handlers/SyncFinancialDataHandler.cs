@@ -4,6 +4,7 @@ using BasicFinance.Domain.Commands;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.Infrastructure.Entities;
+using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.Infrastructure.Helpers;
 using BasicFinance.Infrastructure.VendorModels;
 using BasicFinance.Infrastructure.VendorModels.Exports;
@@ -75,7 +76,6 @@ namespace BasicFinance.DataProcessor.Handlers
             var existingAccountsDict = await dbContext.Accounts
                     .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
                     .Where(x => x.UserId == userId)
-                    .Where(x => x.IsActive)
                     .Include(x => x.Institution)
                     .ToDictionaryAsync(x => new { x.FinancialAccountId, InstitutionName = x.Institution.Name });
 
@@ -85,20 +85,28 @@ namespace BasicFinance.DataProcessor.Handlers
                 .Where(x => x.IsActive)
                 .ToDictionaryAsync(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
-            // Update existing accounts and remove accounts that no longer exist in the spreadsheet
+            var accountIds = existingAccountsDict.Values.Select(x => x.AccountId).ToList();
+            var latestLedgerByAccount = await dbContext.AccountLedgers
+                .Where(x => accountIds.Contains(x.AccountId))
+                .WithLatestPerAccount()
+                .ToDictionaryAsync(x => x.AccountId);
+
+            // Update existing accounts and deactivate accounts that no longer exist in the spreadsheet
             foreach (var (key, existingAccount) in existingAccountsDict)
             {
                 if (accountRowDict.TryGetValue(key, out var accountRow))
                 {
-                    if (accountRow.Balance != existingAccount.Balance)
+                    if (!existingAccount.IsActive)
                     {
-                        dbContext.AccountBalanceHistories.Add(new(existingAccount));
-                        existingAccount.UpdateBalance(accountRow.Balance, accountRow.LastUpdateDated);
+                        existingAccount.SetIsActive(true);
                     }
+
+                    AppendLedgerEntryIfChanged(dbContext, existingAccount, accountRow, latestLedgerByAccount);
                 }
                 else
                 {
-                    dbContext.Remove(existingAccount);
+                    // Soft-close the account so its metadata and balance ledger are retained for period queries
+                    existingAccount.SetIsActive(false);
                 }
 
                 accountRowDict.Remove(key);
@@ -147,17 +155,37 @@ namespace BasicFinance.DataProcessor.Handlers
                    accountType.Value,
                    userId,
                    accountRow.AccountName,
-                   accountRow.Balance,
                    accountRow.Currency,
                    accountRow.Notes,
                    institution.InstitutionId,
-                   accountRow.FinancialAccountId,
-                   accountRow.LastUpdateDated);
+                   accountRow.FinancialAccountId);
                 newAccounts.Add(accountToCreate);
+                dbContext.AccountLedgers.Add(new AccountLedger(accountToCreate, accountRow.Balance, accountRow.LastUpdateDated));
             }
 
             dbContext.Accounts.AddRange(newAccounts);
             await dbContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Appends a balance ledger entry for the account when the spreadsheet reports a balance or
+        /// recorded date that differs from the account's latest ledger entry.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="account"></param>
+        /// <param name="accountRow"></param>
+        /// <param name="latestLedgerByAccount"></param>
+        static void AppendLedgerEntryIfChanged(AppDbContext dbContext, Account account, AccountGoogleSpreadsheetRow accountRow, Dictionary<Guid, AccountLedger> latestLedgerByAccount)
+        {
+            latestLedgerByAccount.TryGetValue(account.AccountId, out var latest);
+            if (latest is not null &&
+                latest.Balance == accountRow.Balance &&
+                latest.BalanceRecordedDate == accountRow.LastUpdateDated)
+            {
+                return;
+            }
+
+            dbContext.AccountLedgers.Add(new AccountLedger(account, accountRow.Balance, accountRow.LastUpdateDated));
         }
 
         /// <summary>

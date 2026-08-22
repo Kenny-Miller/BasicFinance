@@ -14,6 +14,12 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     private static readonly DateTimeOffset CurrentMonthRecordedDate = new(2026, 8, 5, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset PreviousMonthRecordedDate = new(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
 
+    /// <summary>
+    /// Account creation date before the previous period so the account
+    /// counts as active during it (carry-forward scoping).
+    /// </summary>
+    private static readonly DateTimeOffset PreviousPeriodAccountCreatedDate = new(2026, 6, 15, 0, 0, 0, TimeSpan.Zero);
+
     public GetAccountInstitutionSummaryTests(ApiClassFixture fixture)
         : base(fixture)
     {
@@ -26,12 +32,10 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         var account = AccountFactory.Create(
             AuthenticatedUserId,
             accountName: "Institution Checking",
-            balance: 1000m,
-            institutionId: TestConstants.WellsFargoInstitutionId,
-            balanceRecordedDate: CurrentMonthRecordedDate);
-        var history = AccountBalanceHistoryFactory.CreateFor(account, balance: 1000m, balanceRecordedDate: CurrentMonthRecordedDate);
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 1000m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedAsync(history, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
@@ -61,12 +65,10 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
             AuthenticatedUserId,
             accountType: AccountTypeEnum.CreditCard,
             accountName: "Institution Credit",
-            balance: 250m,
-            institutionId: TestConstants.WellsFargoInstitutionId,
-            balanceRecordedDate: CurrentMonthRecordedDate);
-        var history = AccountBalanceHistoryFactory.CreateFor(account, balance: 250m, balanceRecordedDate: CurrentMonthRecordedDate);
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 250m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedAsync(history, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
@@ -83,13 +85,12 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         var account = AccountFactory.Create(
             AuthenticatedUserId,
             accountName: "History Checking",
-            balance: 200m,
             institutionId: TestConstants.WellsFargoInstitutionId,
-            balanceRecordedDate: CurrentMonthRecordedDate);
-        var earliestHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 100m, balanceRecordedDate: PreviousMonthRecordedDate);
-        var latestHistory = AccountBalanceHistoryFactory.CreateFor(account, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
+            systemCreatedDate: PreviousPeriodAccountCreatedDate);
+        var previousLedger = AccountLedgerFactory.CreateFor(account, balance: 100m, balanceRecordedDate: PreviousMonthRecordedDate);
+        var latestLedger = AccountLedgerFactory.CreateFor(account, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
-        await DbContext.SeedRangeAsync([earliestHistory, latestHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([previousLedger, latestLedger], CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
@@ -100,13 +101,12 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_NoHistoryRows_ReturnsEmptyTotalsWithAccountsListed()
+    public async Task GetAccountInstitutionSummary_NoLedgerRows_ReturnsEmptyTotalsWithZeroBalance()
     {
         // Arrange
         var account = AccountFactory.Create(
             AuthenticatedUserId,
-            accountName: "No History Checking",
-            balance: 100m,
+            accountName: "No Ledger Checking",
             institutionId: TestConstants.WellsFargoInstitutionId);
         await DbContext.SeedAsync(account, CancellationToken);
 
@@ -115,7 +115,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
 
         // Assert
         Assert.Single(result.Accounts);
-        Assert.Equal(100m, result.Accounts.Single().Balance);
+        Assert.Equal(0m, result.Accounts.Single().Balance);
         Assert.Empty(result.AccountTypeTotals);
         Assert.Empty(result.AccountTypePreviousTotals);
     }
@@ -128,19 +128,15 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         var myAccount = AccountFactory.Create(
             AuthenticatedUserId,
             accountName: "Mine Checking",
-            balance: 200m,
-            institutionId: TestConstants.WellsFargoInstitutionId,
-            balanceRecordedDate: CurrentMonthRecordedDate);
+            institutionId: TestConstants.WellsFargoInstitutionId);
         var otherAccount = AccountFactory.Create(
             otherUserId,
             accountName: "Other Checking",
-            balance: 900m,
-            institutionId: TestConstants.WellsFargoInstitutionId,
-            balanceRecordedDate: CurrentMonthRecordedDate);
-        var myHistory = AccountBalanceHistoryFactory.CreateFor(myAccount, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
-        var otherHistory = AccountBalanceHistoryFactory.CreateFor(otherAccount, balance: 900m, balanceRecordedDate: CurrentMonthRecordedDate);
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var myLedger = AccountLedgerFactory.CreateFor(myAccount, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var otherLedger = AccountLedgerFactory.CreateFor(otherAccount, balance: 900m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedRangeAsync([myAccount, otherAccount], CancellationToken);
-        await DbContext.SeedRangeAsync([myHistory, otherHistory], CancellationToken);
+        await DbContext.SeedRangeAsync([myLedger, otherLedger], CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
@@ -168,7 +164,6 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         var otherAccount = AccountFactory.Create(
             Guid.NewGuid().ToString(),
             accountName: "Other Chase Checking",
-            balance: 100m,
             institutionId: TestConstants.ChaseInstitutionId);
         await DbContext.SeedAsync(otherAccount, CancellationToken);
 

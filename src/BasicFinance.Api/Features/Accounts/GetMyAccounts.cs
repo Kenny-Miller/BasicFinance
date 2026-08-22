@@ -29,20 +29,23 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var institutions = await dbContext.Accounts
+            var baseAccounts = dbContext.Accounts
                 .AsNoTracking()
-                .Where(a => a.IsActive)
                 .Where(a => a.UserId == user.Id)
+                .Where(x => x.IsActive);
+
+            var accounts = await baseAccounts
+                .WithLatestLedger(AccountLedgerQueries.LatestPerAccountForUser(dbContext, user.Id))
                 .Select(x => new AccountDto(
                     x.AccountId,
                     x.AccountName,
-                    x.AccountType.AccountTypeCode,
-                    x.Institution.Name,
+                    x.AccountTypeCode,
+                    x.Institution,
                     x.Balance,
                     x.BalanceRecordedDate))
                 .ToListAsync(cancellationToken);
 
-            return TypedResults.Ok(institutions);
+            return TypedResults.Ok(accounts);
         }
     }
 }

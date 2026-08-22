@@ -90,8 +90,13 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
 
         Assert.NotNull(account);
         Assert.Equal("Test Checking", account.AccountName);
-        Assert.Equal(1000m, account.Balance);
         Assert.Equal((int)AccountType.Checking, account.AccountTypeId);
+
+        var ledgerEntry = await DbContext.AccountLedgers
+            .FirstOrDefaultAsync(l => l.AccountId == account!.AccountId, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal(1000m, ledgerEntry!.Balance);
     }
 
     [Fact]
@@ -151,11 +156,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     }
 
     [Fact]
-    public async Task Handle_RemoveAccountFromSpreadsheet_HardDeletesAccount()
+    public async Task Handle_AccountRemovedFromSpreadsheet_SoftClosesAccount()
     {
-        // Arrange - seed an account that will be removed
+        // Arrange - seed an account that will be removed from the spreadsheet
         var financialAccountId = Guid.NewGuid();
-        var accountRawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
 
         var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
             .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
@@ -167,10 +171,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             userSpreadsheet.UserGoogleSpreadsheetId,
             AccountType.Checking,
             TestConstants.TestUserId,
-            "To Be Removed",
+            "To Be Closed",
             500m,
             "USD",
-            "Will be removed",
+            "Will be closed",
             institution.InstitutionId,
             financialAccountId,
             DateTime.UtcNow);
@@ -199,9 +203,237 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             Arg.Any<CancellationToken>());
 
         var account = await DbContext.Accounts
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
 
-        Assert.Null(account);
+        Assert.NotNull(account);
+        Assert.False(account!.IsActive);
+        Assert.NotNull(account.SystemModifiedDate);
+
+        var ledgerEntry = await DbContext.AccountLedgers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.AccountId == account.AccountId, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal(500m, ledgerEntry!.Balance);
+    }
+
+    [Fact]
+    public async Task Handle_ExistingAccountWithUnchangedBalance_DoesNotAppendLedgerEntry()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var lastUpdatedDate = new DateTime(2026, 7, 31, 12, 0, 0, DateTimeKind.Utc);
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
+
+        var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+
+        var institution = await DbContext.Institutions
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
+
+        var seedAccount = AccountFactory.Create(
+            userSpreadsheet.UserGoogleSpreadsheetId,
+            AccountType.Checking,
+            TestConstants.TestUserId,
+            "Unchanged Checking",
+            1000m,
+            "USD",
+            "Balance unchanged",
+            institution.InstitutionId,
+            financialAccountId,
+            lastUpdatedDate);
+
+        DbContext.Accounts.Add(seedAccount);
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Unchanged Checking",
+                1000m,
+                "USD",
+                "Balance unchanged",
+                lastUpdatedDate,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
+
+        var ledgerEntries = await DbContext.AccountLedgers
+            .Where(l => l.AccountId == seedAccount.AccountId)
+            .ToListAsync(TestContext.Current.CancellationToken);
+
+        var entry = Assert.Single(ledgerEntries);
+        Assert.Equal(1000m, entry.Balance);
+    }
+
+    [Fact]
+    public async Task Handle_ExistingAccountWithChangedBalance_AppendsLedgerEntry()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var initialBalanceDate = new DateTime(2026, 7, 31, 12, 0, 0, DateTimeKind.Utc);
+        var updatedBalanceDate = new DateTime(2026, 8, 1, 12, 0, 0, DateTimeKind.Utc);
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
+
+        var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+
+        var institution = await DbContext.Institutions
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
+
+        var seedAccount = AccountFactory.Create(
+            userSpreadsheet.UserGoogleSpreadsheetId,
+            AccountType.Checking,
+            TestConstants.TestUserId,
+            "Changed Checking",
+            1000m,
+            "USD",
+            "Balance changed",
+            institution.InstitutionId,
+            financialAccountId,
+            initialBalanceDate);
+
+        DbContext.Accounts.Add(seedAccount);
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Changed Checking",
+                750m,
+                "USD",
+                "Balance changed",
+                updatedBalanceDate,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
+
+        var ledgerEntries = await DbContext.AccountLedgers
+            .Where(l => l.AccountId == seedAccount.AccountId)
+            .OrderBy(l => l.BalanceRecordedDate)
+            .ToListAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(2, ledgerEntries.Count);
+        Assert.Equal(1000m, ledgerEntries[0].Balance);
+        Assert.Equal(750m, ledgerEntries[1].Balance);
+    }
+
+    [Fact]
+    public async Task Handle_SoftClosedAccountReappears_ReactivatesWithoutNewLedgerEntry()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var lastUpdatedDate = new DateTime(2026, 7, 31, 12, 0, 0, DateTimeKind.Utc);
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson();
+
+        var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+
+        var institution = await DbContext.Institutions
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
+
+        var seedAccount = AccountFactory.Create(
+            userSpreadsheet.UserGoogleSpreadsheetId,
+            AccountType.Checking,
+            TestConstants.TestUserId,
+            "Reappeared Checking",
+            500m,
+            "USD",
+            "Was previously closed",
+            institution.InstitutionId,
+            financialAccountId,
+            lastUpdatedDate);
+
+        seedAccount.SetIsActive(false);
+
+        DbContext.Accounts.Add(seedAccount);
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Reappeared Checking",
+                500m,
+                "USD",
+                "Was previously closed",
+                lastUpdatedDate,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
+
+        var account = await DbContext.Accounts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(account);
+        Assert.True(account!.IsActive);
+
+        var entry = Assert.Single(await DbContext.AccountLedgers
+            .AsNoTracking()
+            .Where(l => l.AccountId == account.AccountId)
+            .ToListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(500m, entry.Balance);
     }
 
     [Fact]

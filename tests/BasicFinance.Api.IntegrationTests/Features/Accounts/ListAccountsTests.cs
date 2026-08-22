@@ -22,8 +22,10 @@ public class ListAccountsTests : ApiTestFixtureBase
         // Arrange
         const string accountName = "Test Account";
         const decimal balance = 2500m;
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance);
         await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
@@ -129,10 +131,13 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_WithSorting_SortsByBalanceDesc()
     {
         // Arrange
-        var lowBalance = AccountFactory.Create(AuthenticatedUserId, balance: 100m);
-        var highBalance = AccountFactory.Create(AuthenticatedUserId, balance: 10000m);
-        var midBalance = AccountFactory.Create(AuthenticatedUserId, balance: 5000m);
+        var lowBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "Low Balance Account");
+        var highBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "High Balance Account");
+        var midBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "Mid Balance Account");
         await DbContext.SeedRangeAsync([lowBalance, highBalance, midBalance], CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(lowBalance, 100m), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(highBalance, 10000m), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, 5000m), CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Balance&sortDirection=Desc", CancellationToken);

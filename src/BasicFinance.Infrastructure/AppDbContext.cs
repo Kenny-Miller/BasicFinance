@@ -9,7 +9,7 @@ namespace BasicFinance.Infrastructure
         public DbSet<Account> Accounts { get; init; } = null!;
         public DbSet<AccountType> AccountTypes { get; init; } = null!;
         public DbSet<UserGoogleSpreadsheet> UserGoogleSpreadsheets { get; init; } = null!;
-        public DbSet<AccountBalanceHistory> AccountBalanceHistories { get; init; } = null!;
+        public DbSet<AccountLedger> AccountLedgers { get; init; } = null!;
         public DbSet<Transaction> Transactions { get; init; } = null!;
         public DbSet<TransactionCategory> TransactionCategories { get; init; } = null!;
         public DbSet<TransactionType> TransactionTypes { get; init; } = null!;
@@ -28,5 +28,20 @@ namespace BasicFinance.Infrastructure
 
         /// <inheritdoc/>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.AddInterceptors(_interceptor);
+
+        /// <inheritdoc/>
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AccountLedger>()
+                .ToTable(nameof(AccountLedger))
+                .HasOne(l => l.Account)
+                .WithMany(a => a.Ledger)
+                .HasForeignKey(l => l.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AccountLedger>()
+                .HasIndex(l => new { l.AccountId, l.BalanceRecordedDate })
+                .IsDescending(false, true);
+        }
     }
 }
