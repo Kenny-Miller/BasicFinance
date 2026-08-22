@@ -22,4 +22,6 @@ public static class DbContextExtensions
         context.Set<TEntity>().AddRange(entities);
         await context.SaveChangesAsync(ct);
     }
+
+
 }

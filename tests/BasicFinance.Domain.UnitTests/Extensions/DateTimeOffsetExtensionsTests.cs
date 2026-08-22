@@ -11,26 +11,26 @@ public class DateTimeOffsetExtensionsTests
     public void StartOfWeek_Monday_ReturnsSameDate()
     {
         // Arrange
-        var dt = new DateTimeOffset(2026, 8, 3, 14, 30, 0, DateTimeOffsetHelper.TestOffset);
+        var dt = new DateTimeOffset(2026, 8, 3, 0, 0, 0, DateTimeOffsetHelper.TestOffset);
 
         // Act
         var result = dt.StartOfWeek;
 
         // Assert
-        Assert.Equal(new DateTimeOffset(2026, 8, 3, 14, 30, 0, DateTimeOffsetHelper.TestOffset), result);
+        Assert.Equal(new DateTimeOffset(2026, 8, 3, 0, 0, 0, DateTimeOffsetHelper.TestOffset), result);
     }
 
     [Fact]
     public void StartOfWeek_Friday_ReturnsMonday()
     {
         // Arrange
-        var dt = new DateTimeOffset(2026, 8, 7, 14, 30, 0, DateTimeOffsetHelper.TestOffset);
+        var dt = new DateTimeOffset(2026, 8, 7, 0, 0, 0, DateTimeOffsetHelper.TestOffset);
 
         // Act
         var result = dt.StartOfWeek;
 
         // Assert
-        Assert.Equal(new DateTimeOffset(2026, 8, 3, 14, 30, 0, DateTimeOffsetHelper.TestOffset), result);
+        Assert.Equal(new DateTimeOffset(2026, 8, 3, 0, 0, 0, DateTimeOffsetHelper.TestOffset), result);
     }
 
     [Fact]

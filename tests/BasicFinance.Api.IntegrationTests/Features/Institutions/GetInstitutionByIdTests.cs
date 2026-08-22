@@ -27,7 +27,7 @@ public class GetInstitutionByIdTests : ApiTestFixtureBase
 
         // Assert
         Assert.Equal(institution.InstitutionId, result.Id);
-        Assert.Equal("TEST", result.InstitutionCode);
+        Assert.Equal("TEST", result.Code);
         Assert.Equal("Test Institution", result.Name);
     }
 
