@@ -1,5 +1,6 @@
-﻿using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
+using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +14,8 @@ namespace BasicFinance.Api.Features.Accounts
     public static class GetMyAccounts
     {
         /// <summary>
-        /// Retrieves distinct institutions for the authenticated user.
-        /// Only includes institutions that have at least one active account belonging to the user.
-        /// </summary>s
+        /// Retrieves the active <see cref="Account"/>s for the authenticated user.
+        /// </summary>
         /// <param name="user">The authenticated user performing the request.</param>
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted data.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
@@ -29,20 +29,13 @@ namespace BasicFinance.Api.Features.Accounts
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            var baseAccounts = dbContext.Accounts
+            var accounts = await dbContext.Accounts
                 .AsNoTracking()
-                .Where(a => a.UserId == user.Id)
-                .Where(x => x.IsActive);
-
-            var accounts = await baseAccounts
-                .WithLatestLedger(AccountLedgerQueries.LatestPerAccountForUser(dbContext, user.Id))
-                .Select(x => new AccountDto(
-                    x.AccountId,
-                    x.AccountName,
-                    x.AccountTypeCode,
-                    x.Institution,
-                    x.Balance,
-                    x.BalanceRecordedDate))
+                .Include(x => x.AccountType)
+                .Include(x => x.Institution)
+                .Where(x => x.UserId == user.Id)
+                .Where(x => x.IsActive)
+                .ToAccountDto()
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(accounts);

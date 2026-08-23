@@ -14,7 +14,9 @@ public static class AccountFactory
         string? notes = null,
         int institutionId = TestConstants.WellsFargoInstitutionId,
         Guid? financialAccountId = null,
-        DateTimeOffset? systemCreatedDate = null)
+        DateTimeOffset? systemCreatedDate = null,
+        decimal openingBalance = 0m,
+        DateTimeOffset? openingBalanceRecordedDate = null)
     {
         return new Account(
             TestConstants.TestUserGoogleSpreadsheetId,
@@ -24,7 +26,11 @@ public static class AccountFactory
             currency,
             notes ?? string.Empty,
             institutionId,
-            financialAccountId ?? Guid.NewGuid())
+            financialAccountId ?? Guid.NewGuid(),
+            openingBalance,
+            // Default to a date before any seeded ledger history so that
+            // explicitly seeded ledger entries remain the latest.
+            openingBalanceRecordedDate ?? DateTimeOffset.UnixEpoch)
         {
             SystemCreatedDate = systemCreatedDate ?? DateTimeOffset.UtcNow
         };

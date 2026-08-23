@@ -100,6 +100,54 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
     }
 
     [Fact]
+    public async Task Handle_ValidSpreadsheetWithCreditCardAccount_StoresOpeningBalanceAsNegative()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson(accountType: "Credit");
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Test Credit Card",
+                800m,
+                "USD",
+                "Test notes",
+                DateTime.UtcNow,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        var account = await DbContext.Accounts
+            .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(account);
+        Assert.Equal("Test Credit Card", account.AccountName);
+        Assert.Equal((int)AccountType.CreditCard, account.AccountTypeId);
+
+        var ledgerEntry = await DbContext.AccountLedgers
+            .FirstOrDefaultAsync(l => l.AccountId == account!.AccountId, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal(-800m, ledgerEntry!.Balance);
+    }
+
+    [Fact]
     public async Task Handle_ValidSpreadsheetWithTransaction_CreatesTransaction()
     {
         // Arrange
@@ -357,6 +405,147 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         Assert.Equal(2, ledgerEntries.Count);
         Assert.Equal(1000m, ledgerEntries[0].Balance);
         Assert.Equal(750m, ledgerEntries[1].Balance);
+    }
+
+    [Fact]
+    public async Task Handle_CreditCardAccountWithUnchangedBalance_DoesNotAppendLedgerEntry()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var lastUpdatedDate = new DateTime(2026, 7, 31, 12, 0, 0, DateTimeKind.Utc);
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson(accountType: "Credit");
+
+        var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+
+        var institution = await DbContext.Institutions
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
+
+        var seedAccount = AccountFactory.Create(
+            userSpreadsheet.UserGoogleSpreadsheetId,
+            AccountType.CreditCard,
+            TestConstants.TestUserId,
+            "Unchanged Credit Card",
+            -1000m,
+            "USD",
+            "Balance unchanged",
+            institution.InstitutionId,
+            financialAccountId,
+            lastUpdatedDate);
+
+        DbContext.Accounts.Add(seedAccount);
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Unchanged Credit Card",
+                1000m,
+                "USD",
+                "Balance unchanged",
+                lastUpdatedDate,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
+
+        var ledgerEntries = await DbContext.AccountLedgers
+            .Where(l => l.AccountId == seedAccount.AccountId)
+            .ToListAsync(TestContext.Current.CancellationToken);
+
+        var entry = Assert.Single(ledgerEntries);
+        Assert.Equal(-1000m, entry.Balance);
+    }
+
+    [Fact]
+    public async Task Handle_CreditCardAccountWithChangedBalance_AppendsNegativeLedgerEntry()
+    {
+        // Arrange
+        var financialAccountId = Guid.NewGuid();
+        var initialBalanceDate = new DateTime(2026, 7, 31, 12, 0, 0, DateTimeKind.Utc);
+        var updatedBalanceDate = new DateTime(2026, 8, 1, 12, 0, 0, DateTimeKind.Utc);
+        var rawDataJson = GoogleSpreadsheetExportFactory.CreateAccountExportJson(accountType: "Credit");
+
+        var userSpreadsheet = await DbContext.UserGoogleSpreadsheets
+            .FirstAsync(u => u.UserGoogleSpreadsheetId == TestConstants.TestUserGoogleSpreadsheetId, TestContext.Current.CancellationToken);
+
+        var institution = await DbContext.Institutions
+            .FirstAsync(i => i.Name == "Wells Fargo", TestContext.Current.CancellationToken);
+
+        var seedAccount = AccountFactory.Create(
+            userSpreadsheet.UserGoogleSpreadsheetId,
+            AccountType.CreditCard,
+            TestConstants.TestUserId,
+            "Changed Credit Card",
+            -500m,
+            "USD",
+            "Balance changed",
+            institution.InstitutionId,
+            financialAccountId,
+            initialBalanceDate);
+
+        DbContext.Accounts.Add(seedAccount);
+        await DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var response = new SpreadsheetDataFactory()
+            .AddAccountRow(
+                "Changed Credit Card",
+                750m,
+                "USD",
+                "Balance changed",
+                updatedBalanceDate,
+                "Wells Fargo",
+                financialAccountId,
+                rawDataJson)
+            .Build();
+
+        MockGoogleServiceAccountClient.GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
+
+        // Act
+        var result = await Host
+            .TrackActivity()
+            .IncludeExternalTransports()
+            .SendMessageAndWaitAsync(command);
+
+        // Assert
+        await MockGoogleServiceAccountClient.Received(1).GetSubSpreadsheetsAsync(
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>());
+
+        var ledgerEntries = await DbContext.AccountLedgers
+            .Where(l => l.AccountId == seedAccount.AccountId)
+            .OrderBy(l => l.BalanceRecordedDate)
+            .ToListAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(2, ledgerEntries.Count);
+        Assert.Equal(-500m, ledgerEntries[0].Balance);
+        Assert.Equal(-750m, ledgerEntries[1].Balance);
     }
 
     [Fact]

@@ -2,8 +2,6 @@ using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Enums;
-using BasicFinance.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +16,11 @@ namespace BasicFinance.Api.Features.Accounts
     public static class GetInstitutionSummary
     {
         /// <summary>
-        /// Query parameters for the <see cref="GetInstitutionSummary"/> endpoint.
+        /// Query parameters shared by the account summary endpoints.
         /// </summary>
-        /// <param name="RecordedDate">The anchor date used to resolve period boundaries. Defaults to now (UTC) when omitted.</param>
-        /// <param name="TimePeriod">The period mode. Defaults to <see cref="TimePeriod.Monthly"/> when omitted. Invalid values result in a 400 response.</param>
-        public record Request(DateTimeOffset? RecordedDate, TimePeriod? TimePeriod = null);
+        /// <param name="RecordedDate">The anchor date used to resolve period boundaries.</param>
+        /// <param name="TimePeriod">The period mode.</param>
+        public record Request(DateTimeOffset? RecordedDate = null, TimePeriod? TimePeriod = null);
 
         /// <summary>
         /// Response Dto for the <see cref="GetInstitutionSummary"/> endpoint.
@@ -42,10 +40,10 @@ namespace BasicFinance.Api.Features.Accounts
             IEnumerable<AccountDto> Accounts,
             Dictionary<string, decimal> AccountTypeTotals,
             Dictionary<string, decimal> AccountTypePreviousTotals,
-            DateOnly CurrentPeriodStart,
-            DateOnly CurrentPeriodEnd,
-            DateOnly PreviousPeriodStart,
-            DateOnly PreviousPeriodEnd);
+            DateTime CurrentPeriodStart,
+            DateTime CurrentPeriodEnd,
+            DateTime PreviousPeriodStart,
+            DateTime PreviousPeriodEnd);
 
         /// <summary>
         /// Retrieves account-level summary for a specific institution.
@@ -55,7 +53,6 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         /// <param name="institutionId">The unique identifier of the institution.</param>
         /// <param name="request">The request containing the recorded date and time period.</param>
-        /// <param name="httpContext">The HTTP context used to inspect the raw time period query value.</param>
         /// <param name="user">The authenticated user performing the request.</param>
         /// <param name="timeProvider">Time provider for consistent date calculations.</param>
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted data.</param>
@@ -70,126 +67,95 @@ namespace BasicFinance.Api.Features.Accounts
         public static async Task<Results<Ok<InstitutionSummaryResponse>, BadRequest<string>>> HandleAsync(
             [FromRoute] int institutionId,
             [FromQuery] Request request,
-            HttpContext httpContext,
             AuthenticatedUser user,
             TimeProvider timeProvider,
             AppDbContext dbContext,
             CancellationToken cancellationToken)
         {
-            if (httpContext.Request.Query.TryGetValue("timePeriod", out var rawTimePeriod) &&
-                !Enum.TryParse<TimePeriod>(rawTimePeriod, out _))
-            {
-                return TypedResults.BadRequest("Invalid time period.");
-            }
+            var timePeriod = request.TimePeriod ?? TimePeriod.Monthly;
+            var anchor = request.RecordedDate ?? timeProvider.GetUtcNow();
+            var recordedDate = new DateTimeOffset(anchor.Year, anchor.Month, anchor.Day, 0, 0, 0, TimeSpan.Zero);
 
-            var resolution = (request.TimePeriod ?? TimePeriod.Monthly).ToPeriodResolution(request.RecordedDate, timeProvider.GetUtcNow());
+            var currentRange = recordedDate.ToPeriodRange(timePeriod);
+            var previousRange = recordedDate.ToPeriodRange(timePeriod, -1);
 
             var institution = await dbContext.Institutions
                 .AsNoTracking()
-                .Where(i => i.InstitutionId == institutionId)
-                .Where(i => i.Accounts.Any(a => a.UserId == user.Id && a.IsActive))
-                .Select(i => i.Name)
-                .FirstOrDefaultAsync(cancellationToken);
+                .Where(x => x.IsActive)
+                .Where(x => x.InstitutionId == institutionId)
+                .Where(x => x.Accounts.Any(y => y.UserId == user.Id && y.IsActive))
+                .SingleOrDefaultAsync(cancellationToken);
 
             if (institution == null)
             {
                 return TypedResults.BadRequest("Institution not found or you have no accounts at this institution.");
             }
 
-            var accountRows = await dbContext.Accounts
+            var baseAccountsInInstitutionQuery = dbContext.Accounts
                 .AsNoTracking()
-                .Where(a => a.InstitutionId == institutionId)
-                .Where(a => a.UserId == user.Id)
-                .Where(a => a.IsActive)
-                .Select(a => new
-                {
-                    a.AccountId,
-                    a.AccountName,
-                    a.AccountTypeId,
-                    a.AccountType.AccountTypeCode
-                })
+                .Include(x => x.Institution)
+                .Include(x => x.AccountType)
+                .Where(x => x.Institution.IsActive && x.Institution.InstitutionId == institutionId)
+                .Where(x => x.UserId == user.Id)
+                .Where(x => x.IsActive);
+
+            var currentPeriodQuery = baseAccountsInInstitutionQuery
+                .Include(x => x.Ledger
+                    .Where(l => l.BalanceRecordedDate <= currentRange.RangeEndDate)
+                    .OrderByDescending(l => l.BalanceRecordedDate)
+                    .ThenByDescending(l => l.SystemCreatedDate)
+                    .Take(1));
+
+            var previousPeriodQuery = baseAccountsInInstitutionQuery
+                 .Include(x => x.Ledger
+                    .Where(l => l.BalanceRecordedDate <= previousRange.RangeEndDate)
+                    .OrderByDescending(l => l.BalanceRecordedDate)
+                    .ThenByDescending(l => l.SystemCreatedDate)
+                    .Take(1));
+
+            // Project the most recent ledger entry on or before each period's end, per account.
+            var results = await currentPeriodQuery
+                .Join(previousPeriodQuery,
+                    current => current.AccountId,
+                    previous => previous.AccountId,
+                    (current, previous) => new
+                    {
+                        CurrentAccount = current,
+                        PreviousAccount = previous,
+                    })
                 .ToListAsync(cancellationToken);
 
-            var accountIds = accountRows.Select(a => a.AccountId).ToHashSet();
-
-            var latestLedger = await dbContext.AccountLedgers
-                .AsNoTracking()
-                .Where(l => accountIds.Contains(l.AccountId))
-                .WithLatestPerAccount()
-                .ToDictionaryAsync(l => l.AccountId, cancellationToken);
-
-            var accountDetails = accountRows
-                .Select(a =>
-                {
-                    latestLedger.TryGetValue(a.AccountId, out var entry);
-                    var balance = entry?.Balance ?? 0m;
-                    var recordedDate = entry?.BalanceRecordedDate ?? DateTimeOffset.MinValue;
-                    return new AccountDto(
-                        a.AccountId,
-                        a.AccountName,
-                        a.AccountTypeCode,
-                        institution,
-                        AccountLedgerQueries.IsLiability((AccountType)a.AccountTypeId) ? -balance : balance,
-                        recordedDate
-                    );
-                })
-                .ToList();
-
-            var currentScoped = dbContext.AccountLedgers
-                .AsNoTracking()
-                .Where(l => accountIds.Contains(l.AccountId))
-                .WhereAccountActiveDuring(
-                    resolution.CurrentRange.RangeStartDate,
-                    resolution.CurrentRange.RangeEndDate);
-
-            var previousScoped = dbContext.AccountLedgers
-                .AsNoTracking()
-                .Where(l => accountIds.Contains(l.AccountId))
-                .WhereAccountActiveDuring(
-                    resolution.PreviousRange.RangeStartDate,
-                    resolution.PreviousRange.RangeEndDate);
-
-            var currentSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                currentScoped,
-                resolution.CurrentRange.RangeEndDate,
-                cancellationToken);
-            var previousSnapshots = await AccountLedgerQueries.GetLatestSnapshotsOnOrBeforeAsync(
-                previousScoped,
-                resolution.PreviousRange.RangeEndDate,
-                cancellationToken);
+            var proccessedData = new
+            {
+                CurrentAccountData = results
+                    .Select(x => x.CurrentAccount)
+                    .Select(Queries.ToAccountDtoFunc)
+                    .ToList(),
+                AccountTypeTotals = results
+                    .Select(x => x.CurrentAccount)
+                    .Select(Queries.ToAccountDtoFunc)
+                    .GroupBy(s => s.AccountTypeCode)
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
+                PreviousAccountTypeTotals = results
+                    .Select(x => x.PreviousAccount)
+                    .Select(Queries.ToAccountDtoFunc)
+                    .GroupBy(s => s.AccountTypeCode)
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
+            };
 
             var response = new InstitutionSummaryResponse(
                 institutionId,
-                institution,
-                accountDetails,
-                CalculateTypeTotals(currentSnapshots),
-                CalculateTypeTotals(previousSnapshots),
-                resolution.CurrentStart,
-                resolution.CurrentEnd,
-                resolution.PreviousStart,
-                resolution.PreviousEnd
+                institution.Name,
+                proccessedData.CurrentAccountData,
+                proccessedData.AccountTypeTotals,
+                proccessedData.PreviousAccountTypeTotals,
+                currentRange.RangeStartDate.UtcDateTime,
+                currentRange.RangeEndDate.UtcDateTime,
+                previousRange.RangeStartDate.UtcDateTime,
+                previousRange.RangeEndDate.UtcDateTime
             );
 
             return TypedResults.Ok(response);
-        }
-
-        /// <summary>
-        /// Aggregates account-type totals from a list of account snapshots.
-        /// Credit card balances are treated as liabilities (negative).
-        /// </summary>
-        static Dictionary<string, decimal> CalculateTypeTotals(List<AccountLedgerQueries.Snapshot> snapshots)
-        {
-            if (snapshots.Count == 0)
-            {
-                return [];
-            }
-
-            return snapshots
-                .GroupBy(s => s.AccountTypeCode)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(s => AccountLedgerQueries.IsLiability(s.AccountType) ? -s.Balance : s.Balance)
-                );
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -33,21 +33,14 @@ public static class GetAccountById
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var baseAccounts = dbContext.Accounts
+        var account = await dbContext.Accounts
             .AsNoTracking()
-            .Where(x => x.AccountId == accountId)
+            .Include(x => x.AccountType)
+            .Include(x => x.Institution)
             .Where(x => x.UserId == user.Id)
-            .Where(x => x.IsActive);
-
-        var account = await baseAccounts
-            .WithLatestLedger(AccountLedgerQueries.LatestPerAccountForUser(dbContext, user.Id))
-            .Select(x => new AccountDto(
-                x.AccountId,
-                x.AccountName,
-                x.AccountTypeCode,
-                x.Institution,
-                x.Balance,
-                x.BalanceRecordedDate))
+            .Where(x => x.IsActive)
+            .Where(x => x.AccountId == accountId)
+            .ToAccountDto()
             .SingleOrDefaultAsync(cancellationToken);
 
         return account != null

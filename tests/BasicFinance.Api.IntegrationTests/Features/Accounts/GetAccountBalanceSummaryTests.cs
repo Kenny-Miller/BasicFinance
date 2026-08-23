@@ -1,4 +1,3 @@
-using System.Net;
 using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
@@ -164,7 +163,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         var checkingAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Checking Liability");
         var creditAccount = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.CreditCard, accountName: "Credit Liability");
         var checkingLedger = AccountLedgerFactory.CreateFor(checkingAccount, balance: 500m, balanceRecordedDate: CurrentMonthRecordedDate);
-        var creditLedger = AccountLedgerFactory.CreateFor(creditAccount, balance: 200m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var creditLedger = AccountLedgerFactory.CreateFor(creditAccount, balance: -200m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedRangeAsync([checkingAccount, creditAccount], CancellationToken);
         await DbContext.SeedRangeAsync([checkingLedger, creditLedger], CancellationToken);
 
@@ -176,20 +175,21 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         Assert.Equal(300m, current.Balance);
         Assert.Equal(500m, current.AccountTypeBreakdowns["CHK"].Balance);
         Assert.Equal(-200m, current.AccountTypeBreakdowns["CC"].Balance);
-        Assert.Equal(200m, current.AccountTypeBreakdowns["CC"].Accounts.Single().Balance);
+        Assert.Equal(-200m, current.AccountTypeBreakdowns["CC"].Accounts.Single().Balance);
         Assert.Equal(-67m, current.AccountTypeBreakdowns["CC"].Accounts.Single().PercentageOfTotalBalance);
         Assert.Equal(167m, current.AccountTypeBreakdowns["CHK"].Accounts.Single().PercentageOfTotalBalance);
         Assert.Equal(0m, result.PreviousPeriodBreakdown.Balance);
     }
 
     [Fact]
-    public async Task GetAllAccountAnalytics_InvalidTimePeriod_ReturnsBadRequest()
+    public async Task GetAllAccountAnalytics_UnrecognizedTimePeriod_FallsBackToMonthly()
     {
         // Act
-        var response = await HttpClient.GetAsync($"{EndpointUrl}?TimePeriod=EveryBlueMoon", CancellationToken);
+        var result = await GetResultAsync(AnchorDate, "EveryBlueMoon");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(new DateOnly(2026, 8, 1), result.CurrentPeriodStart);
+        Assert.Equal(new DateOnly(2026, 9, 1), result.CurrentPeriodEnd);
     }
 
     private Task<BalanceSummaryResponseDto> GetResultAsync(DateTimeOffset recordedDate, string timePeriod = "Monthly") =>

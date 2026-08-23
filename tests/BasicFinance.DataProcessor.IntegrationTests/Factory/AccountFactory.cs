@@ -17,7 +17,7 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
             Guid financialAccountId = default,
             DateTimeOffset? balanceRecordedDate = null)
         {
-            var account = new Account(
+            return new Account(
                 userGoogleSpreadsheetId,
                 accountType,
                 userId,
@@ -25,11 +25,9 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
                 currency,
                 notes ?? string.Empty,
                 institutionId,
-                financialAccountId == default ? Guid.NewGuid() : financialAccountId);
-
-            account.Ledger.Add(new AccountLedger(account, balance, balanceRecordedDate ?? DateTimeOffset.UtcNow));
-
-            return account;
+                financialAccountId == default ? Guid.NewGuid() : financialAccountId,
+                balance,
+                balanceRecordedDate ?? DateTimeOffset.UtcNow);
         }
     }
 }

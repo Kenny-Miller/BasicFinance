@@ -8,6 +8,7 @@ namespace BasicFinance.Infrastructure.Entities
     /// Represents an append-only balance entry for an <see cref="Account"/>.
     /// Each entry records the balance as of its <see cref="BalanceRecordedDate"/>;
     /// the current balance is the entry with the greatest recorded date. Entries are immutable.
+    /// Balances of <see cref="AccountType"/>s that are liabilities are stored as negative values.
     /// </summary>
     public class AccountLedger
     {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Frozen;
+using System.Collections.Frozen;
 using System.Globalization;
 using BasicFinance.Domain.Commands;
 using BasicFinance.Infrastructure;
@@ -85,6 +85,9 @@ namespace BasicFinance.DataProcessor.Handlers
                 .Where(x => x.IsActive)
                 .ToDictionaryAsync(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
+            var accountTypesDict = await dbContext.AccountTypes
+                .ToDictionaryAsync(x => x.AccountTypeId);
+
             var accountIds = existingAccountsDict.Values.Select(x => x.AccountId).ToList();
             var latestLedgerByAccount = await dbContext.AccountLedgers
                 .Where(x => accountIds.Contains(x.AccountId))
@@ -101,7 +104,8 @@ namespace BasicFinance.DataProcessor.Handlers
                         existingAccount.SetIsActive(true);
                     }
 
-                    AppendLedgerEntryIfChanged(dbContext, existingAccount, accountRow, latestLedgerByAccount);
+                    var isLiability = accountTypesDict[existingAccount.AccountTypeId].IsLiability;
+                    AppendLedgerEntryIfChanged(dbContext, existingAccount, accountRow, latestLedgerByAccount, isLiability);
                 }
                 else
                 {
@@ -150,6 +154,8 @@ namespace BasicFinance.DataProcessor.Handlers
                     continue;
                 }
 
+                var openingBalance = SignedBalance(accountTypesDict[(int)accountType.Value].IsLiability, accountRow.Balance);
+
                 var accountToCreate = new Account(
                    userGoogleSpreadsheetId,
                    accountType.Value,
@@ -158,9 +164,10 @@ namespace BasicFinance.DataProcessor.Handlers
                    accountRow.Currency,
                    accountRow.Notes,
                    institution.InstitutionId,
-                   accountRow.FinancialAccountId);
+                   accountRow.FinancialAccountId,
+                   openingBalance,
+                   accountRow.LastUpdateDated);
                 newAccounts.Add(accountToCreate);
-                dbContext.AccountLedgers.Add(new AccountLedger(accountToCreate, accountRow.Balance, accountRow.LastUpdateDated));
             }
 
             dbContext.Accounts.AddRange(newAccounts);
@@ -170,23 +177,35 @@ namespace BasicFinance.DataProcessor.Handlers
         /// <summary>
         /// Appends a balance ledger entry for the account when the spreadsheet reports a balance or
         /// recorded date that differs from the account's latest ledger entry.
+        /// Liability balances are stored as negative values.
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="account"></param>
         /// <param name="accountRow"></param>
         /// <param name="latestLedgerByAccount"></param>
-        static void AppendLedgerEntryIfChanged(AppDbContext dbContext, Account account, AccountGoogleSpreadsheetRow accountRow, Dictionary<Guid, AccountLedger> latestLedgerByAccount)
+        /// <param name="isLiability">Whether the account type is a liability, in which case the balance is stored negated.</param>
+        static void AppendLedgerEntryIfChanged(AppDbContext dbContext, Account account, AccountGoogleSpreadsheetRow accountRow, Dictionary<Guid, AccountLedger> latestLedgerByAccount, bool isLiability)
         {
+            var balance = SignedBalance(isLiability, accountRow.Balance);
             latestLedgerByAccount.TryGetValue(account.AccountId, out var latest);
             if (latest is not null &&
-                latest.Balance == accountRow.Balance &&
+                latest.Balance == balance &&
                 latest.BalanceRecordedDate == accountRow.LastUpdateDated)
             {
                 return;
             }
 
-            dbContext.AccountLedgers.Add(new AccountLedger(account, accountRow.Balance, accountRow.LastUpdateDated));
+            dbContext.AccountLedgers.Add(new AccountLedger(account, balance, accountRow.LastUpdateDated));
         }
+
+        /// <summary>
+        /// Negates the balance when the account type is a liability, since liability balances are stored as negative values.
+        /// </summary>
+        /// <param name="isLiability">Whether the account type is a liability.</param>
+        /// <param name="balance">The unsigned balance reported by the source.</param>
+        /// <returns>The signed balance to store.</returns>
+        static decimal SignedBalance(bool isLiability, decimal balance) =>
+            isLiability ? -balance : balance;
 
         /// <summary>
         /// Creates transactions in the database for the specified user and <see cref="UserGoogleSpreadsheet"/> based on the provided list of <see cref="TransactionGoogleSpreadsheetRow"/> retrieved from the Google Spreadsheet.

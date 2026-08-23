@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
@@ -107,6 +107,8 @@ namespace BasicFinance.Infrastructure.Entities
         /// <param name="notes"></param>
         /// <param name="institutionId"></param>
         /// <param name="financialAccountId"></param>
+        /// <param name="openingBalance">The balance recorded when the account was created.</param>
+        /// <param name="openingBalanceRecordedDate">The date the opening balance was recorded.</param>
         [SetsRequiredMembers]
         public Account(
             Guid userGoogleSpreadsheetId,
@@ -116,7 +118,9 @@ namespace BasicFinance.Infrastructure.Entities
             string currency,
             string notes,
             int institutionId,
-            Guid financialAccountId)
+            Guid financialAccountId,
+            decimal openingBalance,
+            DateTimeOffset openingBalanceRecordedDate)
         {
             UserGoogleSpreadsheetId = userGoogleSpreadsheetId;
             AccountTypeId = (int)accountType;
@@ -126,6 +130,7 @@ namespace BasicFinance.Infrastructure.Entities
             Notes = notes;
             InstitutionId = institutionId;
             FinancialAccountId = financialAccountId;
+            Ledger = [new AccountLedger(this, openingBalance, openingBalanceRecordedDate)];
         }
 
         /// <summary>

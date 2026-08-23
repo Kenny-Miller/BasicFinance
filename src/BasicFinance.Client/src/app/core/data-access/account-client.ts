@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams, httpResource } from '@angular/common/http';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
 import { ListResult } from '../../shared/api/list-result';
 import { IPagedQuery, ISortedQuery } from './api-interfaces';
@@ -7,9 +7,9 @@ export interface Account {
   id: string;
   name: string;
   accountTypeCode: string;
-  institution: string;
-  balance: number;
-  balanceRecordedDate: Date;
+  institutionCode: string;
+  latestBalance: number | null;
+  latestBalanceRecordedDate: Date | null;
 }
 
 export interface AccountFilters {

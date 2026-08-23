@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace BasicFinance.Infrastructure.Entities
@@ -24,6 +24,12 @@ namespace BasicFinance.Infrastructure.Entities
         [MaxLength(50)]
         public required string AccountTypeName { get; init; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the balance of an account of this type
+        /// is a liability (money owed) and therefore reduces net worth.
+        /// </summary>
+        public bool IsLiability { get; set; }
+
         /// <inheritdoc />
         public DateTimeOffset SystemCreatedDate { get; init; } = DateTimeOffset.UtcNow;
 
@@ -41,13 +47,15 @@ namespace BasicFinance.Infrastructure.Entities
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountType"/> class.
         /// </summary>
-        /// <param name="accountTypeCode"></param>
-        /// <param name="accountTypeName"></param>
+        /// <param name="accountTypeCode">The account type code.</param>
+        /// <param name="accountTypeName">The account type name.</param>
+        /// <param name="isLiability">Whether balances of this type are liabilities that reduce net worth.</param>
         [SetsRequiredMembers]
-        public AccountType(string accountTypeCode, string accountTypeName)
+        public AccountType(string accountTypeCode, string accountTypeName, bool isLiability = false)
         {
             AccountTypeCode = accountTypeCode;
             AccountTypeName = accountTypeName;
+            IsLiability = isLiability;
         }
 
         /// <summary>

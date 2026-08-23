@@ -37,7 +37,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         Assert.Equal(1, result.PageCount);
         Assert.Single(result.Items);
         Assert.Contains(result.Items, a => a.Name == accountName);
-        Assert.Contains(result.Items, a => a.Balance == balance);
+        Assert.Contains(result.Items, a => a.LatestBalance == balance);
         Assert.Contains(result.Items, a => a.AccountTypeCode == "CHK");
     }
 
@@ -90,7 +90,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         // Assert
         Assert.Equal(1, result.TotalCount);
         Assert.Equal(1, result.PageCount);
-        Assert.All(result.Items, account => Assert.Equal("Wells Fargo", account.Institution));
+        Assert.All(result.Items, account => Assert.Equal("WF", account.InstitutionCode));
     }
 
     [Fact]
@@ -140,11 +140,11 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, 5000m), CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Balance&sortDirection=Desc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
-        var balances = result.Items.Select(a => a.Balance).ToList();
+        var balances = result.Items.Select(a => a.LatestBalance).ToList();
         Assert.Equal(10000m, balances[0]);
         Assert.Equal(5000m, balances[1]);
         Assert.Equal(100m, balances[2]);

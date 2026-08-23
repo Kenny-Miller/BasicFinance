@@ -10,9 +10,9 @@ public record AccountDto(
     Guid Id,
     string Name,
     string AccountTypeCode,
-    string Institution,
-    decimal Balance,
-    DateTimeOffset BalanceRecordedDate);
+    string InstitutionCode,
+    decimal? LatestBalance,
+    DateTimeOffset? LatestBalanceRecordedDate);
 
 public record TransactionDto(
     Guid Id,
@@ -53,8 +53,8 @@ public record InstitutionSummaryAccountDto(
     Guid Id,
     string Name,
     string AccountTypeCode,
-    decimal Balance,
-    DateTimeOffset BalanceRecordedDate);
+    decimal LatestBalance,
+    DateTimeOffset LatestBalanceRecordedDate);
 
 public record InstitutionSummaryResponseDto(
     int InstitutionId,
@@ -62,7 +62,7 @@ public record InstitutionSummaryResponseDto(
     IEnumerable<InstitutionSummaryAccountDto> Accounts,
     Dictionary<string, decimal> AccountTypeTotals,
     Dictionary<string, decimal> AccountTypePreviousTotals,
-    DateOnly CurrentPeriodStart,
-    DateOnly CurrentPeriodEnd,
-    DateOnly PreviousPeriodStart,
-    DateOnly PreviousPeriodEnd);
+    DateTime CurrentPeriodStart,
+    DateTime CurrentPeriodEnd,
+    DateTime PreviousPeriodStart,
+    DateTime PreviousPeriodEnd);

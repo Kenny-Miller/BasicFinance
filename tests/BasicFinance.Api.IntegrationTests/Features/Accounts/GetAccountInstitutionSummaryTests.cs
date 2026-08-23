@@ -15,10 +15,15 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     private static readonly DateTimeOffset PreviousMonthRecordedDate = new(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
 
     /// <summary>
-    /// Account creation date before the previous period so the account
-    /// counts as active during it (carry-forward scoping).
+    /// Account creation date before the previous period.
     /// </summary>
     private static readonly DateTimeOffset PreviousPeriodAccountCreatedDate = new(2026, 6, 15, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>
+    /// Date the account is deactivated, inside the previous period. Only active
+    /// accounts are summarized, so the closed account is excluded from both periods.
+    /// </summary>
+    private static readonly DateTimeOffset AccountDeactivationDate = new(2026, 7, 20, 0, 0, 0, TimeSpan.Zero);
 
     public GetAccountInstitutionSummaryTests(ApiClassFixture fixture)
         : base(fixture)
@@ -47,14 +52,14 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         Assert.Equal(account.AccountId, detail.Id);
         Assert.Equal("Institution Checking", detail.Name);
         Assert.Equal("CHK", detail.AccountTypeCode);
-        Assert.Equal(1000m, detail.Balance);
-        Assert.Equal(CurrentMonthRecordedDate, detail.BalanceRecordedDate);
+        Assert.Equal(1000m, detail.LatestBalance);
+        Assert.Equal(CurrentMonthRecordedDate, detail.LatestBalanceRecordedDate);
         Assert.Equal(1000m, result.AccountTypeTotals["CHK"]);
-        Assert.Empty(result.AccountTypePreviousTotals);
-        Assert.Equal(new DateOnly(2026, 8, 1), result.CurrentPeriodStart);
-        Assert.Equal(new DateOnly(2026, 9, 1), result.CurrentPeriodEnd);
-        Assert.Equal(new DateOnly(2026, 7, 1), result.PreviousPeriodStart);
-        Assert.Equal(new DateOnly(2026, 8, 1), result.PreviousPeriodEnd);
+        Assert.Equal(0m, result.AccountTypePreviousTotals["CHK"]);
+        Assert.Equal(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc), result.CurrentPeriodStart);
+        Assert.Equal(new DateTime(2026, 8, 31, 23, 59, 59, 999, DateTimeKind.Utc), result.CurrentPeriodEnd);
+        Assert.Equal(new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc), result.PreviousPeriodStart);
+        Assert.Equal(new DateTime(2026, 7, 31, 23, 59, 59, 999, DateTimeKind.Utc), result.PreviousPeriodEnd);
     }
 
     [Fact]
@@ -66,7 +71,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
             accountType: AccountTypeEnum.CreditCard,
             accountName: "Institution Credit",
             institutionId: TestConstants.WellsFargoInstitutionId);
-        var ledger = AccountLedgerFactory.CreateFor(account, balance: 250m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: -250m, balanceRecordedDate: CurrentMonthRecordedDate);
         await DbContext.SeedAsync(account, CancellationToken);
         await DbContext.SeedAsync(ledger, CancellationToken);
 
@@ -74,7 +79,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
 
         // Assert
-        Assert.Equal(-250m, result.Accounts.Single().Balance);
+        Assert.Equal(-250m, result.Accounts.Single().LatestBalance);
         Assert.Equal(-250m, result.AccountTypeTotals["CC"]);
     }
 
@@ -101,12 +106,42 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_NoLedgerRows_ReturnsEmptyTotalsWithZeroBalance()
+    public async Task GetAccountInstitutionSummary_AccountDeactivatedDuringPreviousPeriod_IsExcludedFromPreviousPeriodTotals()
+    {
+        // Arrange
+        var activeAccount = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Ongoing Checking",
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var activeLedger = AccountLedgerFactory.CreateFor(activeAccount, balance: 100m, balanceRecordedDate: CurrentMonthRecordedDate);
+        var closedAccount = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Former Checking",
+            institutionId: TestConstants.WellsFargoInstitutionId,
+            systemCreatedDate: PreviousPeriodAccountCreatedDate);
+        var closedLedger = AccountLedgerFactory.CreateFor(closedAccount, balance: 500m, balanceRecordedDate: PreviousMonthRecordedDate);
+        closedAccount.IsActive = false;
+        closedAccount.SystemModifiedDate = AccountDeactivationDate;
+        await DbContext.SeedRangeAsync([activeAccount, closedAccount], CancellationToken);
+        await DbContext.SeedRangeAsync([activeLedger, closedLedger], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
+
+        // Assert
+        var detail = Assert.Single(result.Accounts);
+        Assert.Equal(activeAccount.AccountId, detail.Id);
+        Assert.Equal(100m, result.AccountTypeTotals["CHK"]);
+        Assert.Equal(0m, result.AccountTypePreviousTotals["CHK"]);
+    }
+
+    [Fact]
+    public async Task GetAccountInstitutionSummary_OnlyOpeningLedgerEntry_ReturnsZeroBalanceAndZeroCurrentTotals()
     {
         // Arrange
         var account = AccountFactory.Create(
             AuthenticatedUserId,
-            accountName: "No Ledger Checking",
+            accountName: "Opening Ledger Checking",
             institutionId: TestConstants.WellsFargoInstitutionId);
         await DbContext.SeedAsync(account, CancellationToken);
 
@@ -115,9 +150,9 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
 
         // Assert
         Assert.Single(result.Accounts);
-        Assert.Equal(0m, result.Accounts.Single().Balance);
-        Assert.Empty(result.AccountTypeTotals);
-        Assert.Empty(result.AccountTypePreviousTotals);
+        Assert.Equal(0m, result.Accounts.Single().LatestBalance);
+        Assert.Equal(0m, result.AccountTypeTotals["CHK"]);
+        Assert.Equal(0m, result.AccountTypePreviousTotals["CHK"]);
     }
 
     [Fact]

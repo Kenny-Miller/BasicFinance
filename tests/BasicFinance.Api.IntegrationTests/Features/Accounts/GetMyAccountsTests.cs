@@ -30,7 +30,7 @@ public class GetMyAccountsTests : ApiTestFixtureBase
 
         // Assert
         Assert.Contains(result, a => a.Name == accountName);
-        Assert.Contains(result, a => a.Balance == balance);
+        Assert.Contains(result, a => a.LatestBalance == balance);
         Assert.Single(result);
     }
 
