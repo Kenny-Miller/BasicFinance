@@ -60,4 +60,20 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         Assert.Single(result);
         Assert.Equal("Active Account", result[0].Name);
     }
+
+    [Fact]
+    public async Task GetMyAccounts_AnotherUserHasAccounts_ExcludesTheirAccounts()
+    {
+        // Arrange
+        var myAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "My Account");
+        var otherAccount = AccountFactory.Create(Guid.NewGuid().ToString(), accountName: "Other Account");
+        await DbContext.SeedRangeAsync([myAccount, otherAccount], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("My Account", result[0].Name);
+    }
 }

@@ -30,7 +30,7 @@ public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
 
     /// <summary>
     /// The <see cref="ApiAssemblyFixture"/> instance shared by all
-    /// <see cref="ApiAssemblyFixture"/>s.
+    /// <see cref="ApiClassFixture"/> instances.
     /// </summary>
     private ApiAssemblyFixture _assemblyFixture = default!;
 

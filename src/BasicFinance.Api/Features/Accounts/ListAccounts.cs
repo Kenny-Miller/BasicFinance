@@ -21,12 +21,12 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Request Dto for the <see cref="ListAccounts"/> endpoint.
         /// </summary>
-        /// <param name="Page"></param>
-        /// <param name="PageSize"></param>
-        /// <param name="SortField"></param>
-        /// <param name="SortDirection"></param>
-        /// <param name="AccountTypeCode"></param>
-        /// <param name="Institution"></param>
+        /// <param name="Page">The 1-based page number to return. Defaults to the first page.</param>
+        /// <param name="PageSize">The maximum number of items per page. Defaults to the standard page size.</param>
+        /// <param name="SortField">The field to sort by. Unknown values fall back to the account name.</param>
+        /// <param name="SortDirection">The sort direction ('asc' or 'desc'). Defaults to ascending.</param>
+        /// <param name="AccountTypeCode">Optional filter: the account type code (e.g. 'CHK').</param>
+        /// <param name="Institution">Optional filter: the institution's full name (e.g. 'Wells Fargo').</param>
         public record Request(
             int? Page,
             int? PageSize,
@@ -41,7 +41,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         /// <param name="request">The request query parameters.</param>
         /// <param name="user">The authenticated user performing the request.</param>
-        /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
+        /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted accounts.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
         /// Returns <see cref="Ok{TValue}"/> with a <see cref="ListResult{TValue}"/> of <see cref="AccountDto"/> when successful,

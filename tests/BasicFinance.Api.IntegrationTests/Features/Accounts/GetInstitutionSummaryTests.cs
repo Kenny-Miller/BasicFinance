@@ -8,7 +8,7 @@ using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 
 namespace BasicFinance.Api.IntegrationTests.Features.Accounts;
 
-public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
+public class GetInstitutionSummaryTests : ApiTestFixtureBase
 {
     private static readonly DateTimeOffset AnchorDate = new(2026, 8, 7, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset CurrentMonthRecordedDate = new(2026, 8, 5, 12, 0, 0, TimeSpan.Zero);
@@ -25,13 +25,13 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     /// </summary>
     private static readonly DateTimeOffset AccountDeactivationDate = new(2026, 7, 20, 0, 0, 0, TimeSpan.Zero);
 
-    public GetAccountInstitutionSummaryTests(ApiClassFixture fixture)
+    public GetInstitutionSummaryTests(ApiClassFixture fixture)
         : base(fixture)
     {
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_UserHasAccountsAtInstitution_ReturnsInstitutionSummary()
+    public async Task GetInstitutionSummary_UserHasAccountsAtInstitution_ReturnsInstitutionSummary()
     {
         // Arrange
         var account = AccountFactory.Create(
@@ -63,7 +63,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_CreditCardAccount_RosterAndTotalsAreNegative()
+    public async Task GetInstitutionSummary_CreditCardAccount_RosterAndTotalsAreNegative()
     {
         // Arrange
         var account = AccountFactory.Create(
@@ -84,7 +84,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_MultipleHistoryRows_ReturnsLatestBalanceOnOrBeforeEachPeriodEnd()
+    public async Task GetInstitutionSummary_MultipleHistoryRows_ReturnsLatestBalanceOnOrBeforeEachPeriodEnd()
     {
         // Arrange
         var account = AccountFactory.Create(
@@ -106,7 +106,79 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_AccountDeactivatedDuringPreviousPeriod_IsExcludedFromPreviousPeriodTotals()
+    public async Task GetInstitutionSummary_LastLedgerBeforePreviousPeriod_CarriesForwardLastKnownBalance()
+    {
+        // Arrange: the newest ledger entry is older than both periods, so the
+        // last known balance must be carried forward into the period totals.
+        var carryForwardRecordedDate = new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero);
+        var account = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Carry Forward Checking",
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 750m, balanceRecordedDate: carryForwardRecordedDate);
+        await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
+
+        // Assert
+        var detail = Assert.Single(result.Accounts);
+        Assert.Equal(750m, detail.LatestBalance);
+        Assert.Equal(carryForwardRecordedDate, detail.LatestBalanceRecordedDate);
+        Assert.Equal(750m, result.AccountTypeTotals["CHK"]);
+        Assert.Equal(750m, result.AccountTypePreviousTotals["CHK"]);
+    }
+
+    [Fact]
+    public async Task GetInstitutionSummary_LedgerRecordedAfterAnchorDate_IsIncludedWhenOnOrBeforePeriodEnd()
+    {
+        // Arrange: the ledger entry is recorded after the anchor date but before
+        // the end of the anchor's month, so it must still count for the current
+        // period.
+        var afterAnchorRecordedDate = new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero);
+        var account = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Post Anchor Checking",
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 300m, balanceRecordedDate: afterAnchorRecordedDate);
+        await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(EndpointFor(TestConstants.WellsFargoInstitutionId), CancellationToken);
+
+        // Assert
+        var detail = Assert.Single(result.Accounts);
+        Assert.Equal(300m, detail.LatestBalance);
+        Assert.Equal(300m, result.AccountTypeTotals["CHK"]);
+        Assert.Equal(0m, result.AccountTypePreviousTotals["CHK"]);
+    }
+
+    [Fact]
+    public async Task GetInstitutionSummary_UnrecognizedTimePeriod_FallsBackToMonthly()
+    {
+        // Arrange
+        var account = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Period Fallback Checking",
+            institutionId: TestConstants.WellsFargoInstitutionId);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance: 400m, balanceRecordedDate: CurrentMonthRecordedDate);
+        await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
+
+        // Act
+        var endpoint = $"/api/accounts/institution/{TestConstants.WellsFargoInstitutionId}/summary?recordedDate={AnchorDate:O}&timePeriod=EveryBlueMoon";
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>(endpoint, CancellationToken);
+
+        // Assert
+        Assert.Equal(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc), result.CurrentPeriodStart);
+        Assert.Equal(new DateTime(2026, 8, 31, 23, 59, 59, 999, DateTimeKind.Utc), result.CurrentPeriodEnd);
+        Assert.Equal(400m, result.AccountTypeTotals["CHK"]);
+    }
+
+    [Fact]
+    public async Task GetInstitutionSummary_AccountDeactivatedDuringPreviousPeriod_IsExcludedFromPreviousPeriodTotals()
     {
         // Arrange
         var activeAccount = AccountFactory.Create(
@@ -136,7 +208,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_OnlyOpeningLedgerEntry_ReturnsZeroBalanceAndZeroCurrentTotals()
+    public async Task GetInstitutionSummary_OnlyOpeningLedgerEntry_ReturnsZeroBalanceAndZeroCurrentTotals()
     {
         // Arrange
         var account = AccountFactory.Create(
@@ -156,7 +228,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_AnotherUsersAccountAtInstitution_IsExcluded()
+    public async Task GetInstitutionSummary_AnotherUsersAccountAtInstitution_IsExcluded()
     {
         // Arrange
         var otherUserId = Guid.NewGuid().ToString();
@@ -183,7 +255,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_NonExistentInstitution_ReturnsBadRequest()
+    public async Task GetInstitutionSummary_NonExistentInstitution_ReturnsBadRequest()
     {
         // Act
         var response = await HttpClient.GetAsync(EndpointFor(TestConstants.NonExistentInstitutionId), CancellationToken);
@@ -193,7 +265,7 @@ public class GetAccountInstitutionSummaryTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountInstitutionSummary_AnotherUserOnlyAtInstitution_ReturnsBadRequest()
+    public async Task GetInstitutionSummary_AnotherUserOnlyAtInstitution_ReturnsBadRequest()
     {
         // Arrange
         var otherAccount = AccountFactory.Create(

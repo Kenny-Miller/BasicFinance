@@ -16,7 +16,7 @@ namespace BasicFinance.Api.Features.Accounts
     public static class GetInstitutionSummary
     {
         /// <summary>
-        /// Query parameters shared by the account summary endpoints.
+        /// Query parameters for the <see cref="GetInstitutionSummary"/> endpoint.
         /// </summary>
         /// <param name="RecordedDate">The anchor date used to resolve period boundaries.</param>
         /// <param name="TimePeriod">The period mode.</param>
@@ -25,11 +25,11 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Response Dto for the <see cref="GetInstitutionSummary"/> endpoint.
         /// </summary>
-        /// <param name="InstitutionId"></param>
-        /// <param name="InstitutionName"></param>
-        /// <param name="Accounts"></param>
-        /// <param name="AccountTypeTotals"></param>
-        /// <param name="AccountTypePreviousTotals"></param>
+        /// <param name="InstitutionId">The Id of the institution.</param>
+        /// <param name="InstitutionName">The full name of the institution.</param>
+        /// <param name="Accounts">The user's active accounts at the institution with their latest balances.</param>
+        /// <param name="AccountTypeTotals">Sum of the latest balances per account type for the current period.</param>
+        /// <param name="AccountTypePreviousTotals">Sum of the latest balances per account type for the previous period.</param>
         /// <param name="CurrentPeriodStart">The first day of the current period (inclusive).</param>
         /// <param name="CurrentPeriodEnd">The first day excluded from the current period (exclusive).</param>
         /// <param name="PreviousPeriodStart">The first day of the previous period (inclusive).</param>
@@ -58,9 +58,10 @@ namespace BasicFinance.Api.Features.Accounts
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted data.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
-        /// Returns <see cref="Ok{TValue}"/> with institution summary when successful,
-        /// or <see cref="BadRequest{TValue}"/> if the time period is invalid,
-        /// or the institution is not found or the user has no accounts.
+        /// Returns <see cref="Ok{TValue}"/> with the institution summary when successful,
+        /// or <see cref="BadRequest{TValue}"/> when the institution does not exist
+        /// or the authenticated user has no active accounts at that institution.
+        /// Unrecognized time period values fall back to <see cref="TimePeriod.Monthly"/>.
         /// </returns>
         [Authorize]
         [WolverineGet("api/accounts/institution/{institutionId:int}/summary")]
@@ -107,7 +108,7 @@ namespace BasicFinance.Api.Features.Accounts
                     .Take(1));
 
             var previousPeriodQuery = baseAccountsInInstitutionQuery
-                 .Include(x => x.Ledger
+                .Include(x => x.Ledger
                     .Where(l => l.BalanceRecordedDate <= previousRange.RangeEndDate)
                     .OrderByDescending(l => l.BalanceRecordedDate)
                     .ThenByDescending(l => l.SystemCreatedDate)
@@ -125,7 +126,7 @@ namespace BasicFinance.Api.Features.Accounts
                     })
                 .ToListAsync(cancellationToken);
 
-            var proccessedData = new
+            var processedData = new
             {
                 CurrentAccountData = results
                     .Select(x => x.CurrentAccount)
@@ -146,9 +147,9 @@ namespace BasicFinance.Api.Features.Accounts
             var response = new InstitutionSummaryResponse(
                 institutionId,
                 institution.Name,
-                proccessedData.CurrentAccountData,
-                proccessedData.AccountTypeTotals,
-                proccessedData.PreviousAccountTypeTotals,
+                processedData.CurrentAccountData,
+                processedData.AccountTypeTotals,
+                processedData.PreviousAccountTypeTotals,
                 currentRange.RangeStartDate.UtcDateTime,
                 currentRange.RangeEndDate.UtcDateTime,
                 previousRange.RangeStartDate.UtcDateTime,

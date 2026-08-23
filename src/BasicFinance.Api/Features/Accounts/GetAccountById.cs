@@ -15,11 +15,11 @@ namespace BasicFinance.Api.Features.Accounts;
 public static class GetAccountById
 {
     /// <summary>
-    /// Gets a <see cref="Account"/>s associated with the authenticated user and the specified Id.
+    /// Gets the <see cref="Account"/> associated with the authenticated user that has the specified Id.
     /// </summary>
-    /// <param name="accountId">The request query parameters.</param>
+    /// <param name="accountId">The Id of the account to retrieve.</param>
     /// <param name="user">The authenticated user performing the request.</param>
-    /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
+    /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted accounts.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>
     /// Returns <see cref="Ok{TValue}"/> when successful,

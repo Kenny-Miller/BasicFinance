@@ -49,8 +49,6 @@ public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyn
         HttpClient.Dispose();
         await DbContext.DisposeAsync();
         _serviceScope?.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
