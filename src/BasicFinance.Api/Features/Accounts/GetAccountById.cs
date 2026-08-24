@@ -23,11 +23,11 @@ public static class GetAccountById
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>
     /// Returns <see cref="Ok{TValue}"/> when successful,
-    /// or <see cref="BadRequest"/> on failure.
+    /// or <see cref="NotFound"/> when the account does not exist, is not active, or does not belong to the user.
     /// </returns>
     [Authorize]
-    [WolverineGet("api/Accounts/{accountId:guid}")]
-    public static async Task<Results<Ok<AccountDto>, BadRequest<string>>> HandleAsync(
+    [WolverineGet("api/accounts/{accountId:guid}")]
+    public static async Task<Results<Ok<AccountDto>, NotFound>> HandleAsync(
         [FromRoute] Guid accountId,
         AuthenticatedUser user,
         AppDbContext dbContext,
@@ -45,6 +45,6 @@ public static class GetAccountById
 
         return account != null
             ? TypedResults.Ok(account)
-            : TypedResults.BadRequest("Account with the specified Id was not found");
+            : TypedResults.NotFound();
     }
 }

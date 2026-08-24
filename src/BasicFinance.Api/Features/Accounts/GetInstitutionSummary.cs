@@ -136,12 +136,12 @@ namespace BasicFinance.Api.Features.Accounts
                     .Select(x => x.CurrentAccount)
                     .Select(Queries.ToAccountDtoFunc)
                     .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance ?? 0)),
                 PreviousAccountTypeTotals = results
                     .Select(x => x.PreviousAccount)
                     .Select(Queries.ToAccountDtoFunc)
                     .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance ?? 0)),
             };
 
             var response = new InstitutionSummaryResponse(

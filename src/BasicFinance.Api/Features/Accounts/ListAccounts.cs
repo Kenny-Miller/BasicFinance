@@ -48,7 +48,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/Accounts/")]
+        [WolverineGet("api/accounts")]
         public static async Task<Ok<ListResult<AccountDto>>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,
@@ -108,10 +108,12 @@ namespace BasicFinance.Api.Features.Accounts
             [nameof(AccountDto.InstitutionCode)] = x => x.Institution.InstitutionCode,
             [nameof(AccountDto.LatestBalance)] = x => x.Ledger.OrderByDescending(y => y.BalanceRecordedDate)
                     .ThenByDescending(y => y.SystemCreatedDate)
-                    .First().Balance,
+                    .Select(y => y.Balance)
+                    .FirstOrDefault(),
             [nameof(AccountDto.LatestBalanceRecordedDate)] = x => x.Ledger.OrderByDescending(y => y.BalanceRecordedDate)
                     .ThenByDescending(y => y.SystemCreatedDate)
-                    .First().BalanceRecordedDate,
+                    .Select(y => y.BalanceRecordedDate)
+                    .FirstOrDefault(),
         }.ToFrozenDictionary();
     }
 }

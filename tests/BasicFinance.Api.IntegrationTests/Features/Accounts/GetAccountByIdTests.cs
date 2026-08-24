@@ -31,7 +31,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
         await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/Accounts/{account.AccountId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/accounts/{account.AccountId}", CancellationToken);
 
         // Assert
         Assert.Equal(account.AccountId, result.Id);
@@ -63,7 +63,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([mostRecent, backdated], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/Accounts/{account.AccountId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/accounts/{account.AccountId}", CancellationToken);
 
         // Assert
         Assert.Equal(1000m, result.LatestBalance);
@@ -94,7 +94,7 @@ public class GetAccountByIdTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([earlierCreated, laterCreated], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/Accounts/{account.AccountId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountDto>($"/api/accounts/{account.AccountId}", CancellationToken);
 
         // Assert
         Assert.Equal(900m, result.LatestBalance);
@@ -102,31 +102,31 @@ public class GetAccountByIdTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetAccountById_AnotherUsersAccount_ReturnsBadRequest()
+    public async Task GetAccountById_AnotherUsersAccount_ReturnsNotFound()
     {
         // Arrange
         var account = AccountFactory.Create(Guid.NewGuid().ToString(), accountName: "Other Account");
         await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/Accounts/{account.AccountId}", CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/accounts/{account.AccountId}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task GetAccountById_NonExistentAccount_ReturnsBadRequest()
+    public async Task GetAccountById_NonExistentAccount_ReturnsNotFound()
     {
         // Act
-        var response = await HttpClient.GetAsync($"/api/Accounts/{TestConstants.ZeroGuid}", CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/accounts/{TestConstants.ZeroGuid}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task GetAccountById_DeactivatedAccount_ReturnsBadRequest()
+    public async Task GetAccountById_DeactivatedAccount_ReturnsNotFound()
     {
         // Arrange
         var account = AccountFactory.Create(AuthenticatedUserId);
@@ -134,9 +134,9 @@ public class GetAccountByIdTests : ApiTestFixtureBase
         await DbContext.SeedAsync(account, CancellationToken);
 
         // Act
-        var response = await HttpClient.GetAsync($"/api/Accounts/{account.AccountId}", CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/accounts/{account.AccountId}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

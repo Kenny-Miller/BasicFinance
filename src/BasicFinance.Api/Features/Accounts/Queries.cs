@@ -11,24 +11,28 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Projection from <see cref="Account"/> to <see cref="AccountDto"/>,
         /// taking the latest ledger entry (by balance recorded date, with system
-        /// created date as a tie-breaker) for the balance fields.
+        /// created date as a tie-breaker) for the balance fields. The balance
+        /// fields are <c>null</c> when the account has no ledger entries.
         /// </summary>
         public static readonly Expression<Func<Account, AccountDto>> ToAccountDtoExpression =
             x => new AccountDto(
                 x.AccountId,
                 x.AccountName,
                 x.AccountType.AccountTypeCode,
+                x.AccountType.AccountTypeName,
                 x.Institution.InstitutionCode,
+                x.Institution.Name,
+                x.Currency,
+                x.AccountType.IsLiability,
                 x.Ledger.OrderByDescending(l => l.BalanceRecordedDate)
                     .ThenByDescending(l => l.SystemCreatedDate)
-                    .First().Balance,
+                    .Select(l => (decimal?)l.Balance)
+                    .FirstOrDefault(),
                 x.Ledger.OrderByDescending(l => l.BalanceRecordedDate)
                     .ThenByDescending(l => l.SystemCreatedDate)
-                    .First().BalanceRecordedDate);
+                    .Select(l => (DateTimeOffset?)l.BalanceRecordedDate)
+                    .FirstOrDefault());
 
-        /// <summary>
-        /// Compiled in-memory version of <see cref="ToAccountDtoExpression"/>.
-        /// </summary>
         public static readonly Func<Account, AccountDto> ToAccountDtoFunc = ToAccountDtoExpression.Compile();
 
         /// <summary>

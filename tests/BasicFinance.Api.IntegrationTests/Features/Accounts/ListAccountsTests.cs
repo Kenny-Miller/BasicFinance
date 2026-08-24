@@ -28,7 +28,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -49,7 +49,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(accounts, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?page=1&pageSize=2", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?page=1&pageSize=2", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -69,7 +69,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(accounts, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?page=2&pageSize=2", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?page=2&pageSize=2", CancellationToken);
 
         // Assert
         Assert.Equal(2, result.Page);
@@ -90,7 +90,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([checkingAccount, savingsAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?accountTypeCode=CHK", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?accountTypeCode=CHK", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.TotalCount);
@@ -107,7 +107,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([wfAccount, chaseAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?institution=Wells+Fargo", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?institution=Wells+Fargo", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.TotalCount);
@@ -125,7 +125,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([matchingAccount, otherInstitutionAccount, otherTypeAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?accountTypeCode=CHK&institution=Wells+Fargo", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?accountTypeCode=CHK&institution=Wells+Fargo", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -142,7 +142,7 @@ public class ListAccountsTests : ApiTestFixtureBase
     public async Task ListAccounts_UserHasNoAccounts_ReturnsEmptyList()
     {
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -162,7 +162,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([zebraAccount, alphaAccount, middleAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Name&sortDirection=Asc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=Name&sortDirection=Asc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
@@ -185,7 +185,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, 5000m), CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
@@ -205,7 +205,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([zebraAccount, alphaAccount, middleAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/?sortField=Bogus", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=Bogus", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
@@ -224,7 +224,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([myAccount, otherAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -244,7 +244,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([activeAccount, deactivatedAccount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/Accounts/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -252,5 +252,60 @@ public class ListAccountsTests : ApiTestFixtureBase
         Assert.Equal(1, result.TotalCount);
         Assert.Equal(1, result.PageCount);
         Assert.Equal("Active Account", result.Items.Single().Name);
+    }
+
+    [Fact]
+    public async Task ListAccounts_AccountWithoutLedger_ReturnsNullBalance()
+    {
+        // Arrange
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "No Ledger Account");
+        account.Ledger.Clear();
+        await DbContext.SeedAsync(account, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
+
+        // Assert
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        var detail = Assert.Single(result.Items);
+        Assert.Equal(account.AccountId, detail.Id);
+        Assert.Equal("No Ledger Account", detail.Name);
+        Assert.Equal("CHK", detail.AccountTypeCode);
+        Assert.Equal("Checking", detail.AccountTypeName);
+        Assert.Equal("WF", detail.InstitutionCode);
+        Assert.Equal("Wells Fargo", detail.InstitutionName);
+        Assert.Equal("USD", detail.Currency);
+        Assert.False(detail.IsLiability);
+        Assert.Null(detail.LatestBalance);
+        Assert.Null(detail.LatestBalanceRecordedDate);
+    }
+
+    [Fact]
+    public async Task ListAccounts_SortByBalance_WithAccountWithoutLedger_OrdersAccountsByBalance()
+    {
+        // Arrange: the no-ledger account has a null balance; PostgreSQL null
+        // ordering is implementation dependent, so only the relative order of
+        // the two non-null balances is asserted.
+        var noLedger = AccountFactory.Create(AuthenticatedUserId, accountName: "No Ledger Sorting");
+        noLedger.Ledger.Clear();
+        var highBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "High Sorting");
+        var midBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "Mid Sorting");
+        await DbContext.SeedRangeAsync([noLedger, highBalance, midBalance], CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(highBalance, balance: 10000m), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, balance: 5000m), CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
+
+        // Assert
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(3, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        var balances = result.Items.Where(account => account.LatestBalance is not null).Select(account => account.LatestBalance!.Value).ToList();
+        Assert.Equal([10000m, 5000m], balances);
     }
 }
