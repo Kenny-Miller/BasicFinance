@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { Transaction } from '../../../../shared/api/transactions/transactions';
+import { Transaction } from '../../../../core/data-access/transaction-client';
 import { TransactionsList } from '../../../../shared/ui/transactions/transactions-list/transactions-list';
 
 @Component({

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BasicFinance.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260808161834_InitialGeneration")]
+    [Migration("20260827033604_InitialGeneration")]
     partial class InitialGeneration
     {
         /// <inheritdoc />
@@ -38,13 +38,6 @@ namespace BasicFinance.Infrastructure.Migrations
 
                     b.Property<int>("AccountTypeId")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("Balance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTimeOffset>("BalanceRecordedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -89,9 +82,9 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountBalanceHistory", b =>
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountLedger", b =>
                 {
-                    b.Property<Guid>("AccountBalanceHistoryId")
+                    b.Property<Guid>("AccountLedgerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -105,20 +98,15 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("BalanceRecordedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTimeOffset>("SystemCreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("SystemModifiedDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.HasKey("AccountLedgerId");
 
-                    b.HasKey("AccountBalanceHistoryId");
+                    b.HasIndex("AccountId", "BalanceRecordedDate")
+                        .IsDescending(false, true);
 
-                    b.HasIndex("AccountId");
-
-                    b.ToTable("AccountBalanceHistories");
+                    b.ToTable("AccountLedger", (string)null);
                 });
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountType", b =>
@@ -140,6 +128,9 @@ namespace BasicFinance.Infrastructure.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsLiability")
                         .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("SystemCreatedDate")
@@ -373,12 +364,12 @@ namespace BasicFinance.Infrastructure.Migrations
                     b.Navigation("UserGoogleSpreadsheet");
                 });
 
-            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountBalanceHistory", b =>
+            modelBuilder.Entity("BasicFinance.Infrastructure.Entities.AccountLedger", b =>
                 {
                     b.HasOne("BasicFinance.Infrastructure.Entities.Account", "Account")
-                        .WithMany("AccountBalanceHistory")
+                        .WithMany("Ledger")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Account");
@@ -413,7 +404,7 @@ namespace BasicFinance.Infrastructure.Migrations
 
             modelBuilder.Entity("BasicFinance.Infrastructure.Entities.Account", b =>
                 {
-                    b.Navigation("AccountBalanceHistory");
+                    b.Navigation("Ledger");
 
                     b.Navigation("Transactions");
                 });

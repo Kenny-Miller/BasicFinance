@@ -1,113 +1,55 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
-import { provideIcons } from '@ng-icons/core';
-import {
-  lucideChartNoAxesCombined,
-  lucideCreditCard,
-  lucideDollarSign,
-  lucideLandmark,
-} from '@ng-icons/lucide';
-import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { ACCOUNT_TYPE_CODES } from '../../shared/data/account-type-map';
-import { SummaryCardSkeleton } from '../../shared/ui/cards/summary-card-skeleton/summary-card-skeleton';
 import { SummaryCard } from '../../shared/ui/cards/summary-card/summary-card';
-import { AccountNetWorthBreakdownSkeleton } from './components/account-net-worth-breakdown-skeleton/account-net-worth-breakdown-skeleton';
 import { AccountNetWorthBreakdown } from './components/account-net-worth-breakdown/account-net-worth-breakdown';
-import { RecentTransactionsSkeleton } from './components/recent-transactions-skeleton/recent-transactions-skeleton';
+import { HomeSkeleton } from './components/home-skeleton/home-skeleton';
 import { RecentTransactions } from './components/recent-transactions/recent-transactions';
-import { SpendActivityChartSkeleton } from './components/spend-activity-chart-skeleton/spend-activity-chart-skeleton';
 import { SpendActivityChart } from './components/spend-activity-chart/spend-activity-chart';
-import { HomeClient } from './data/home-client';
+import { HomeService } from './home-service';
 
 @Component({
   selector: 'app-home',
-  providers: [
-    provideIcons({ lucideChartNoAxesCombined, lucideCreditCard, lucideLandmark, lucideDollarSign }),
-  ],
   imports: [
-    CommonModule,
-    HlmCardImports,
+    DatePipe,
+    HlmButtonImports,
+    SummaryCard,
     AccountNetWorthBreakdown,
     SpendActivityChart,
-    SpendActivityChartSkeleton,
-    SummaryCard,
-    SummaryCardSkeleton,
-    AccountNetWorthBreakdownSkeleton,
+    HomeSkeleton,
     RecentTransactions,
-    RecentTransactionsSkeleton,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
   private readonly oauthService = inject(OAuthService);
-  private readonly homeClient = inject(HomeClient);
+  private readonly homeService = inject(HomeService);
   private readonly pageService = inject(PageService);
   private readonly themeService = inject(ThemeService);
 
-  readonly balanceSummaryResource = this.homeClient.balanceSummaryResource;
-  readonly transactionsResource = this.homeClient.transactionsResource;
-  readonly recentTransactions = computed(() => this.transactionsResource.value()?.items ?? []);
-  readonly spendingOverTimeResource = this.homeClient.spendingOverTimeResource;
+  readonly loading = this.homeService.loading;
+  readonly error = this.homeService.error;
 
-  readonly currentNetWorth = computed(
-    () => this.balanceSummaryResource.value()?.currentPeriodBreakdown.balance ?? 0,
-  );
-  readonly previousNetWorth = computed(
-    () => this.balanceSummaryResource.value()?.previousPeriodBreakdown.balance ?? 0,
-  );
+  readonly currentNetWorth = this.homeService.currentNetWorth;
+  readonly previousNetWorth = this.homeService.previousNetWorth;
+  readonly currentChecking = this.homeService.currentChecking;
+  readonly previousChecking = this.homeService.previousChecking;
+  readonly currentSavings = this.homeService.currentSavings;
+  readonly previousSavings = this.homeService.previousSavings;
+  readonly currentInvestments = this.homeService.currentInvestments;
+  readonly previousInvestments = this.homeService.previousInvestments;
 
-  readonly currentChecking = computed(
-    () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.CHECKING
-      ]?.balance ?? 0,
-  );
-  readonly previousChecking = computed(
-    () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.CHECKING
-      ]?.balance ?? 0,
-  );
+  readonly currentPeriodBreakdown = this.homeService.currentPeriodBreakdown;
+  readonly spendingOverTimeData = this.homeService.spendingOverTimeData;
+  readonly recentTransactions = this.homeService.recentTransactions;
 
-  readonly currentSavings = computed(
-    () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.SAVINGS
-      ]?.balance ?? 0,
-  );
-  readonly previousSavings = computed(
-    () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.SAVINGS
-      ]?.balance ?? 0,
-  );
-
-  readonly currentInvestments = computed(
-    () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.INVESTMENTS
-      ]?.balance ?? 0,
-  );
-  readonly previousInvestments = computed(
-    () =>
-      this.balanceSummaryResource.value()?.previousPeriodBreakdown.accountTypeBreakdowns[
-        ACCOUNT_TYPE_CODES.INVESTMENTS
-      ]?.balance ?? 0,
-  );
-
-  readonly currentPeriodBreakdown = computed(
-    () =>
-      this.balanceSummaryResource.value()?.currentPeriodBreakdown ?? {
-        balance: 0,
-        accountTypeBreakdowns: {},
-      },
-  );
+  readonly refetchAll = (): void => this.homeService.refetchAll();
 
   readonly appTheme = this.themeService.appTheme;
   readonly user = signal<AuthUserProfile | null>(null);

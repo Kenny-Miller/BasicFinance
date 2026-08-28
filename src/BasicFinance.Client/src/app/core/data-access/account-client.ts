@@ -1,15 +1,19 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
-import { ListResult } from '../../shared/api/list-result';
-import { IPagedQuery, ISortedQuery } from './api-interfaces';
+import { TimePeriod } from '../../shared/data/time-period';
+import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
 export interface Account {
   id: string;
   name: string;
   accountTypeCode: string;
+  accountTypeName: string;
   institutionCode: string;
+  institutionName: string;
+  currency: string;
+  isLiability: boolean;
   latestBalance: number | null;
-  latestBalanceRecordedDate: Date | null;
+  latestBalanceRecordedDate: string | null;
 }
 
 export interface AccountFilters {
@@ -20,6 +24,36 @@ export interface AccountFilters {
 interface ListAccountsParams extends IPagedQuery, ISortedQuery {
   accountTypeCode?: string;
   institution?: string;
+}
+
+export interface AccountBalanceDto {
+  id: string;
+  accountTypeCode: string;
+  institution: string;
+  accountName: string;
+  balance: number;
+  percentageOfTotalBalance: number;
+  percentageOfAccountTypeBalance: number;
+}
+
+export interface AccountTypeBreakdown {
+  balance: number;
+  percentageOfTotalBalance: number;
+  accounts: AccountBalanceDto[];
+}
+
+export interface TotalBalanceBreakdown {
+  balance: number;
+  accountTypeBreakdowns: Record<string, AccountTypeBreakdown>;
+}
+
+export interface AccountAnalyticsResponse {
+  currentPeriodBreakdown: TotalBalanceBreakdown;
+  previousPeriodBreakdown: TotalBalanceBreakdown;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
 }
 
 @Injectable({
@@ -33,11 +67,12 @@ export class AccountClient {
   }
 
   getMyAccounts() {
-    return this.client.get<Account>('api/my/accounts');
+    return this.client.get<Account[]>('api/my/accounts');
   }
 
   listAccounts(
     pageSignal: Signal<number>,
+    pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
     filtersSignal: Signal<AccountFilters>,
@@ -45,7 +80,7 @@ export class AccountClient {
     return httpResource<ListResult<Account>>(() => {
       const params: ListAccountsParams = {
         page: pageSignal(),
-        pageSize: 20,
+        pageSize: pageSizeSignal(),
         sortField: sortFieldSignal(),
         sortDirection: sortDirectionSignal(),
         ...filtersSignal(),
@@ -60,5 +95,11 @@ export class AccountClient {
         params: queryParams,
       };
     });
+  }
+
+  createBalanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
+    return httpResource<AccountAnalyticsResponse>(
+      () => `api/accounts/balanceSummary?TimePeriod=${timePeriodSignal()}`,
+    );
   }
 }

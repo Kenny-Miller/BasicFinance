@@ -57,7 +57,7 @@
                     [isActive]="rla.isActive"
                     [routerLinkActiveOptions]="{ exact: true }"
                   >
-                    <ng-icon [name]="item.icon" />
+                    <app-institution-avatar [name]="item.label"></app-institution-avatar>
                     <span>{{ item.label }}</span>
                   </a>
                 </li>

@@ -17,6 +17,7 @@ import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { PageService } from './core/page/page.service';
 import { NavMenuItem } from './shared/models/nav-menu-item';
+import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/institution-avatar';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ import { NavMenuItem } from './shared/models/nav-menu-item';
     HlmSeparatorImports,
     RouterLink,
     RouterLinkActive,
+    InstitutionAvatar,
   ],
   providers: [
     provideIcons({

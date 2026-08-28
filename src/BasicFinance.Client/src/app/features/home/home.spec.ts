@@ -1,13 +1,11 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
-import { of } from 'rxjs';
 import { ENVIRONMENT_CONFIG } from '../../environment-config';
 import { ThemeService } from '../../core/theme/theme.service';
-import { HomeClient } from './data/home-client';
 import { Home } from './home';
+import { HomeService } from './home-service';
 
 describe('Home', () => {
   beforeEach(async () => {
@@ -26,29 +24,36 @@ describe('Home', () => {
           },
         },
         {
-          provide: HomeClient,
+          provide: HomeService,
           useValue: {
-            balanceSummaryResource: {
-              value: () => ({
-                currentPeriodBreakdown: { balance: 0, accountTypeBreakdowns: {} },
-                previousPeriodBreakdown: { balance: 0, accountTypeBreakdowns: {} },
-              }),
-            },
-            transactionsResource: { value: () => [] },
-            spendingOverTimeResource: { value: () => null },
+            loading: () => false,
+            error: () => false,
+            currentNetWorth: () => 100500,
+            previousNetWorth: () => 90000,
+            currentChecking: () => 40000,
+            previousChecking: () => 38000,
+            currentSavings: () => 35000,
+            previousSavings: () => 32000,
+            currentInvestments: () => 25500,
+            previousInvestments: () => 20000,
+            currentPeriodBreakdown: () => ({
+              balance: 100500,
+              accountTypeBreakdowns: {},
+            }),
+            spendingOverTimeData: () => ({
+              currentMonthActivity: [],
+              previousMonthActivity: [],
+              totalMonthlySpend: 0,
+              monthlySpendDifference: 0,
+            }),
+            recentTransactions: () => [],
+            refetchAll: () => ({}),
           },
         },
         {
           provide: ThemeService,
           useValue: {
-            appTheme: { getValue: () => 'light' },
-            getAppColor: () => '#000000',
-          },
-        },
-        {
-          provide: BreakpointObserver,
-          useValue: {
-            observe: () => of({ matches: false }),
+            appTheme: () => 'light',
           },
         },
       ],

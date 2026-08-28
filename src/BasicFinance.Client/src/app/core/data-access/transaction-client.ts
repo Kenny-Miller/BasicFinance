@@ -1,18 +1,20 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
-import { ListResult } from '../../shared/api/list-result';
-import { IPagedQuery, ISortedQuery } from './api-interfaces';
+import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
 export interface Transaction {
   id: string;
-  code: string;
-  name: string;
-  logoUrl: string;
+  transactionTypeName: string;
+  transactionCategoryName: string;
+  accountName: string;
+  date: string;
+  amount: number;
+  description: string;
 }
 
 export interface TransactionFilters {
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: string;
+  endDate?: string;
   minAmount?: number;
   maxAmount?: number;
   transactionTypeCode?: string;
@@ -21,8 +23,8 @@ export interface TransactionFilters {
 }
 
 interface ListTransactionsParams extends IPagedQuery, ISortedQuery {
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: string;
+  endDate?: string;
   minAmount?: number;
   maxAmount?: number;
   transactionTypeCode?: string;
@@ -42,6 +44,7 @@ export class TransactionClient {
 
   listTransactions(
     pageSignal: Signal<number>,
+    pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
     filtersSignal: Signal<TransactionFilters>,
@@ -49,7 +52,7 @@ export class TransactionClient {
     return httpResource<ListResult<Transaction>>(() => {
       const params: ListTransactionsParams = {
         page: pageSignal(),
-        pageSize: 20,
+        pageSize: pageSizeSignal(),
         sortField: sortFieldSignal(),
         sortDirection: sortDirectionSignal(),
         ...filtersSignal(),
