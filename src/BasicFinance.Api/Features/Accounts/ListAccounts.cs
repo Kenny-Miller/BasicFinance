@@ -1,4 +1,4 @@
-﻿using System.Collections.Frozen;
+using System.Collections.Frozen;
 using System.Linq.Expressions;
 using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Queries;
@@ -21,12 +21,12 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Request Dto for the <see cref="ListAccounts"/> endpoint.
         /// </summary>
-        /// <param name="Page"></param>
-        /// <param name="PageSize"></param>
-        /// <param name="SortField"></param>
-        /// <param name="SortDirection"></param>
-        /// <param name="AccountTypeCode"></param>
-        /// <param name="Institution"></param>
+        /// <param name="Page">The 1-based page number to return. Defaults to the first page.</param>
+        /// <param name="PageSize">The maximum number of items per page. Defaults to the standard page size.</param>
+        /// <param name="SortField">The field to sort by. Unknown values fall back to the account name.</param>
+        /// <param name="SortDirection">The sort direction ('asc' or 'desc'). Defaults to ascending.</param>
+        /// <param name="AccountTypeCode">Optional filter: the account type code (e.g. 'CHK').</param>
+        /// <param name="Institution">Optional filter: the institution's full name (e.g. 'Wells Fargo').</param>
         public record Request(
             int? Page,
             int? PageSize,
@@ -41,14 +41,14 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         /// <param name="request">The request query parameters.</param>
         /// <param name="user">The authenticated user performing the request.</param>
-        /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
+        /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted accounts.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
         /// Returns <see cref="Ok{TValue}"/> with a <see cref="ListResult{TValue}"/> of <see cref="AccountDto"/> when successful,
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/Accounts/")]
+        [WolverineGet("api/accounts")]
         public static async Task<Ok<ListResult<AccountDto>>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,
@@ -56,10 +56,11 @@ namespace BasicFinance.Api.Features.Accounts
             CancellationToken cancellationToken)
         {
             var sortField = request.SortField ?? nameof(AccountDto.Name);
-            var sortExpressionSelector = SortFieldExpressionSelectors.GetValueOrDefault(sortField, x => x.AccountName);
+            var sortExpression = SortFieldExpressionSelectors.GetValueOrDefault(sortField, x => x.AccountName);
 
             var baseQuery = dbContext.Accounts
                 .AsNoTracking()
+                .Include(x => x.AccountType)
                 .Include(x => x.Institution)
                 .Where(x => x.UserId == user.Id)
                 .Where(x => x.IsActive);
@@ -69,16 +70,10 @@ namespace BasicFinance.Api.Features.Accounts
             var totalCount = await baseQuery.CountAsync(cancellationToken);
 
             var accounts = await baseQuery
-                .OrderBy(sortExpressionSelector, request)
+                .OrderBy(sortExpression, request)
                     .ThenBy(x => x.AccountName, request)
                 .Paginate(request)
-                .Select(x => new AccountDto(
-                    x.AccountId,
-                    x.AccountName,
-                    x.AccountType.AccountTypeCode,
-                    x.Institution.Name,
-                    x.Balance,
-                    x.BalanceRecordedDate))
+                .ToAccountDto()
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new ListResult<AccountDto>(accounts, request.Page, request.PageSize, totalCount));
@@ -110,9 +105,15 @@ namespace BasicFinance.Api.Features.Accounts
             [nameof(AccountDto.Id)] = x => x.AccountId,
             [nameof(AccountDto.Name)] = x => x.AccountName,
             [nameof(AccountDto.AccountTypeCode)] = x => x.AccountType.AccountTypeCode,
-            [nameof(AccountDto.Institution)] = x => x.Institution.Name,
-            [nameof(AccountDto.Balance)] = x => x.Balance,
-            [nameof(AccountDto.BalanceRecordedDate)] = x => x.BalanceRecordedDate,
+            [nameof(AccountDto.InstitutionCode)] = x => x.Institution.InstitutionCode,
+            [nameof(AccountDto.LatestBalance)] = x => x.Ledger.OrderByDescending(y => y.BalanceRecordedDate)
+                    .ThenByDescending(y => y.SystemCreatedDate)
+                    .Select(y => y.Balance)
+                    .FirstOrDefault(),
+            [nameof(AccountDto.LatestBalanceRecordedDate)] = x => x.Ledger.OrderByDescending(y => y.BalanceRecordedDate)
+                    .ThenByDescending(y => y.SystemCreatedDate)
+                    .Select(y => y.BalanceRecordedDate)
+                    .FirstOrDefault(),
         }.ToFrozenDictionary();
     }
 }

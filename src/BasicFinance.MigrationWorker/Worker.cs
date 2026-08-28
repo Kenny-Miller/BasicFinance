@@ -97,7 +97,7 @@ namespace BasicFinance.MigrationWorker
                 dbContext.AccountTypes.AddRange(
                     new("CHK", "Checking"),
                     new("SAV", "Savings"),
-                    new("CC", "Credit Card"),
+                    new("CC", "Credit Card", true),
                     new("INV", "Investment"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);

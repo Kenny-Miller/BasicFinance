@@ -12,7 +12,11 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource(Worker.ActivitySourceName));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(ServiceDiscoveryNames.BasicFinanceDb)));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString(ServiceDiscoveryNames.BasicFinanceDb));
+    options.EnableSensitiveDataLogging();
+});
+
 builder.EnrichNpgsqlDbContext<AppDbContext>();
 
 var host = builder.Build();

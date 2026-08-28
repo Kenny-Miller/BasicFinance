@@ -10,24 +10,30 @@ public static class AccountFactory
         string userId,
         AccountTypeEnum accountType = AccountTypeEnum.Checking,
         string accountName = "Test Checking",
-        decimal balance = 1000.00m,
         string currency = "USD",
         string? notes = null,
         int institutionId = TestConstants.WellsFargoInstitutionId,
         Guid? financialAccountId = null,
-        DateTimeOffset? balanceRecordedDate = null)
+        DateTimeOffset? systemCreatedDate = null,
+        decimal openingBalance = 0m,
+        DateTimeOffset? openingBalanceRecordedDate = null)
     {
         return new Account(
             TestConstants.TestUserGoogleSpreadsheetId,
             accountType,
             userId,
             accountName,
-            balance,
             currency,
             notes ?? string.Empty,
             institutionId,
             financialAccountId ?? Guid.NewGuid(),
-            balanceRecordedDate ?? DateTimeOffset.UtcNow);
+            openingBalance,
+            // Default to a date before any seeded ledger history so that
+            // explicitly seeded ledger entries remain the latest.
+            openingBalanceRecordedDate ?? DateTimeOffset.UnixEpoch)
+        {
+            SystemCreatedDate = systemCreatedDate ?? DateTimeOffset.UtcNow
+        };
     }
 
     public static IEnumerable<Account> CreateBatch(
@@ -35,7 +41,6 @@ public static class AccountFactory
         string userId,
         string namePrefix = "Account",
         AccountTypeEnum accountType = AccountTypeEnum.Checking,
-        decimal balance = 1000.00m,
         int institutionId = TestConstants.WellsFargoInstitutionId)
     {
         for (var i = 0; i < count; i++)
@@ -44,7 +49,6 @@ public static class AccountFactory
                 userId,
                 accountType: accountType,
                 accountName: $"{namePrefix} {i}",
-                balance: balance,
                 institutionId: institutionId);
         }
     }

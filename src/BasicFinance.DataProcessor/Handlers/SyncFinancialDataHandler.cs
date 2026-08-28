@@ -1,9 +1,10 @@
-﻿using System.Collections.Frozen;
+using System.Collections.Frozen;
 using System.Globalization;
 using BasicFinance.Domain.Commands;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
 using BasicFinance.Infrastructure.Entities;
+using BasicFinance.Infrastructure.Extensions;
 using BasicFinance.Infrastructure.Helpers;
 using BasicFinance.Infrastructure.VendorModels;
 using BasicFinance.Infrastructure.VendorModels.Exports;
@@ -75,7 +76,6 @@ namespace BasicFinance.DataProcessor.Handlers
             var existingAccountsDict = await dbContext.Accounts
                     .Where(x => x.UserGoogleSpreadsheetId == userGoogleSpreadsheetId)
                     .Where(x => x.UserId == userId)
-                    .Where(x => x.IsActive)
                     .Include(x => x.Institution)
                     .ToDictionaryAsync(x => new { x.FinancialAccountId, InstitutionName = x.Institution.Name });
 
@@ -85,20 +85,32 @@ namespace BasicFinance.DataProcessor.Handlers
                 .Where(x => x.IsActive)
                 .ToDictionaryAsync(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
-            // Update existing accounts and remove accounts that no longer exist in the spreadsheet
+            var accountTypesDict = await dbContext.AccountTypes
+                .ToDictionaryAsync(x => x.AccountTypeId);
+
+            var accountIds = existingAccountsDict.Values.Select(x => x.AccountId).ToList();
+            var latestLedgerByAccount = await dbContext.AccountLedgers
+                .Where(x => accountIds.Contains(x.AccountId))
+                .WithLatestPerAccount()
+                .ToDictionaryAsync(x => x.AccountId);
+
+            // Update existing accounts and deactivate accounts that no longer exist in the spreadsheet
             foreach (var (key, existingAccount) in existingAccountsDict)
             {
                 if (accountRowDict.TryGetValue(key, out var accountRow))
                 {
-                    if (accountRow.Balance != existingAccount.Balance)
+                    if (!existingAccount.IsActive)
                     {
-                        dbContext.AccountBalanceHistories.Add(new(existingAccount));
-                        existingAccount.UpdateBalance(accountRow.Balance, accountRow.LastUpdateDated);
+                        existingAccount.SetIsActive(true);
                     }
+
+                    var isLiability = accountTypesDict[existingAccount.AccountTypeId].IsLiability;
+                    AppendLedgerEntryIfChanged(dbContext, existingAccount, accountRow, latestLedgerByAccount, isLiability);
                 }
                 else
                 {
-                    dbContext.Remove(existingAccount);
+                    // Soft-close the account so its metadata and balance ledger are retained for period queries
+                    existingAccount.SetIsActive(false);
                 }
 
                 accountRowDict.Remove(key);
@@ -142,16 +154,18 @@ namespace BasicFinance.DataProcessor.Handlers
                     continue;
                 }
 
+                var openingBalance = SignedBalance(accountTypesDict[(int)accountType.Value].IsLiability, accountRow.Balance);
+
                 var accountToCreate = new Account(
                    userGoogleSpreadsheetId,
                    accountType.Value,
                    userId,
                    accountRow.AccountName,
-                   accountRow.Balance,
                    accountRow.Currency,
                    accountRow.Notes,
                    institution.InstitutionId,
                    accountRow.FinancialAccountId,
+                   openingBalance,
                    accountRow.LastUpdateDated);
                 newAccounts.Add(accountToCreate);
             }
@@ -159,6 +173,39 @@ namespace BasicFinance.DataProcessor.Handlers
             dbContext.Accounts.AddRange(newAccounts);
             await dbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Appends a balance ledger entry for the account when the spreadsheet reports a balance or
+        /// recorded date that differs from the account's latest ledger entry.
+        /// Liability balances are stored as negative values.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="account"></param>
+        /// <param name="accountRow"></param>
+        /// <param name="latestLedgerByAccount"></param>
+        /// <param name="isLiability">Whether the account type is a liability, in which case the balance is stored negated.</param>
+        static void AppendLedgerEntryIfChanged(AppDbContext dbContext, Account account, AccountGoogleSpreadsheetRow accountRow, Dictionary<Guid, AccountLedger> latestLedgerByAccount, bool isLiability)
+        {
+            var balance = SignedBalance(isLiability, accountRow.Balance);
+            latestLedgerByAccount.TryGetValue(account.AccountId, out var latest);
+            if (latest is not null &&
+                latest.Balance == balance &&
+                latest.BalanceRecordedDate == accountRow.LastUpdateDated)
+            {
+                return;
+            }
+
+            dbContext.AccountLedgers.Add(new AccountLedger(account, balance, accountRow.LastUpdateDated));
+        }
+
+        /// <summary>
+        /// Negates the balance when the account type is a liability, since liability balances are stored as negative values.
+        /// </summary>
+        /// <param name="isLiability">Whether the account type is a liability.</param>
+        /// <param name="balance">The unsigned balance reported by the source.</param>
+        /// <returns>The signed balance to store.</returns>
+        static decimal SignedBalance(bool isLiability, decimal balance) =>
+            isLiability ? -balance : balance;
 
         /// <summary>
         /// Creates transactions in the database for the specified user and <see cref="UserGoogleSpreadsheet"/> based on the provided list of <see cref="TransactionGoogleSpreadsheetRow"/> retrieved from the Google Spreadsheet.

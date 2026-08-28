@@ -22,11 +22,11 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
                 accountType,
                 userId,
                 accountName,
-                balance,
                 currency,
                 notes ?? string.Empty,
                 institutionId,
                 financialAccountId == default ? Guid.NewGuid() : financialAccountId,
+                balance,
                 balanceRecordedDate ?? DateTimeOffset.UtcNow);
         }
     }

@@ -20,6 +20,7 @@ namespace BasicFinance.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AccountTypeCode = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
                     AccountTypeName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IsLiability = table.Column<bool>(type: "boolean", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -108,10 +109,8 @@ namespace BasicFinance.Infrastructure.Migrations
                     AccountTypeId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     AccountName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     InstitutionId = table.Column<int>(type: "integer", nullable: false),
                     FinancialAccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -142,26 +141,24 @@ namespace BasicFinance.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccountBalanceHistories",
+                name: "AccountLedger",
                 columns: table => new
                 {
-                    AccountBalanceHistoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountLedgerId = table.Column<Guid>(type: "uuid", nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     BalanceRecordedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    SystemModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    SystemCreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccountBalanceHistories", x => x.AccountBalanceHistoryId);
+                    table.PrimaryKey("PK_AccountLedger", x => x.AccountLedgerId);
                     table.ForeignKey(
-                        name: "FK_AccountBalanceHistories_Accounts_AccountId",
+                        name: "FK_AccountLedger_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "AccountId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -205,9 +202,10 @@ namespace BasicFinance.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccountBalanceHistories_AccountId",
-                table: "AccountBalanceHistories",
-                column: "AccountId");
+                name: "IX_AccountLedger_AccountId_BalanceRecordedDate",
+                table: "AccountLedger",
+                columns: new[] { "AccountId", "BalanceRecordedDate" },
+                descending: new[] { false, true });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_AccountTypeId",
@@ -244,7 +242,7 @@ namespace BasicFinance.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AccountBalanceHistories");
+                name: "AccountLedger");
 
             migrationBuilder.DropTable(
                 name: "Transactions");

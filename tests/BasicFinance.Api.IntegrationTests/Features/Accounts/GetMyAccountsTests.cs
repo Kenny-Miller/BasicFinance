@@ -20,15 +20,17 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         // Arrange
         const string accountName = "My Checking";
         const decimal balance = 5000m;
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName, balance: balance);
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance);
         await DbContext.SeedAsync(account, CancellationToken);
+        await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
         Assert.Contains(result, a => a.Name == accountName);
-        Assert.Contains(result, a => a.Balance == balance);
+        Assert.Contains(result, a => a.LatestBalance == balance);
         Assert.Single(result);
     }
 
@@ -57,5 +59,21 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         // Assert
         Assert.Single(result);
         Assert.Equal("Active Account", result[0].Name);
+    }
+
+    [Fact]
+    public async Task GetMyAccounts_AnotherUserHasAccounts_ExcludesTheirAccounts()
+    {
+        // Arrange
+        var myAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "My Account");
+        var otherAccount = AccountFactory.Create(Guid.NewGuid().ToString(), accountName: "Other Account");
+        await DbContext.SeedRangeAsync([myAccount, otherAccount], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("My Account", result[0].Name);
     }
 }

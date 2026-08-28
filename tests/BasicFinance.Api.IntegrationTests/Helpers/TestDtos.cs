@@ -1,3 +1,5 @@
+using BasicFinance.Domain.Enums;
+
 namespace BasicFinance.Api.IntegrationTests.Helpers;
 
 public record InstitutionDto(
@@ -10,9 +12,13 @@ public record AccountDto(
     Guid Id,
     string Name,
     string AccountTypeCode,
-    string Institution,
-    decimal Balance,
-    DateTimeOffset BalanceRecordedDate);
+    string AccountTypeName,
+    string InstitutionCode,
+    string InstitutionName,
+    string Currency,
+    bool IsLiability,
+    decimal? LatestBalance,
+    DateTimeOffset? LatestBalanceRecordedDate);
 
 public record TransactionDto(
     Guid Id,
@@ -30,12 +36,18 @@ public record BalanceSummaryAccountDto(
     string AccountName,
     decimal Balance,
     decimal PercentageOfTotalBalance,
-    decimal PercentageOfAccountTypeBalance);
+    decimal PercentageOfAccountTypeBalance,
+    string Currency,
+    DateTimeOffset BalanceRecordedDate,
+    decimal? PreviousBalance,
+    decimal? Change);
 
 public record BalanceSummaryAccountTypeDto(
     decimal Balance,
     decimal PercentageOfTotalBalance,
-    List<BalanceSummaryAccountDto> Accounts);
+    List<BalanceSummaryAccountDto> Accounts,
+    string AccountTypeName,
+    bool IsLiability);
 
 public record BalanceSummaryPeriodDto(
     decimal Balance,
@@ -44,17 +56,22 @@ public record BalanceSummaryPeriodDto(
 public record BalanceSummaryResponseDto(
     BalanceSummaryPeriodDto CurrentPeriodBreakdown,
     BalanceSummaryPeriodDto PreviousPeriodBreakdown,
-    DateOnly CurrentPeriodStart,
-    DateOnly CurrentPeriodEnd,
-    DateOnly PreviousPeriodStart,
-    DateOnly PreviousPeriodEnd);
+    DateTimeOffset CurrentPeriodStart,
+    DateTimeOffset CurrentPeriodEnd,
+    DateTimeOffset PreviousPeriodStart,
+    DateTimeOffset PreviousPeriodEnd);
 
 public record InstitutionSummaryAccountDto(
     Guid Id,
     string Name,
     string AccountTypeCode,
-    decimal Balance,
-    DateTimeOffset BalanceRecordedDate);
+    string AccountTypeName,
+    string InstitutionCode,
+    string InstitutionName,
+    string Currency,
+    bool IsLiability,
+    decimal? LatestBalance,
+    DateTimeOffset? LatestBalanceRecordedDate);
 
 public record InstitutionSummaryResponseDto(
     int InstitutionId,
@@ -62,7 +79,28 @@ public record InstitutionSummaryResponseDto(
     IEnumerable<InstitutionSummaryAccountDto> Accounts,
     Dictionary<string, decimal> AccountTypeTotals,
     Dictionary<string, decimal> AccountTypePreviousTotals,
-    DateOnly CurrentPeriodStart,
-    DateOnly CurrentPeriodEnd,
-    DateOnly PreviousPeriodStart,
-    DateOnly PreviousPeriodEnd);
+    DateTimeOffset CurrentPeriodStart,
+    DateTimeOffset CurrentPeriodEnd,
+    DateTimeOffset PreviousPeriodStart,
+    DateTimeOffset PreviousPeriodEnd);
+
+public record BalanceHistoryPointDto(
+    DateTimeOffset BalanceDate,
+    decimal Balance);
+
+public record BalanceHistoryResponseDto(
+    Guid AccountId,
+    string AccountName,
+    string AccountTypeCode,
+    string AccountTypeName,
+    string Institution,
+    string Currency,
+    List<BalanceHistoryPointDto> Points);
+
+public record NetWorthPointDto(
+    DateTimeOffset PeriodStart,
+    decimal NetWorth);
+
+public record NetWorthOverTimeResponseDto(
+    TimePeriod TimePeriod,
+    List<NetWorthPointDto> Points);

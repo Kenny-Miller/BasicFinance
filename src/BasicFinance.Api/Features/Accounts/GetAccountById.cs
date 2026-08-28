@@ -1,4 +1,4 @@
-﻿using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -15,19 +15,19 @@ namespace BasicFinance.Api.Features.Accounts;
 public static class GetAccountById
 {
     /// <summary>
-    /// Gets a <see cref="Account"/>s associated with the authenticated user and the specified Id.
+    /// Gets the <see cref="Account"/> associated with the authenticated user that has the specified Id.
     /// </summary>
-    /// <param name="accountId">The request query parameters.</param>
+    /// <param name="accountId">The Id of the account to retrieve.</param>
     /// <param name="user">The authenticated user performing the request.</param>
-    /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted spreadsheets.</param>
+    /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted accounts.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>
     /// Returns <see cref="Ok{TValue}"/> when successful,
-    /// or <see cref="BadRequest"/> on failure.
+    /// or <see cref="NotFound"/> when the account does not exist, is not active, or does not belong to the user.
     /// </returns>
     [Authorize]
-    [WolverineGet("api/Accounts/{accountId:guid}")]
-    public static async Task<Results<Ok<AccountDto>, BadRequest<string>>> HandleAsync(
+    [WolverineGet("api/accounts/{accountId:guid}")]
+    public static async Task<Results<Ok<AccountDto>, NotFound>> HandleAsync(
         [FromRoute] Guid accountId,
         AuthenticatedUser user,
         AppDbContext dbContext,
@@ -37,20 +37,14 @@ public static class GetAccountById
             .AsNoTracking()
             .Include(x => x.AccountType)
             .Include(x => x.Institution)
-            .Where(x => x.AccountId == accountId)
             .Where(x => x.UserId == user.Id)
             .Where(x => x.IsActive)
-            .Select(x => new AccountDto(
-                x.AccountId,
-                x.AccountName,
-                x.AccountType.AccountTypeCode,
-                x.Institution.Name,
-                x.Balance,
-                x.BalanceRecordedDate))
+            .Where(x => x.AccountId == accountId)
+            .ToAccountDto()
             .SingleOrDefaultAsync(cancellationToken);
 
         return account != null
             ? TypedResults.Ok(account)
-            : TypedResults.BadRequest("Account with the specified Id was not found");
+            : TypedResults.NotFound();
     }
 }

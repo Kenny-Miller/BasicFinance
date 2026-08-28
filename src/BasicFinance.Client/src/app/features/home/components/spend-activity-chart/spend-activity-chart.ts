@@ -5,13 +5,26 @@ import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
+import { SpendingOverTimeSummary } from '../../../../core/data-access/spending-client';
 import { ThemeService } from '../../../../core/theme/theme.service';
-import { SpendingOverTimeSummary } from '../../../../shared/api/spending/spending-over-time-summary';
 
 interface TooltipParam {
   seriesIndex: number;
   value: number;
 }
+
+// Hardcoded for now — plain rgb/rgba so zrender can parse them directly
+// (no Tailwind CSS variables involved yet).
+const CHART_COLORS = {
+  light: {
+    primary: 'rgb(217, 119, 6)', // amber-600 — current month
+    previous: 'rgb(253, 230, 138)', // amber-200 — previous month
+  },
+  dark: {
+    primary: 'rgb(251, 191, 36)', // amber-400 — brighter for contrast on dark
+    previous: 'rgb(120, 53, 15)', // amber-900 — dim tint for a dark surface
+  },
+};
 
 @Component({
   selector: 'app-spend-activity-chart',
@@ -36,8 +49,9 @@ export class SpendActivityChart {
   readonly options = computed<EChartsCoreOption>(() => {
     const spendingData = this.data();
 
-    const primaryColor = '#000000';
-    const previousMonthColor = '#ffffff';
+    const colors = this.theme() === 'dark' ? CHART_COLORS.dark : CHART_COLORS.light;
+    const primaryColor = colors.primary;
+    const previousMonthColor = colors.previous;
 
     const currentData = spendingData?.currentMonthActivity.map((item) => item.y) ?? [];
     const previousData = spendingData?.previousMonthActivity.map((item) => item.y) ?? [];
@@ -97,8 +111,8 @@ export class SpendActivityChart {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(0, 0, 0, 0.75)' },
-                { offset: 1, color: 'rgba(0, 0, 0, 0.05)' },
+                { offset: 0, color: 'rgba(217, 119, 6, 0.25)' }, // amber-600 @ 25%
+                { offset: 1, color: 'rgba(217, 119, 6, 0.03)' },
               ],
             },
           },

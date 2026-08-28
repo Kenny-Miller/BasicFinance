@@ -1,59 +1,43 @@
-<div class="flex flex-col gap-4">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-    @if (balanceSummaryResource.hasValue()) {
+<main class="flex flex-col gap-6 p-4">
+  @if (loading()) {
+    <app-home-skeleton />
+  } @else if (error()) {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">Failed to load your financial overview</p>
+      <button variant="outline" hlmBtn class="mt-2" (click)="refetchAll()">Retry</button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <app-summary-card
-        title="Networth"
+        title="Net Worth"
         [currentValue]="currentNetWorth()"
         [lastMonthValue]="previousNetWorth()"
       />
+
       <app-summary-card
         title="Checking"
         [currentValue]="currentChecking()"
         [lastMonthValue]="previousChecking()"
       />
+
       <app-summary-card
         title="Savings"
         [currentValue]="currentSavings()"
         [lastMonthValue]="previousSavings()"
       />
+
       <app-summary-card
         title="Investments"
         [currentValue]="currentInvestments()"
         [lastMonthValue]="previousInvestments()"
       />
-    } @else if (balanceSummaryResource.isLoading()) {
-      <app-summary-card-skeleton />
-      <app-summary-card-skeleton />
-      <app-summary-card-skeleton />
-      <app-summary-card-skeleton />
-    }
-  </div>
-
-  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-    <div class="col-span-1 xl:col-span-1">
-      @if (spendingOverTimeResource.hasValue()) {
-        <app-spend-activity-chart [theme]="appTheme()" [data]="spendingOverTimeResource.value()" />
-      } @else if (spendingOverTimeResource.isLoading()) {
-        <app-spend-activity-chart-skeleton />
-      }
     </div>
 
-    <div class="col-span-1 xl:col-span-1">
-      @if (balanceSummaryResource.hasValue()) {
-        <app-account-net-worth-breakdown
-          [data]="currentPeriodBreakdown()"
-        ></app-account-net-worth-breakdown>
-      } @else if (balanceSummaryResource.isLoading()) {
-        <app-account-net-worth-breakdown-skeleton />
-      }
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <app-spend-activity-chart [theme]="appTheme()" [data]="spendingOverTimeData()" />
+      <app-account-net-worth-breakdown [data]="currentPeriodBreakdown()" />
     </div>
-  </div>
 
-  <div>
-    @if (transactionsResource.hasValue()) {
-      <app-recent-transactions [transactions]="recentTransactions()" />
-    } @else if (transactionsResource.isLoading()) {
-      <app-recent-transactions-skeleton />
-    }
-  </div>
-</div>
+    <app-recent-transactions [transactions]="recentTransactions()" />
+  }
+</main>

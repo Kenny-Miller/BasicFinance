@@ -8,7 +8,7 @@ import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import {
   AccountTypeBreakdown,
   TotalBalanceBreakdown,
-} from '../../../../shared/api/accounts/account-analytics';
+} from '../../../../core/data-access/account-client';
 import { ACCOUNT_TYPE_LABELS } from '../../../../shared/data/account-type-map';
 import { AbsPipe } from '../../../../shared/pipes/abs-pipe';
 
