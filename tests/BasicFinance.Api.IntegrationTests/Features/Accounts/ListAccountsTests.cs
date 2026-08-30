@@ -23,7 +23,7 @@ public class ListAccountsTests : ApiTestFixtureBase
         const string accountName = "Test Account";
         const decimal balance = 2500m;
         var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName);
-        var ledger = AccountLedgerFactory.CreateFor(account, balance);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance, DateTimeOffset.UtcNow);
         await DbContext.SeedAsync(account, CancellationToken);
         await DbContext.SeedAsync(ledger, CancellationToken);
 
@@ -180,9 +180,9 @@ public class ListAccountsTests : ApiTestFixtureBase
         var highBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "High Balance Account");
         var midBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "Mid Balance Account");
         await DbContext.SeedRangeAsync([lowBalance, highBalance, midBalance], CancellationToken);
-        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(lowBalance, 100m), CancellationToken);
-        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(highBalance, 10000m), CancellationToken);
-        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, 5000m), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(lowBalance, 100m, DateTimeOffset.UtcNow), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(highBalance, 10000m, DateTimeOffset.UtcNow), CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, 5000m, DateTimeOffset.UtcNow), CancellationToken);
 
         // Act
         var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
@@ -252,60 +252,5 @@ public class ListAccountsTests : ApiTestFixtureBase
         Assert.Equal(1, result.TotalCount);
         Assert.Equal(1, result.PageCount);
         Assert.Equal("Active Account", result.Items.Single().Name);
-    }
-
-    [Fact]
-    public async Task ListAccounts_AccountWithoutLedger_ReturnsNullBalance()
-    {
-        // Arrange
-        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "No Ledger Account");
-        account.Ledger.Clear();
-        await DbContext.SeedAsync(account, CancellationToken);
-
-        // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts", CancellationToken);
-
-        // Assert
-        Assert.Equal(1, result.Page);
-        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
-        Assert.Equal(1, result.TotalCount);
-        Assert.Equal(1, result.PageCount);
-        var detail = Assert.Single(result.Items);
-        Assert.Equal(account.AccountId, detail.Id);
-        Assert.Equal("No Ledger Account", detail.Name);
-        Assert.Equal("CHK", detail.AccountTypeCode);
-        Assert.Equal("Checking", detail.AccountTypeName);
-        Assert.Equal("WF", detail.InstitutionCode);
-        Assert.Equal("Wells Fargo", detail.InstitutionName);
-        Assert.Equal("USD", detail.Currency);
-        Assert.False(detail.IsLiability);
-        Assert.Null(detail.LatestBalance);
-        Assert.Null(detail.LatestBalanceRecordedDate);
-    }
-
-    [Fact]
-    public async Task ListAccounts_SortByBalance_WithAccountWithoutLedger_OrdersAccountsByBalance()
-    {
-        // Arrange: the no-ledger account has a null balance; PostgreSQL null
-        // ordering is implementation dependent, so only the relative order of
-        // the two non-null balances is asserted.
-        var noLedger = AccountFactory.Create(AuthenticatedUserId, accountName: "No Ledger Sorting");
-        noLedger.Ledger.Clear();
-        var highBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "High Sorting");
-        var midBalance = AccountFactory.Create(AuthenticatedUserId, accountName: "Mid Sorting");
-        await DbContext.SeedRangeAsync([noLedger, highBalance, midBalance], CancellationToken);
-        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(highBalance, balance: 10000m), CancellationToken);
-        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(midBalance, balance: 5000m), CancellationToken);
-
-        // Act
-        var result = await HttpClient.GetResultAsync<ListResult<AccountDto>>("/api/accounts?sortField=LatestBalance&sortDirection=Desc", CancellationToken);
-
-        // Assert
-        Assert.Equal(1, result.Page);
-        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
-        Assert.Equal(3, result.TotalCount);
-        Assert.Equal(1, result.PageCount);
-        var balances = result.Items.Where(account => account.LatestBalance is not null).Select(account => account.LatestBalance!.Value).ToList();
-        Assert.Equal([10000m, 5000m], balances);
     }
 }

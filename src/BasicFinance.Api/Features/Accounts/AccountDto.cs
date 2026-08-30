@@ -24,6 +24,6 @@ namespace BasicFinance.Api.Features.Accounts
         string InstitutionName,
         string Currency,
         bool IsLiability,
-        decimal? LatestBalance,
-        DateTimeOffset? LatestBalanceRecordedDate);
+        decimal LatestBalance,
+        DateTimeOffset LatestBalanceRecordedDate);
 }

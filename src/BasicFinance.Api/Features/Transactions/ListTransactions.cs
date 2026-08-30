@@ -32,6 +32,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="TransactionTypeCode"></param>
         /// <param name="TransactionCategoryCode"></param>
         /// <param name="AccountId"></param>
+        /// <param name="Search"></param>
         public record Request(
             int? Page,
             int? PageSize,
@@ -43,7 +44,8 @@ namespace BasicFinance.Api.Features.Transactions
             decimal? MaxAmount,
             string? TransactionTypeCode,
             string? TransactionCategoryCode,
-            Guid? AccountId) : IPagedQuery, ISortedQuery;
+            Guid? AccountId,
+            string? Search) : IPagedQuery, ISortedQuery;
 
         /// <summary>
         /// Retrieves <see cref="Transaction"/>s associated with the authenticated user
@@ -135,6 +137,12 @@ namespace BasicFinance.Api.Features.Transactions
             if (request.AccountId.HasValue)
             {
                 query = query.Where(x => x.AccountId == request.AccountId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                var search = $"%{request.Search.Trim()}%";
+                query = query.Where(x => EF.Functions.ILike(x.Description, search));
             }
 
             return query;

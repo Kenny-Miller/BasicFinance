@@ -1,4 +1,5 @@
 ﻿using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -91,7 +92,7 @@ namespace BasicFinance.Api.Features.Spending
             CancellationToken cancellationToken)
         {
             var startDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified);
-            var now = new DateTime(2025, 11, 25, 13, 26, 30, DateTimeKind.Unspecified);
+            var now = timeProvider.GetUtcNow().Date;
             var (periodStart, periodEnd) = GetPeriodBoundaries(startDate, request.SpendingPeriod, now.Date);
 
             var userTransactions = dbContext.Transactions
@@ -149,7 +150,7 @@ namespace BasicFinance.Api.Features.Spending
         {
             var start = period switch
             {
-                SpendingPeriod.Weekly => startDate.AddDays(-(int)startDate.DayOfWeek),
+                SpendingPeriod.Weekly => startDate.StartOfWeek,
                 SpendingPeriod.Monthly => new DateTime(startDate.Year, startDate.Month, 1, 0, 0, 0, DateTimeKind.Unspecified),
                 SpendingPeriod.Quarterly => new DateTime(startDate.Year, (startDate.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
                 SpendingPeriod.Yearly => new DateTime(startDate.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),

@@ -47,9 +47,11 @@ namespace BasicFinance.Api.Features.Accounts
 
         /// <summary>
         /// Retrieves account-level summary for a specific institution.
-        /// Validates that the authenticated user owns at least one active account at the institution.
         /// Period totals are sourced from the most recent balance ledger entry
         /// on or before each period's end (last known balances are carried forward).
+        /// Returns zero-filled data (empty roster and totals, and an empty institution name
+        /// when the institution does not exist) if the user has no active accounts at the
+        /// institution, or the institution does not exist or is deactivated.
         /// </summary>
         /// <param name="institutionId">The unique identifier of the institution.</param>
         /// <param name="request">The request containing the recorded date and time period.</param>
@@ -58,14 +60,12 @@ namespace BasicFinance.Api.Features.Accounts
         /// <param name="dbContext">Application <see cref="AppDbContext"/> used to query persisted data.</param>
         /// <param name="cancellationToken">Cancellation token for the request.</param>
         /// <returns>
-        /// Returns <see cref="Ok{TValue}"/> with the institution summary when successful,
-        /// or <see cref="BadRequest{TValue}"/> when the institution does not exist
-        /// or the authenticated user has no active accounts at that institution.
+        /// Returns <see cref="Ok{TValue}"/> with the institution summary.
         /// Unrecognized time period values fall back to <see cref="TimePeriod.Monthly"/>.
         /// </returns>
         [Authorize]
         [WolverineGet("api/accounts/institution/{institutionId:int}/summary")]
-        public static async Task<Results<Ok<InstitutionSummaryResponse>, BadRequest<string>>> HandleAsync(
+        public static async Task<Ok<InstitutionSummaryResponse>> HandleAsync(
             [FromRoute] int institutionId,
             [FromQuery] Request request,
             AuthenticatedUser user,
@@ -82,21 +82,15 @@ namespace BasicFinance.Api.Features.Accounts
 
             var institution = await dbContext.Institutions
                 .AsNoTracking()
-                .Where(x => x.IsActive)
                 .Where(x => x.InstitutionId == institutionId)
-                .Where(x => x.Accounts.Any(y => y.UserId == user.Id && y.IsActive))
-                .SingleOrDefaultAsync(cancellationToken);
-
-            if (institution == null)
-            {
-                return TypedResults.BadRequest("Institution not found or you have no accounts at this institution.");
-            }
+                .FirstOrDefaultAsync(cancellationToken);
 
             var baseAccountsInInstitutionQuery = dbContext.Accounts
                 .AsNoTracking()
                 .Include(x => x.Institution)
                 .Include(x => x.AccountType)
-                .Where(x => x.Institution.IsActive && x.Institution.InstitutionId == institutionId)
+                .Where(x => x.InstitutionId == institutionId)
+                .Where(x => x.Institution.IsActive)
                 .Where(x => x.UserId == user.Id)
                 .Where(x => x.IsActive);
 
@@ -136,17 +130,17 @@ namespace BasicFinance.Api.Features.Accounts
                     .Select(x => x.CurrentAccount)
                     .Select(Queries.ToAccountDtoFunc)
                     .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance ?? 0)),
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
                 PreviousAccountTypeTotals = results
                     .Select(x => x.PreviousAccount)
                     .Select(Queries.ToAccountDtoFunc)
                     .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance ?? 0)),
+                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
             };
 
             var response = new InstitutionSummaryResponse(
                 institutionId,
-                institution.Name,
+                institution?.Name ?? string.Empty,
                 processedData.CurrentAccountData,
                 processedData.AccountTypeTotals,
                 processedData.PreviousAccountTypeTotals,

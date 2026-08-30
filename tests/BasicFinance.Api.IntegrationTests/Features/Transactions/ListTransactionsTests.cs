@@ -102,6 +102,48 @@ public class ListTransactionsTests : ApiTestFixtureBase
     }
 
     [Fact]
+    public async Task ListTransactions_FilterBySearch_ReturnsMatchingDescriptionsCaseInsensitive()
+    {
+        // Arrange
+        var account = AccountFactory.Create(AuthenticatedUserId);
+        await DbContext.SeedAsync(account, CancellationToken);
+        var coffeeTx = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Coffee Shop Order");
+        var groceryTx = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Grocery Run");
+        await DbContext.SeedRangeAsync([coffeeTx, groceryTx], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions/?search={Uri.EscapeDataString("COFFEE SHOP")}", CancellationToken);
+
+        // Assert
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.Equal("Coffee Shop Order", result.Items.Single().Description);
+    }
+
+    [Fact]
+    public async Task ListTransactions_FilterByBlankSearch_ReturnsAllTransactions()
+    {
+        // Arrange
+        var account = AccountFactory.Create(AuthenticatedUserId);
+        await DbContext.SeedAsync(account, CancellationToken);
+        var tx1 = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Alpha Purchase");
+        var tx2 = TransactionFactory.Create(AuthenticatedUserId, account.AccountId, description: "Beta Payment");
+        await DbContext.SeedRangeAsync([tx1, tx2], CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions/?search={Uri.EscapeDataString("  ")}", CancellationToken);
+
+        // Assert
+        Assert.Equal(1, result.Page);
+        Assert.Equal(QueryConstants.DefaultPageSize, result.PageSize);
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(1, result.PageCount);
+        Assert.Equal(2, result.Items.Count());
+    }
+
+    [Fact]
     public async Task ListTransactions_UserHasNoTransactions_ReturnsEmptyList()
     {
         // Act

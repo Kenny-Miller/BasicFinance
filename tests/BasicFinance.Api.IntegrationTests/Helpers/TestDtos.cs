@@ -104,3 +104,56 @@ public record NetWorthPointDto(
 public record NetWorthOverTimeResponseDto(
     TimePeriod TimePeriod,
     List<NetWorthPointDto> Points);
+
+public record TransactionPeriodSummaryDto(
+    int TotalCount,
+    decimal TotalSpend,
+    decimal TotalIncome,
+    decimal NetFlow);
+
+public record TransactionSummaryResponseDto(
+    DateOnly CurrentStart,
+    DateOnly CurrentEnd,
+    DateOnly PreviousStart,
+    DateOnly PreviousEnd,
+    TransactionPeriodSummaryDto CurrentPeriod,
+    TransactionPeriodSummaryDto PreviousPeriod);
+
+public record DailyTransactionSummaryDto(
+    DateOnly Date,
+    decimal TotalSpend,
+    int TransactionCount);
+
+public record DailySummaryResponseDto(
+    DateOnly CurrentStart,
+    DateOnly CurrentEnd,
+    DateOnly PreviousStart,
+    DateOnly PreviousEnd,
+    List<DailyTransactionSummaryDto> CurrentPeriod,
+    List<DailyTransactionSummaryDto> PreviousPeriod);
+
+public record AccountBalanceSummaryAccountDto(
+    Guid Id,
+    string AccountTypeCode,
+    string Institution,
+    string AccountName,
+    decimal Balance,
+    decimal PercentageOfTotalBalance,
+    decimal PercentageOfAccountTypeBalance);
+
+public record AccountBalanceSummaryAccountTypeDto(
+    decimal Balance,
+    decimal PercentageOfTotalBalance,
+    List<AccountBalanceSummaryAccountDto> Accounts);
+
+public record AccountBalanceSummaryPeriodDto(
+    decimal Balance,
+    Dictionary<string, AccountBalanceSummaryAccountTypeDto> AccountTypeBreakdowns);
+
+public record AccountBalanceSummaryResponseDto(
+    AccountBalanceSummaryPeriodDto CurrentPeriodBreakdown,
+    AccountBalanceSummaryPeriodDto PreviousPeriodBreakdown,
+    DateOnly CurrentPeriodStart,
+    DateOnly CurrentPeriodEnd,
+    DateOnly PreviousPeriodStart,
+    DateOnly PreviousPeriodEnd);

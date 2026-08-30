@@ -26,12 +26,12 @@ namespace BasicFinance.Api.Features.Accounts
                 x.AccountType.IsLiability,
                 x.Ledger.OrderByDescending(l => l.BalanceRecordedDate)
                     .ThenByDescending(l => l.SystemCreatedDate)
-                    .Select(l => (decimal?)l.Balance)
-                    .FirstOrDefault(),
+                    .Select(l => l.Balance)
+                    .First(),
                 x.Ledger.OrderByDescending(l => l.BalanceRecordedDate)
                     .ThenByDescending(l => l.SystemCreatedDate)
-                    .Select(l => (DateTimeOffset?)l.BalanceRecordedDate)
-                    .FirstOrDefault());
+                    .Select(l => l.BalanceRecordedDate)
+                    .First());
 
         public static readonly Func<Account, AccountDto> ToAccountDtoFunc = ToAccountDtoExpression.Compile();
 

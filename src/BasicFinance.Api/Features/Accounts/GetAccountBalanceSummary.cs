@@ -74,12 +74,24 @@ namespace BasicFinance.Api.Features.Accounts
             decimal PercentageOfTotalBalance,
             decimal PercentageOfAccountTypeBalance);
 
+        private sealed record AccountPeriodComparisonDto(
+            Account Account,
+            AccountLedger? CurrentPeriodLatestLedger,
+            AccountLedger? PreviousPeriodLatestLedger);
+
+        private sealed class AccountTypeAccumulator
+        {
+            public decimal Total { get; set; }
+            public List<AccountDto> Accounts { get; } = [];
+        }
+
         /// <summary>
         /// Retrieves the total balance breakdown for the user's active accounts for the current and
         /// previous period.
         /// Period totals are sourced from the most recent balance ledger entry
         /// on or before each period's end (last known balances are carried forward).
-        /// Accounts without a ledger entry that far back are omitted from that period's breakdown.
+        /// Accounts without a ledger entry that far back appear in that period's
+        /// breakdown with a zero balance.
         /// </summary>
         /// <param name="request">The request containing the recorded date and time period.</param>
         /// <param name="user">The authenticated user performing the request.</param>
@@ -110,132 +122,125 @@ namespace BasicFinance.Api.Features.Accounts
                 .Include(x => x.Institution)
                 .Include(x => x.AccountType)
                 .Where(x => x.Institution.IsActive)
+                .Where(x => x.AccountType.IsActive)
                 .Where(x => x.UserId == user.Id)
-                .Where(x => x.IsActive);
+                .Where(x => x.IsActive)
+                .ProjectToComparison(currentPeriod.RangeEndDate, previousPeriod.RangeEndDate);
 
-            var currentPeriodQuery = baseAccountsQuery
-                .Include(x => x.Ledger.Where(l => l.BalanceRecordedDate <= currentPeriod.RangeEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .Take(1));
+            var results = await baseAccountsQuery.ToListAsync(cancellationToken);
+            var currentItems = new List<AccountDto>();
+            var previousItems = new List<AccountDto>();
+            foreach (var res in results)
+            {
+                if (res.CurrentPeriodLatestLedger != null)
+                {
+                    currentItems.Add(ToAccountDto(res.Account, res.CurrentPeriodLatestLedger));
+                }
+                if (res.PreviousPeriodLatestLedger != null)
+                {
+                    previousItems.Add(ToAccountDto(res.Account, res.PreviousPeriodLatestLedger));
+                }
+            }
 
-            var previousPeriodQuery = baseAccountsQuery
-                .Include(x => x.Ledger.Where(l => l.BalanceRecordedDate <= previousPeriod.RangeEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .Take(1));
-
-            var results = await currentPeriodQuery
-                .Join(
-                    previousPeriodQuery,
-                    current => current.AccountId,
-                    previous => previous.AccountId,
-                    (current, previous) => new { Current = current, Previous = previous })
+            var accountTypeCodes = await dbContext.AccountTypes
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .Select(x => x.AccountTypeCode)
                 .ToListAsync(cancellationToken);
 
             return TypedResults.Ok(new Response(
-                BuildPeriodBreakdown(results.Select(r => ProjectPeriodSnapshot(r.Current))),
-                BuildPeriodBreakdown(results.Select(r => ProjectPeriodSnapshot(r.Previous))),
-                DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod).Date),
+                BuildPeriodBreakdown(currentItems, accountTypeCodes),
+                BuildPeriodBreakdown(previousItems, accountTypeCodes),
+                DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date),
                 DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod, 1).Date),
-                DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod, -1).Date),
-                DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod).Date)));
+                DateOnly.FromDateTime(previousPeriod.RangeStartDate.Date),
+                DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date)));
         }
 
         /// <summary>
-        /// Period-level snapshot of a single account carrying the latest balance on or before the period
-        /// end, as loaded by the filtered ledger include.
+        /// Projects the  <see cref="Account"/> query to a query containing the <see cref="Account"/> and it's latest <see cref="AccountLedger"/>
+        /// within the periods defined by <paramref name="currentPeriodEndDate"/> and <paramref name="previousPeriodEndDate"/>.
         /// </summary>
-        /// <param name="AccountId">The unique identifier of the account.</param>
-        /// <param name="AccountName">The name of the account.</param>
-        /// <param name="AccountTypeCode">The code of the account type.</param>
-        /// <param name="InstitutionName">The name of the institution the account belongs to.</param>
-        /// <param name="LatestBalance">The latest balance on or before the period end, or <c>null</c> when the account has no ledger row that far back.</param>
-        private sealed record PeriodSnapshot(
-            Guid AccountId,
-            string AccountName,
-            string AccountTypeCode,
-            string InstitutionName,
-            decimal? LatestBalance);
-
-        /// <summary>
-        /// An account with a known latest balance on or before the period end.
-        /// </summary>
-        /// <param name="AccountId">The unique identifier of the account.</param>
-        /// <param name="AccountName">The name of the account.</param>
-        /// <param name="AccountTypeCode">The code of the account type.</param>
-        /// <param name="InstitutionName">The name of the institution the account belongs to.</param>
-        /// <param name="Balance">The latest balance on or before the period end.</param>
-        private sealed record PeriodAccount(
-            Guid AccountId,
-            string AccountName,
-            string AccountTypeCode,
-            string InstitutionName,
-            decimal Balance);
-
-        /// <summary>
-        /// Projects an account, whose filtered ledger include has loaded at most one row, into a period
-        /// snapshot. Accounts with no ledger row on or before the period end project a <c>null</c> balance.
-        /// </summary>
-        /// <param name="account">The account with at most one ledger row loaded.</param>
-        /// <returns>A period snapshot for the account.</returns>
-        private static PeriodSnapshot ProjectPeriodSnapshot(Account account)
+        /// <param name="query"></param>
+        /// <param name="currentPeriodEndDate"></param>
+        /// <param name="previousPeriodEndDate"></param>
+        /// <returns></returns>
+        private static IQueryable<AccountPeriodComparisonDto> ProjectToComparison(this IQueryable<Account> query, DateTimeOffset currentPeriodEndDate, DateTimeOffset previousPeriodEndDate)
         {
-            return new PeriodSnapshot(
-                account.AccountId,
-                account.AccountName,
-                account.AccountType.AccountTypeCode,
-                account.Institution.Name,
-                account.Ledger.FirstOrDefault()?.Balance);
+            return query.Select(x => new AccountPeriodComparisonDto(
+                x,
+                x.Ledger
+                    .Where(l => l.BalanceRecordedDate <= currentPeriodEndDate)
+                    .OrderByDescending(l => l.BalanceRecordedDate)
+                    .ThenByDescending(l => l.SystemCreatedDate)
+                    .FirstOrDefault(),
+                x.Ledger
+                    .Where(l => l.BalanceRecordedDate <= previousPeriodEndDate)
+                    .OrderByDescending(l => l.BalanceRecordedDate)
+                    .ThenByDescending(l => l.SystemCreatedDate)
+                    .FirstOrDefault()));
         }
 
         /// <summary>
-        /// Aggregates period snapshots into a total balance breakdown by account type. Accounts without a
-        /// balance on or before the period end are omitted.
+        /// Maps the <see cref="Account"/> and <see cref="AccountLedger"/> to a
+        /// <see cref="AccountDto"/>.
         /// </summary>
-        /// <param name="snapshots">The period snapshots of all active accounts.</param>
+        /// <param name="account"></param>
+        /// <param name="accountLedger"></param>
+        /// <returns></returns>
+        private static AccountDto ToAccountDto(Account account, AccountLedger accountLedger) => new(
+            account.AccountId,
+            account.AccountName,
+            account.AccountType.AccountTypeCode,
+            account.AccountType.AccountTypeName,
+            account.Institution.InstitutionCode,
+            account.Institution.Name,
+            account.Currency,
+            account.AccountType.IsLiability,
+            accountLedger.Balance,
+            accountLedger.BalanceRecordedDate);
+
+        /// <summary>
+        /// Aggregates period snapshots into a total balance breakdown by account type. Every active
+        /// account type code is included, with zero balances for types that have no account snapshots.
+        /// </summary>
+        /// <param name="accounts">Account snapshots with their latest balance at the specified point in time.</param>
+        /// <param name="accountTypeCodes"></param>
         /// <returns>The total balance breakdown for the period.</returns>
-        private static TotalBalanceBreakdown BuildPeriodBreakdown(IEnumerable<PeriodSnapshot> snapshots)
+        private static TotalBalanceBreakdown BuildPeriodBreakdown(List<AccountDto> accounts, List<string> accountTypeCodes)
         {
-            var accounts = snapshots
-                .Where(s => s.LatestBalance is not null)
-                .Select(s => new PeriodAccount(s.AccountId, s.AccountName, s.AccountTypeCode, s.InstitutionName, s.LatestBalance!.Value))
-                .ToList();
-            if (accounts.Count == 0)
+            var totalNetworth = 0m;
+            var accountTypeCodeDict = accountTypeCodes.ToDictionary(x => x, x => new AccountTypeAccumulator());
+            foreach (var account in accounts)
             {
-                return new TotalBalanceBreakdown(0m, []);
+                var accountTypeCodeEntry = accountTypeCodeDict[account.AccountTypeCode];
+                accountTypeCodeEntry.Accounts.Add(account);
+                accountTypeCodeEntry.Total += account.LatestBalance;
+                totalNetworth += account.LatestBalance;
             }
 
-            var netWorth = accounts.Sum(s => s.Balance);
-            var accountTypeBreakdowns = accounts
-                .GroupBy(s => s.AccountTypeCode)
-                .Select(group =>
+            var results = accountTypeCodeDict.ToDictionary(x => x.Key, x =>
+            {
+                var typePercentageOfTotalBalance = totalNetworth != 0 ? x.Value.Total / totalNetworth * 100m : 0m;
+                var balanceDtos = x.Value.Accounts.Select(y =>
                 {
-                    var typeBalance = group.Sum(s => s.Balance);
-                    var typePercentageOfTotalBalance = netWorth != 0 ? typeBalance / netWorth * 100m : 0m;
-                    var typeAccounts = group
-                        .Select(s =>
-                        {
-                            var balance = s.Balance;
-                            var percentageOfTotalBalance = netWorth != 0 ? Math.Round(balance / netWorth * 100m, 0) : 0m;
-                            var percentageOfAccountTypeBalance = typeBalance != 0
-                                ? Math.Round(Math.Abs(balance) / Math.Abs(typeBalance) * 100m, 0)
-                                : 0m;
-                            return new AccountBalanceDto(
-                                s.AccountId,
-                                s.AccountTypeCode,
-                                s.InstitutionName,
-                                s.AccountName,
-                                balance,
+                    var percentageOfTotalBalance = totalNetworth != 0 ? Math.Round(Math.Abs(y.LatestBalance / totalNetworth * 100m), 0) : 0m;
+                    var percentageOfAccountTypeBalance = x.Value.Total != 0 ? Math.Round(Math.Abs(y.LatestBalance / x.Value.Total * 100m), 0) : 0m;
+
+                    return new AccountBalanceDto(
+                                y.Id,
+                                y.AccountTypeCode,
+                                y.InstitutionName,
+                                y.Name,
+                                y.LatestBalance,
                                 percentageOfTotalBalance,
                                 percentageOfAccountTypeBalance);
-                        })
-                        .ToList();
-                    return KeyValuePair.Create(group.Key, new AccountTypeBreakdown(typeBalance, typePercentageOfTotalBalance, typeAccounts));
-                })
-                .ToDictionary();
+                });
 
-            return new TotalBalanceBreakdown(netWorth, accountTypeBreakdowns);
+                return new AccountTypeBreakdown(x.Value.Total, typePercentageOfTotalBalance, [.. balanceDtos]);
+            });
+
+            return new TotalBalanceBreakdown(totalNetworth, results);
         }
     }
 }
