@@ -1,3 +1,4 @@
+using System.Net;
 using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
@@ -9,6 +10,7 @@ namespace BasicFinance.Api.IntegrationTests.Features.Accounts;
 public class GetInstitutionSummaryTests : ApiTestFixtureBase
 {
     private const string MonthlyQuery = "recordedDate=2026-08-05&timePeriod=Monthly";
+    private static readonly string[] ActiveAccountTypeCodes = ["CHK", "SAV", "CC", "INV"];
 
     public GetInstitutionSummaryTests(ApiClassFixture fixture)
         : base(fixture)
@@ -38,12 +40,69 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         Assert.Equal("CHASE", rosterAccount.InstitutionCode);
         Assert.Equal("Chase", rosterAccount.InstitutionName);
         Assert.Equal(1000m, rosterAccount.LatestBalance);
+        Assert.Equal(new DateTimeOffset(2026, 8, 5, 0, 0, 0, TimeSpan.Zero), rosterAccount.LatestBalanceRecordedDate);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
         Assert.Equal(1000m, result.AccountTypeTotals["CHK"]);
+        Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
         Assert.Equal(900m, result.AccountTypePreviousTotals["CHK"]);
+        Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
         Assert.Equal(new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero), result.CurrentPeriodStart);
         Assert.Equal(new DateTimeOffset(2026, 8, 31, 23, 59, 59, 999, TimeSpan.Zero), result.CurrentPeriodEnd);
         Assert.Equal(new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero), result.PreviousPeriodStart);
         Assert.Equal(new DateTimeOffset(2026, 7, 31, 23, 59, 59, 999, TimeSpan.Zero), result.PreviousPeriodEnd);
+    }
+
+    [Fact]
+    public async Task GetInstitutionSummary_LedgerBeforePeriodStart_IsCarriedForward()
+    {
+        // Arrange
+        var account = AccountFactory.Create(AuthenticatedUserId, accountName: "Chase Checking", institutionId: TestConstants.ChaseInstitutionId);
+        await DbContext.SeedAsync(account, CancellationToken);
+        var ledgerBeforePeriodStart = AccountLedgerFactory.CreateFor(account, 800m, new DateTimeOffset(2026, 7, 28, 0, 0, 0, TimeSpan.Zero));
+        await DbContext.SeedAsync(ledgerBeforePeriodStart, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.ChaseInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
+
+        // Assert
+        Assert.Single(result.Accounts);
+        var rosterAccount = result.Accounts.First();
+        Assert.Equal(800m, rosterAccount.LatestBalance);
+        Assert.Equal(new DateTimeOffset(2026, 7, 28, 0, 0, 0, TimeSpan.Zero), rosterAccount.LatestBalanceRecordedDate);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
+        Assert.Equal(800m, result.AccountTypeTotals["CHK"]);
+        Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
+        Assert.Equal(800m, result.AccountTypePreviousTotals["CHK"]);
+        Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
+    }
+
+    [Fact]
+    public async Task GetInstitutionSummary_AccountWithNoBalanceActivity_ReturnsZeroBalanceWithOpeningRecordedDate()
+    {
+        // Arrange
+        var openingRecordedDate = new DateTimeOffset(2026, 7, 20, 0, 0, 0, TimeSpan.Zero);
+        var account = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "Chase Checking",
+            institutionId: TestConstants.ChaseInstitutionId,
+            openingBalance: 0m,
+            openingBalanceRecordedDate: openingRecordedDate);
+        await DbContext.SeedAsync(account, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.ChaseInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
+
+        // Assert
+        Assert.Single(result.Accounts);
+        var rosterAccount = result.Accounts.First();
+        Assert.Equal(0m, rosterAccount.LatestBalance);
+        Assert.Equal(openingRecordedDate, rosterAccount.LatestBalanceRecordedDate);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
     }
 
     [Fact]
@@ -59,25 +118,20 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         Assert.Equal(TestConstants.SchwabInstitutionId, result.InstitutionId);
         Assert.Equal("Charles Schwab", result.InstitutionName);
         Assert.Empty(result.Accounts);
-        Assert.Empty(result.AccountTypeTotals);
-        Assert.Empty(result.AccountTypePreviousTotals);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
     }
 
     [Fact]
-    public async Task GetInstitutionSummary_NonExistentInstitution_ReturnsZeroFilledResponse()
+    public async Task GetInstitutionSummary_NonExistentInstitution_ReturnsBadRequest()
     {
-        // Arrange
-        const string parameters = MonthlyQuery;
-
         // Act
-        var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.NonExistentInstitutionId}/summary?{parameters}", CancellationToken);
+        var response = await HttpClient.GetAsync($"/api/accounts/institution/{TestConstants.NonExistentInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
-        Assert.Equal(TestConstants.NonExistentInstitutionId, result.InstitutionId);
-        Assert.Equal(string.Empty, result.InstitutionName);
-        Assert.Empty(result.Accounts);
-        Assert.Empty(result.AccountTypeTotals);
-        Assert.Empty(result.AccountTypePreviousTotals);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -98,7 +152,11 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         // Assert
         Assert.Single(result.Accounts);
         Assert.Equal("Active Wells Fargo", result.Accounts.First().Name);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
         Assert.Equal(1000m, result.AccountTypeTotals["CHK"]);
+        Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
     }
 
     [Fact]
@@ -121,7 +179,9 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         Assert.Equal(inactiveInstitution.InstitutionId, result.InstitutionId);
         Assert.Equal("Inactive Bank", result.InstitutionName);
         Assert.Empty(result.Accounts);
-        Assert.Empty(result.AccountTypeTotals);
-        Assert.Empty(result.AccountTypePreviousTotals);
+        Assert.Equal(4, result.AccountTypeTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypeTotals[code]));
+        Assert.Equal(4, result.AccountTypePreviousTotals.Count);
+        Assert.All(ActiveAccountTypeCodes, code => Assert.Equal(0m, result.AccountTypePreviousTotals[code]));
     }
 }

@@ -1,8 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -53,17 +53,14 @@ namespace BasicFinance.Api.Features.Transactions
         /// <param name="TotalCount">Count of all transaction types in the period.</param>
         /// <param name="TotalSpend">Sum of debit amounts in the period.</param>
         /// <param name="TotalIncome">Sum of credit amounts in the period.</param>
-        /// <param name="NetFlow">Total income minus total spend; negative when spend exceeds income.</param>
-        public record TransactionPeriodSummary(int TotalCount, decimal TotalSpend, decimal TotalIncome, decimal NetFlow);
-
-        /// <summary>
-        /// Period-level aggregates computed by the database over grouped transaction rows.
-        /// </summary>
-        /// <param name="IsCurrentPeriod">Whether the row aggregates transactions in the current period.</param>
-        /// <param name="TotalCount">Count of all transaction types in the period.</param>
-        /// <param name="TotalSpend">Sum of debit amounts in the period.</param>
-        /// <param name="TotalIncome">Sum of credit amounts in the period.</param>
-        private sealed record PeriodAggregateRow(bool IsCurrentPeriod, int TotalCount, decimal TotalSpend, decimal TotalIncome);
+        public record TransactionPeriodSummary(int TotalCount, decimal TotalSpend, decimal TotalIncome)
+        {
+            /// <summary>
+            /// Represents the net income for the given period.
+            /// </summary>
+            [NotMapped]
+            public decimal NetFlow => TotalIncome - TotalSpend;
+        };
 
         /// <summary>
         /// Retrieves headline transaction aggregates (count, spend, income, net flow) for the user's
@@ -116,32 +113,25 @@ namespace BasicFinance.Api.Features.Transactions
             var aggregatesByPeriod = await baseQuery
                 .Where(x => x.Date >= previousPeriod.RangeStartDate && x.Date <= currentPeriod.RangeEndDate)
                 .GroupBy(x => x.Date >= currentPeriod.RangeStartDate)
-                .Select(g => new PeriodAggregateRow(
-                    g.Key,
-                    g.Count(),
-                    g.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Debit ? r.Amount : 0m),
-                    g.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Credit ? r.Amount : 0m)))
-                .ToListAsync(cancellationToken);
+                .ToDictionaryAsync(
+                    x => x.Key,
+                    x => new TransactionPeriodSummary(
+                        x.Count(),
+                        x.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Debit ? r.Amount : 0m),
+                        x.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Credit ? r.Amount : 0m)),
+                    cancellationToken);
 
-            var emptyAggregates = new PeriodAggregateRow(false, 0, 0m, 0m);
-            var currentAggregates = aggregatesByPeriod.FirstOrDefault(a => a.IsCurrentPeriod, emptyAggregates);
-            var previousAggregates = aggregatesByPeriod.FirstOrDefault(a => !a.IsCurrentPeriod, emptyAggregates);
+            var emptyAggregates = new TransactionPeriodSummary(0, 0m, 0m);
+            var currentAggregates = aggregatesByPeriod.GetValueOrDefault(true, emptyAggregates);
+            var previousAggregates = aggregatesByPeriod.GetValueOrDefault(false, emptyAggregates);
 
             return TypedResults.Ok(new TransactionSummaryResponse(
                 DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date),
                 DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod, 1).Date),
                 DateOnly.FromDateTime(previousPeriod.RangeStartDate.Date),
                 DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date),
-                ToPeriodSummary(currentAggregates),
-                ToPeriodSummary(previousAggregates)));
+                currentAggregates,
+                previousAggregates));
         }
-
-        /// <summary>
-        /// Projects per-period aggregates into a wire summary, deriving net flow as income minus spend.
-        /// </summary>
-        /// <param name="aggregates">The period aggregates.</param>
-        /// <returns>The wire summary for the period.</returns>
-        private static TransactionPeriodSummary ToPeriodSummary(PeriodAggregateRow aggregates) =>
-            new(aggregates.TotalCount, aggregates.TotalSpend, aggregates.TotalIncome, aggregates.TotalIncome - aggregates.TotalSpend);
     }
 }

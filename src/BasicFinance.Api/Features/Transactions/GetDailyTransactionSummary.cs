@@ -58,10 +58,9 @@ namespace BasicFinance.Api.Features.Transactions
         /// <summary>
         /// Daily aggregates computed by the database over grouped transaction rows.
         /// </summary>
-        /// <param name="Date">The transaction day, as materialized from the grouping key.</param>
         /// <param name="TotalSpend">Sum of debit amounts for the day.</param>
         /// <param name="TransactionCount">Count of all transaction types for the day.</param>
-        private sealed record DailyAggregation(DateTime Date, decimal TotalSpend, int TransactionCount);
+        private sealed record DailyAggregation(decimal TotalSpend, int TransactionCount);
 
         /// <summary>
         /// Retrieves per-calendar-day spend points for the user's active accounts for the current and
@@ -111,18 +110,15 @@ namespace BasicFinance.Api.Features.Transactions
                     .Where(x => x.Account.Institution.IsActive);
             }
 
-            var aggregations = await baseQuery
+            var pointsByDate = await baseQuery
                 .Where(x => x.Date >= previousPeriod.RangeStartDate && x.Date <= currentPeriod.RangeEndDate)
-                .GroupBy(x => x.Date.Date)
-                .Select(g => new DailyAggregation(
-                    g.Key,
-                    g.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Debit ? r.Amount : 0m),
-                    g.Count()))
-                .ToListAsync(cancellationToken);
-
-            var pointsByDate = aggregations.ToDictionary(
-                a => DateOnly.FromDateTime(a.Date),
-                a => a);
+                .GroupBy(x => DateOnly.FromDateTime(x.Date.Date))
+                .ToDictionaryAsync(
+                    x => x.Key,
+                    x => new DailyAggregation(
+                        x.Sum(r => r.TransactionTypeId == (int)TransactionTypeEnum.Debit ? r.Amount : 0m),
+                        x.Count()),
+                    cancellationToken);
 
             var currentStart = DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date);
             var currentEnd = DateOnly.FromDateTime(recordedDate.ToStartOfPeriod(timePeriod, 1).Date);

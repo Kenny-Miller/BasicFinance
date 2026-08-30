@@ -2,7 +2,6 @@ using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
-using BasicFinance.Infrastructure.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -74,11 +73,6 @@ namespace BasicFinance.Api.Features.Accounts
             decimal PercentageOfTotalBalance,
             decimal PercentageOfAccountTypeBalance);
 
-        private sealed record AccountPeriodComparisonDto(
-            Account Account,
-            AccountLedger? CurrentPeriodLatestLedger,
-            AccountLedger? PreviousPeriodLatestLedger);
-
         private sealed class AccountTypeAccumulator
         {
             public decimal Total { get; set; }
@@ -132,14 +126,8 @@ namespace BasicFinance.Api.Features.Accounts
             var previousItems = new List<AccountDto>();
             foreach (var res in results)
             {
-                if (res.CurrentPeriodLatestLedger != null)
-                {
-                    currentItems.Add(ToAccountDto(res.Account, res.CurrentPeriodLatestLedger));
-                }
-                if (res.PreviousPeriodLatestLedger != null)
-                {
-                    previousItems.Add(ToAccountDto(res.Account, res.PreviousPeriodLatestLedger));
-                }
+                currentItems.Add(Queries.ToAccountDto(res.Account, res.CurrentPeriodLatestLedger, currentPeriod.RangeEndDate));
+                previousItems.Add(Queries.ToAccountDto(res.Account, res.PreviousPeriodLatestLedger, previousPeriod.RangeEndDate));
             }
 
             var accountTypeCodes = await dbContext.AccountTypes
@@ -156,49 +144,6 @@ namespace BasicFinance.Api.Features.Accounts
                 DateOnly.FromDateTime(previousPeriod.RangeStartDate.Date),
                 DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date)));
         }
-
-        /// <summary>
-        /// Projects the  <see cref="Account"/> query to a query containing the <see cref="Account"/> and it's latest <see cref="AccountLedger"/>
-        /// within the periods defined by <paramref name="currentPeriodEndDate"/> and <paramref name="previousPeriodEndDate"/>.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="currentPeriodEndDate"></param>
-        /// <param name="previousPeriodEndDate"></param>
-        /// <returns></returns>
-        private static IQueryable<AccountPeriodComparisonDto> ProjectToComparison(this IQueryable<Account> query, DateTimeOffset currentPeriodEndDate, DateTimeOffset previousPeriodEndDate)
-        {
-            return query.Select(x => new AccountPeriodComparisonDto(
-                x,
-                x.Ledger
-                    .Where(l => l.BalanceRecordedDate <= currentPeriodEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .FirstOrDefault(),
-                x.Ledger
-                    .Where(l => l.BalanceRecordedDate <= previousPeriodEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .FirstOrDefault()));
-        }
-
-        /// <summary>
-        /// Maps the <see cref="Account"/> and <see cref="AccountLedger"/> to a
-        /// <see cref="AccountDto"/>.
-        /// </summary>
-        /// <param name="account"></param>
-        /// <param name="accountLedger"></param>
-        /// <returns></returns>
-        private static AccountDto ToAccountDto(Account account, AccountLedger accountLedger) => new(
-            account.AccountId,
-            account.AccountName,
-            account.AccountType.AccountTypeCode,
-            account.AccountType.AccountTypeName,
-            account.Institution.InstitutionCode,
-            account.Institution.Name,
-            account.Currency,
-            account.AccountType.IsLiability,
-            accountLedger.Balance,
-            accountLedger.BalanceRecordedDate);
 
         /// <summary>
         /// Aggregates period snapshots into a total balance breakdown by account type. Every active

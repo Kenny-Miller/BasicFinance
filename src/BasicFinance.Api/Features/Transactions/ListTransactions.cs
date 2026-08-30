@@ -141,8 +141,7 @@ namespace BasicFinance.Api.Features.Transactions
 
             if (!string.IsNullOrWhiteSpace(request.Search))
             {
-                var search = $"%{request.Search.Trim()}%";
-                query = query.Where(x => EF.Functions.ILike(x.Description, search));
+                query = query.Where(x => EF.Functions.ILike(x.Description, $"%{request.Search}%"));
             }
 
             return query;

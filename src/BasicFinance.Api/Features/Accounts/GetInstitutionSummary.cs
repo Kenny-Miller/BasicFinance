@@ -27,9 +27,9 @@ namespace BasicFinance.Api.Features.Accounts
         /// </summary>
         /// <param name="InstitutionId">The Id of the institution.</param>
         /// <param name="InstitutionName">The full name of the institution.</param>
-        /// <param name="Accounts">The user's active accounts at the institution with their latest balances.</param>
-        /// <param name="AccountTypeTotals">Sum of the latest balances per account type for the current period.</param>
-        /// <param name="AccountTypePreviousTotals">Sum of the latest balances per account type for the previous period.</param>
+        /// <param name="Accounts">The user's active accounts at the institution, with their latest balance on or before the current period end.</param>
+        /// <param name="AccountTypeTotals">Sum of the latest balances per account type for the current period, zero-filled for every active account type.</param>
+        /// <param name="AccountTypePreviousTotals">Sum of the latest balances per account type for the previous period, zero-filled for every active account type.</param>
         /// <param name="CurrentPeriodStart">The first day of the current period (inclusive).</param>
         /// <param name="CurrentPeriodEnd">The first day excluded from the current period (exclusive).</param>
         /// <param name="PreviousPeriodStart">The first day of the previous period (inclusive).</param>
@@ -48,10 +48,11 @@ namespace BasicFinance.Api.Features.Accounts
         /// <summary>
         /// Retrieves account-level summary for a specific institution.
         /// Period totals are sourced from the most recent balance ledger entry
-        /// on or before each period's end (last known balances are carried forward).
-        /// Returns zero-filled data (empty roster and totals, and an empty institution name
-        /// when the institution does not exist) if the user has no active accounts at the
-        /// institution, or the institution does not exist or is deactivated.
+        /// on or before each period's end (last known balances are carried forward;
+        /// accounts without a ledger entry that far back carry a zero balance).
+        /// The per-account-type totals are zero-filled for every active account type.
+        /// If the institution is deactivated no accounts are returned, but the
+        /// institution name and zero-filled totals are.
         /// </summary>
         /// <param name="institutionId">The unique identifier of the institution.</param>
         /// <param name="request">The request containing the recorded date and time period.</param>
@@ -62,10 +63,11 @@ namespace BasicFinance.Api.Features.Accounts
         /// <returns>
         /// Returns <see cref="Ok{TValue}"/> with the institution summary.
         /// Unrecognized time period values fall back to <see cref="TimePeriod.Monthly"/>.
+        /// A <see cref="BadRequest"/> is returned when the institution does not exist.
         /// </returns>
         [Authorize]
         [WolverineGet("api/accounts/institution/{institutionId:int}/summary")]
-        public static async Task<Ok<InstitutionSummaryResponse>> HandleAsync(
+        public static async Task<Results<Ok<InstitutionSummaryResponse>, BadRequest<string>>> HandleAsync(
             [FromRoute] int institutionId,
             [FromQuery] Request request,
             AuthenticatedUser user,
@@ -85,65 +87,42 @@ namespace BasicFinance.Api.Features.Accounts
                 .Where(x => x.InstitutionId == institutionId)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            var baseAccountsInInstitutionQuery = dbContext.Accounts
+            if (institution is null)
+            {
+                return TypedResults.BadRequest("Institution with the specified Id was not found");
+            }
+
+            var results = await dbContext.Accounts
                 .AsNoTracking()
                 .Include(x => x.Institution)
                 .Include(x => x.AccountType)
                 .Where(x => x.InstitutionId == institutionId)
                 .Where(x => x.Institution.IsActive)
+                .Where(x => x.AccountType.IsActive)
                 .Where(x => x.UserId == user.Id)
-                .Where(x => x.IsActive);
-
-            var currentPeriodQuery = baseAccountsInInstitutionQuery
-                .Include(x => x.Ledger
-                    .Where(l => l.BalanceRecordedDate <= currentRange.RangeEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .Take(1));
-
-            var previousPeriodQuery = baseAccountsInInstitutionQuery
-                .Include(x => x.Ledger
-                    .Where(l => l.BalanceRecordedDate <= previousRange.RangeEndDate)
-                    .OrderByDescending(l => l.BalanceRecordedDate)
-                    .ThenByDescending(l => l.SystemCreatedDate)
-                    .Take(1));
-
-            // Project the most recent ledger entry on or before each period's end, per account.
-            var results = await currentPeriodQuery
-                .Join(previousPeriodQuery,
-                    current => current.AccountId,
-                    previous => previous.AccountId,
-                    (current, previous) => new
-                    {
-                        CurrentAccount = current,
-                        PreviousAccount = previous,
-                    })
+                .Where(x => x.IsActive)
+                .ProjectToComparison(currentRange.RangeEndDate, previousRange.RangeEndDate)
                 .ToListAsync(cancellationToken);
 
-            var processedData = new
-            {
-                CurrentAccountData = results
-                    .Select(x => x.CurrentAccount)
-                    .Select(Queries.ToAccountDtoFunc)
-                    .ToList(),
-                AccountTypeTotals = results
-                    .Select(x => x.CurrentAccount)
-                    .Select(Queries.ToAccountDtoFunc)
-                    .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
-                PreviousAccountTypeTotals = results
-                    .Select(x => x.PreviousAccount)
-                    .Select(Queries.ToAccountDtoFunc)
-                    .GroupBy(s => s.AccountTypeCode)
-                    .ToDictionary(g => g.Key, g => g.Sum(s => s.LatestBalance)),
-            };
+            var accountTypeCodes = await dbContext.AccountTypes
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .Select(x => x.AccountTypeCode)
+                .ToListAsync(cancellationToken);
+
+            var accounts = results
+                .Select(x => Queries.ToAccountDto(x.Account, x.CurrentPeriodLatestLedger, currentRange.RangeStartDate))
+                .ToList();
+            var previousAccounts = results
+                .Select(x => Queries.ToAccountDto(x.Account, x.PreviousPeriodLatestLedger, previousRange.RangeStartDate))
+                .ToList();
 
             var response = new InstitutionSummaryResponse(
                 institutionId,
-                institution?.Name ?? string.Empty,
-                processedData.CurrentAccountData,
-                processedData.AccountTypeTotals,
-                processedData.PreviousAccountTypeTotals,
+                institution.Name,
+                accounts,
+                BuildAccountTypeTotals(accounts, accountTypeCodes),
+                BuildAccountTypeTotals(previousAccounts, accountTypeCodes),
                 currentRange.RangeStartDate.UtcDateTime,
                 currentRange.RangeEndDate.UtcDateTime,
                 previousRange.RangeStartDate.UtcDateTime,
@@ -151,6 +130,24 @@ namespace BasicFinance.Api.Features.Accounts
             );
 
             return TypedResults.Ok(response);
+        }
+
+        /// <summary>
+        /// Builds a total per account type, initialized to <c>0</c> for every active
+        /// account type code and accumulated from the given accounts' balances.
+        /// </summary>
+        /// <param name="accounts">The mapped accounts to sum per account type.</param>
+        /// <param name="accountTypeCodes">The active account type codes to include.</param>
+        /// <returns>A total per account type where every active account type is present.</returns>
+        private static Dictionary<string, decimal> BuildAccountTypeTotals(List<AccountDto> accounts, List<string> accountTypeCodes)
+        {
+            var totals = accountTypeCodes.ToDictionary(x => x, _ => 0m);
+            foreach (var account in accounts)
+            {
+                totals[account.AccountTypeCode] += account.LatestBalance;
+            }
+
+            return totals;
         }
     }
 }

@@ -70,8 +70,8 @@ public record InstitutionSummaryAccountDto(
     string InstitutionName,
     string Currency,
     bool IsLiability,
-    decimal? LatestBalance,
-    DateTimeOffset? LatestBalanceRecordedDate);
+    decimal LatestBalance,
+    DateTimeOffset LatestBalanceRecordedDate);
 
 public record InstitutionSummaryResponseDto(
     int InstitutionId,
