@@ -21,7 +21,7 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         const string accountName = "My Checking";
         const decimal balance = 5000m;
         var account = AccountFactory.Create(AuthenticatedUserId, accountName: accountName);
-        var ledger = AccountLedgerFactory.CreateFor(account, balance);
+        var ledger = AccountLedgerFactory.CreateFor(account, balance, DateTimeOffset.UtcNow);
         await DbContext.SeedAsync(account, CancellationToken);
         await DbContext.SeedAsync(ledger, CancellationToken);
 
