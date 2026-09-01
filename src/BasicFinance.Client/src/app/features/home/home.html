@@ -1,4 +1,4 @@
-<main class="flex flex-col gap-6 p-4">
+<main class="flex flex-col gap-4 p-4">
   @if (loading()) {
     <app-home-skeleton />
   } @else if (error()) {
@@ -10,34 +10,34 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <app-summary-card
         title="Net Worth"
-        [currentValue]="currentNetWorth()"
-        [lastMonthValue]="previousNetWorth()"
+        [currentPeriodValue]="data().currentPeriodTotalBalance"
+        [previousPeriodValue]="data().previousPeriodBalance"
       />
 
       <app-summary-card
         title="Checking"
-        [currentValue]="currentChecking()"
-        [lastMonthValue]="previousChecking()"
+        [currentPeriodValue]="data().currentPeriodCheckingBalance"
+        [previousPeriodValue]="data().previousPeriodCheckingBalance"
       />
 
       <app-summary-card
         title="Savings"
-        [currentValue]="currentSavings()"
-        [lastMonthValue]="previousSavings()"
+        [currentPeriodValue]="data().currentPeriodSavingsBalance"
+        [previousPeriodValue]="data().previousPeriodSavingsBalance"
       />
 
       <app-summary-card
         title="Investments"
-        [currentValue]="currentInvestments()"
-        [lastMonthValue]="previousInvestments()"
+        [currentPeriodValue]="data().currentPeriodInvestmentsBalance"
+        [previousPeriodValue]="data().previousPeriodInvestmentsBalance"
       />
     </div>
 
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <app-spend-activity-chart [theme]="appTheme()" [data]="spendingOverTimeData()" />
-      <app-account-net-worth-breakdown [data]="currentPeriodBreakdown()" />
+      <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
+      <app-account-net-worth-breakdown [data]="data().currentPeriodBreakdown" />
     </div>
 
-    <app-recent-transactions [transactions]="recentTransactions()" />
+    <app-recent-transactions [transactions]="data().recentTransactions" />
   }
 </main>

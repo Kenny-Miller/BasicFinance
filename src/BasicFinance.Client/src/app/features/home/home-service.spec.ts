@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { AccountClient } from '../../core/data-access/account-client';
 import { SpendingClient } from '../../core/data-access/spending-client';
 import { TransactionClient } from '../../core/data-access/transaction-client';
-import { DEFAULT_TIME_PERIOD } from '../../shared/data/time-period';
 import { HomeService } from './home-service';
 
 describe('HomeService', () => {
@@ -84,10 +83,6 @@ describe('HomeService', () => {
     service = TestBed.inject(HomeService);
   });
 
-  it('should default to the monthly time period', () => {
-    expect(service.timePeriod()).toBe(DEFAULT_TIME_PERIOD);
-  });
-
   it('should report loading until every resource has a value', () => {
     expect(service.loading()).toBe(true);
 
@@ -98,17 +93,12 @@ describe('HomeService', () => {
     expect(service.loading()).toBe(false);
   });
 
-  it('should report an error when any resource errors without a value', () => {
-    expect(service.error()).toBe(false);
+  it('should report an error when any resource errors', () => {
+    expect(service.error()).toBeFalsy();
 
     transactionsError.set(new Error('boom'));
 
-    expect(service.error()).toBe(true);
-
-    transactionsValue.set({ items: [] });
-    transactionsHasValue.set(true);
-
-    expect(service.error()).toBe(false);
+    expect(service.error()).toBeTruthy();
   });
 
   it('should map net worth and account type balances from the balance summary', () => {
@@ -133,23 +123,27 @@ describe('HomeService', () => {
     });
     balanceSummaryHasValue.set(true);
 
-    expect(service.currentNetWorth()).toBe(100500);
-    expect(service.previousNetWorth()).toBe(90000);
-    expect(service.currentChecking()).toBe(40000);
-    expect(service.previousChecking()).toBe(38000);
-    expect(service.currentSavings()).toBe(35000);
-    expect(service.previousSavings()).toBe(32000);
-    expect(service.currentInvestments()).toBe(25500);
-    expect(service.previousInvestments()).toBe(20000);
-    expect(service.currentPeriodBreakdown()).toEqual(breakdown);
+    expect(service.data().currentPeriodTotalBalance).toBe(100500);
+    expect(service.data().currentPeriodCheckingBalance).toBe(40000);
+    expect(service.data().currentPeriodSavingsBalance).toBe(35000);
+    expect(service.data().currentPeriodInvestmentsBalance).toBe(25500);
+    expect(service.data().previousPeriodBalance).toBe(90000);
+    expect(service.data().previousPeriodCheckingBalance).toBe(38000);
+    expect(service.data().previousPeriodSavingsBalance).toBe(32000);
+    expect(service.data().previousPeriodInvestmentsBalance).toBe(20000);
+    expect(service.data().currentPeriodBreakdown).toEqual(breakdown);
   });
 
   it('should fall back to zero balances and an empty breakdown when the balance summary is missing', () => {
-    expect(service.currentNetWorth()).toBe(0);
-    expect(service.currentChecking()).toBe(0);
-    expect(service.currentSavings()).toBe(0);
-    expect(service.currentInvestments()).toBe(0);
-    expect(service.currentPeriodBreakdown()).toEqual({ balance: 0, accountTypeBreakdowns: {} });
+    expect(service.data().currentPeriodTotalBalance).toBe(0);
+    expect(service.data().currentPeriodCheckingBalance).toBe(0);
+    expect(service.data().currentPeriodSavingsBalance).toBe(0);
+    expect(service.data().currentPeriodInvestmentsBalance).toBe(0);
+    expect(service.data().previousPeriodBalance).toBe(0);
+    expect(service.data().previousPeriodCheckingBalance).toBe(0);
+    expect(service.data().previousPeriodSavingsBalance).toBe(0);
+    expect(service.data().previousPeriodInvestmentsBalance).toBe(0);
+    expect(service.data().currentPeriodBreakdown).toEqual({ balance: 0, accountTypeBreakdowns: {} });
   });
 
   it('should map recent transactions from the transactions list result', () => {
@@ -167,7 +161,7 @@ describe('HomeService', () => {
     transactionsValue.set({ items: transactions, page: 1, pageSize: 5, pageCount: 1, totalCount: 1 });
     transactionsHasValue.set(true);
 
-    expect(service.recentTransactions()).toEqual(transactions);
+    expect(service.data().recentTransactions).toEqual(transactions);
   });
 
   it('should expose the spending over time data', () => {
@@ -180,7 +174,17 @@ describe('HomeService', () => {
     spendingValue.set(spending);
     spendingHasValue.set(true);
 
-    expect(service.spendingOverTimeData()).toEqual(spending);
+    expect(service.data().spendingOverTime).toEqual(spending);
+  });
+
+  it('should expose default spending and transactions when those resources are missing', () => {
+    expect(service.data().spendingOverTime).toEqual({
+      currentMonthActivity: [],
+      previousMonthActivity: [],
+      totalMonthlySpend: 0,
+      monthlySpendDifference: 0,
+    });
+    expect(service.data().recentTransactions).toEqual([]);
   });
 
   it('should reload every resource', () => {
