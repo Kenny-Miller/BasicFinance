@@ -1,4 +1,6 @@
 import { Component, OnChanges, input, output } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
@@ -8,17 +10,23 @@ import {
   TimePeriod,
   TIME_PERIODS,
   isValidTimePeriod,
-} from '../../../../shared/data/time-period';
+} from '../../data/time-period';
+
+export type PeriodNavigation = 'previous' | 'next';
 
 @Component({
   selector: 'app-period-selector',
-  imports: [HlmCardImports, HlmToggleGroupImports, HlmFieldImports, HlmButtonImports],
+  imports: [HlmCardImports, HlmToggleGroupImports, HlmFieldImports, HlmButtonImports, NgIcon],
+  providers: [provideIcons({ lucideChevronLeft, lucideChevronRight })],
   templateUrl: './period-selector.html',
   styleUrl: './period-selector.css',
 })
 export class PeriodSelector implements OnChanges {
   readonly activePeriod = input.required<TimePeriod>();
   readonly periodChange = output<TimePeriod>();
+  readonly navigate = output<PeriodNavigation>();
+  readonly periodLabel = input<string>('');
+  readonly nextDisabled = input(false);
 
   readonly periods = TIME_PERIODS;
 
@@ -28,13 +36,14 @@ export class PeriodSelector implements OnChanges {
     this.selectedPeriod = this.activePeriod();
   }
 
-  private isValidPeriod(value: unknown): value is TimePeriod {
-    return isValidTimePeriod(value);
-  }
-
   selectPeriod(value: unknown) {
-    if (this.isValidPeriod(value)) {
+    if (isValidTimePeriod(value)) {
+      this.selectedPeriod = value;
       this.periodChange.emit(value);
     }
+  }
+
+  navigateTo(direction: PeriodNavigation) {
+    this.navigate.emit(direction);
   }
 }

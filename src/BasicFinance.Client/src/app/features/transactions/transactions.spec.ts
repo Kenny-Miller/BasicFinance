@@ -1,39 +1,74 @@
-import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+
+import { ThemeService } from '../../core/theme/theme.service';
 import { Transactions } from './transactions';
-import { TransactionsClient } from './data/transactions-client';
+import { TransactionsService } from './transactions-service';
 
 describe('Transactions', () => {
-  let component: Transactions;
-  let fixture: ComponentFixture<Transactions>;
+  function service(summaryError: boolean) {
+    return {
+      period: signal('Monthly'),
+      page: signal(1),
+      pageSize: signal(10),
+      loading: () => false,
+      error: summaryError ? () => new Error('simulated resource error') : () => undefined,
+      data: () => ({
+        accounts: { page: 1, pageSize: 100, pageCount: 0, totalCount: 0, items: [] },
+        transactions: { page: 1, pageSize: 10, pageCount: 0, totalCount: 0, items: [] },
+        dailySummary: {
+          currentStart: '',
+          currentEnd: '',
+          previousStart: '',
+          previousEnd: '',
+          currentPeriod: [],
+          previousPeriod: [],
+        },
+        transactionSummary: {
+          currentStart: '',
+          currentEnd: '',
+          previousStart: '',
+          previousEnd: '',
+          currentPeriod: { totalCount: 0, totalSpend: 0, totalIncome: 0, netFlow: 0 },
+          previousPeriod: { totalCount: 0, totalSpend: 0, totalIncome: 0, netFlow: 0 },
+        },
+      }),
+      refetchAll: () => undefined,
+    };
+  }
 
-  beforeEach(async () => {
+  async function configure(summaryError: boolean) {
     await TestBed.configureTestingModule({
       imports: [Transactions],
       providers: [
-        provideRouter([]),
-        provideHttpClient(),
         {
-          provide: TransactionsClient,
+          provide: TransactionsService,
+          useValue: service(summaryError),
+        },
+        {
+          provide: ThemeService,
           useValue: {
-            createResource: () => ({
-              value: () => ({ items: [], totalCount: 0, page: 1 }),
-              hasValue: () => false,
-              error: () => null,
-              isLoading: () => false,
-            }),
+            appTheme: signal('light'),
           },
         },
       ],
     }).compileComponents();
+  }
 
-    fixture = TestBed.createComponent(Transactions);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+  beforeEach(async () => {
+    await configure(false);
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const fixture = TestBed.createComponent(Transactions);
+    expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  it('should render without throwing when a resource is in an error state', async () => {
+    await configure(true);
+    const fixture = TestBed.createComponent(Transactions);
+
+    expect(() => fixture.detectChanges()).not.toThrow();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

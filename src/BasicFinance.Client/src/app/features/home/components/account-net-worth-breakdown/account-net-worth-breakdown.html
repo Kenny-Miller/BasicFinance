@@ -3,7 +3,7 @@
     <h3 hlmCardTitle class="text-xs">Net Worth by Account</h3>
   </div>
   <div hlmCardContent>
-    <div class="font-semibold text-2xl">{{ totalSpend() | currency }}</div>
+    <div class="font-semibold text-2xl">{{ data().balance | currency }}</div>
     <hlm-item-group>
       @for (entry of breakdownEntries(); track entry.code) {
         @let code = entry.code;

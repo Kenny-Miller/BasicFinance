@@ -38,7 +38,7 @@ export class HomeService {
 
   private readonly timePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
 
-  private readonly balanceSummaryResource = this.accountClient.createBalanceSummaryResource(
+  private readonly balanceSummaryResource = this.accountClient.balanceSummaryResource(
     this.timePeriod,
   );
   private readonly transactionsResource = this.transactionClient.listTransactions(
@@ -49,8 +49,7 @@ export class HomeService {
     signal({}),
   );
 
-  private readonly spendingOverTimeResource =
-    this.spendingClient.createSpendingOverTimeSummaryResource();
+  private readonly spendingOverTimeResource = this.spendingClient.spendingOverTimeSummaryResource();
 
   readonly loading = computed(
     () =>

@@ -1,85 +1,94 @@
-<form [formGroup]="form" (ngSubmit)="onApply()">
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+<form [formGroup]="filterForm" (ngSubmit)="applyFilters($event)" class="flex flex-wrap items-end gap-3">
+  <div class="w-44 shrink-0">
     <hlm-field>
-      <hlm-date-picker formControlName="startDate" autoCloseOnSelect="true">
-        <hlm-date-picker-trigger buttonId="filter-start-range-date" class="w-full"
-          >MM/DD/YYYY</hlm-date-picker-trigger
-        >
-      </hlm-date-picker>
+      <hlm-field-label hlm>From</hlm-field-label>
+      <hlm-field-content>
+        <hlm-date-picker formControlName="startDate" [min]="minDate">
+          <hlm-date-picker-trigger>Any date</hlm-date-picker-trigger>
+        </hlm-date-picker>
+      </hlm-field-content>
     </hlm-field>
-
-    <hlm-field>
-      <hlm-date-picker formControlName="endDate" autoCloseOnSelect="true">
-        <hlm-date-picker-trigger buttonId="filter-end-range-date" class="w-full"
-          >MM/DD/YYYY</hlm-date-picker-trigger
-        >
-      </hlm-date-picker>
-    </hlm-field>
-
-    <div hlmField>
-      <input
-        id="filter-min-amount"
-        type="number"
-        step="0.01"
-        hlmInput
-        placeholder="0.00"
-        formControlName="minAmount"
-      />
-    </div>
-
-    <div hlmField>
-      <input
-        id="filter-max-amount"
-        type="number"
-        step="0.01"
-        hlmInput
-        placeholder="99999.99"
-        formControlName="maxAmount"
-      />
-    </div>
-
-    <div hlmField>
-      <hlm-select [itemToString]="transactionTypeToString" formControlName="transactionTypeId">
-        <hlm-select-trigger class="w-full" buttonId="filter-transaction-type-select">
-          <hlm-select-value placeholder="Choose a Transaction Type..." />
-        </hlm-select-trigger>
-        <hlm-select-content *hlmSelectPortal>
-          <hlm-select-group>
-            @for (option of transactionTypeOptions; track option.value) {
-              <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
-            }
-          </hlm-select-group>
-        </hlm-select-content>
-      </hlm-select>
-    </div>
-
-    <div hlmField>
-      <hlm-select [itemToString]="categoryToString" formControlName="transactionCategoryId">
-        <hlm-select-trigger class="w-full" buttonId="filter-category-select">
-          <hlm-select-value placeholder="Choose a Category..." />
-        </hlm-select-trigger>
-        <hlm-select-content *hlmSelectPortal>
-          <hlm-select-group>
-            @for (option of categoryOptions; track option.value) {
-              <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
-            }
-          </hlm-select-group>
-        </hlm-select-content>
-      </hlm-select>
-    </div>
-
-    <div hlmField>
-      <input
-        id="filter-search"
-        type="text"
-        hlmInput
-        placeholder="Description..."
-        formControlName="search"
-      />
-    </div>
   </div>
-  <div class="flex items-center gap-2">
-    <button hlmBtn type="submit">Apply</button>
-    <button hlmBtn variant="outline" type="button" (click)="onReset()">Reset</button>
+
+  <div class="w-44 shrink-0">
+    <hlm-field>
+      <hlm-field-label hlm>To</hlm-field-label>
+      <hlm-field-content>
+        <hlm-date-picker formControlName="endDate" [min]="minDate">
+          <hlm-date-picker-trigger>Any date</hlm-date-picker-trigger>
+        </hlm-date-picker>
+      </hlm-field-content>
+    </hlm-field>
+  </div>
+
+  <div class="w-44 shrink-0">
+    <hlm-field>
+      <hlm-field-label hlm>Min Amount</hlm-field-label>
+      <hlm-field-content>
+        <input type="number" step="0.01" hlmInput formControlName="minAmount" placeholder="$0.00" />
+      </hlm-field-content>
+    </hlm-field>
+  </div>
+
+  <div class="w-44 shrink-0">
+    <hlm-field>
+      <hlm-field-label hlm>Max Amount</hlm-field-label>
+      <hlm-field-content>
+        <input type="number" step="0.01" hlmInput formControlName="maxAmount" placeholder="Any" />
+      </hlm-field-content>
+    </hlm-field>
+  </div>
+
+  <div class="w-full sm:w-auto">
+    <hlm-select formControlName="transactionTypeCode" [itemToString]="typeItemToString">
+      <hlm-select-trigger class="w-44">
+        <hlm-select-value placeholder="Filter by type" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal class="max-h-80 min-w-36">
+        @for (option of typeOptions; track option.value) {
+          <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
+        }
+      </hlm-select-content>
+    </hlm-select>
+  </div>
+
+  <div class="w-full sm:w-auto">
+    <hlm-select formControlName="transactionCategoryCode" [itemToString]="categoryItemToString">
+      <hlm-select-trigger class="w-44">
+        <hlm-select-value placeholder="Filter by category" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal class="max-h-80 min-w-44">
+        @for (option of categoryOptions; track option.value) {
+          <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
+        }
+      </hlm-select-content>
+    </hlm-select>
+  </div>
+
+  <div class="w-full sm:w-auto">
+    <hlm-select formControlName="accountId" [itemToString]="accountItemToString">
+      <hlm-select-trigger class="w-44">
+        <hlm-select-value placeholder="Filter by account" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal class="max-h-80 min-w-44">
+        @for (option of accountOptions; track option.value) {
+          <hlm-select-item [value]="option.value">{{ option.label }}</hlm-select-item>
+        }
+      </hlm-select-content>
+    </hlm-select>
+  </div>
+
+  <div class="w-full sm:w-88">
+    <hlm-field>
+      <hlm-field-label hlm>Search</hlm-field-label>
+      <hlm-field-content>
+        <input hlmInput formControlName="search" type="search" placeholder="Search descriptions…" />
+      </hlm-field-content>
+    </hlm-field>
+  </div>
+
+  <div class="flex gap-2 sm:ml-auto">
+    <button type="button" hlmBtn variant="ghost" size="sm" (click)="resetFilters()">Clear</button>
+    <button type="submit" hlmBtn variant="default" size="sm">Apply</button>
   </div>
 </form>

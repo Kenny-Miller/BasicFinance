@@ -1,0 +1,21 @@
+<section hlmCard class="flex flex-col gap-4 rounded-sm p-4">
+  <div class="flex items-center justify-between gap-2">
+    <span class="text-xs font-medium tracking-wider text-gray-500 uppercase">{{ label() }}</span>
+    @if (badge()) {
+      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+        {{ badge() }}
+      </span>
+    }
+  </div>
+  <p
+    class="text-3xl font-semibold tabular-nums"
+    [class]="
+      tone() === 'good' ? 'text-emerald-600' : tone() === 'bad' ? 'text-red-600' : 'text-gray-900'
+    "
+  >
+    {{ value() }}
+  </p>
+  @if (caption()) {
+    <span class="text-xs text-gray-500">{{ caption() }}</span>
+  }
+</section>

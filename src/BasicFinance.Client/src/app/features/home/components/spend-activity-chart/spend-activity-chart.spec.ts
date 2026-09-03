@@ -34,6 +34,18 @@ describe('SpendActivityChart', () => {
     fixture = TestBed.createComponent(SpendActivityChart);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('data', {
+      currentMonthActivity: [],
+      previousMonthActivity: [],
+      totalMonthlySpend: 0,
+      monthlySpendDifference: 0,
+    });
+    fixture.componentRef.setInput('data', {
+      currentMonthActivity: [],
+      previousMonthActivity: [],
+      totalMonthlySpend: 0,
+      monthlySpendDifference: 0,
+    });
     await fixture.whenStable();
   });
 

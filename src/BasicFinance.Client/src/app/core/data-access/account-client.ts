@@ -97,7 +97,7 @@ export class AccountClient {
     });
   }
 
-  createBalanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
+  balanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
     return httpResource<AccountAnalyticsResponse>(
       () => `api/accounts/balanceSummary?TimePeriod=${timePeriodSignal()}`,
     );

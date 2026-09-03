@@ -39,7 +39,7 @@ describe('HomeService', () => {
         {
           provide: AccountClient,
           useValue: {
-            createBalanceSummaryResource: () => ({
+            balanceSummaryResource: () => ({
               hasValue: () => balanceSummaryHasValue(),
               error: () => balanceSummaryError(),
               value: () => balanceSummaryValue(),
@@ -67,7 +67,7 @@ describe('HomeService', () => {
         {
           provide: SpendingClient,
           useValue: {
-            createSpendingOverTimeSummaryResource: () => ({
+            spendingOverTimeSummaryResource: () => ({
               hasValue: () => spendingHasValue(),
               error: () => spendingError(),
               value: () => spendingValue(),

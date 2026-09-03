@@ -18,7 +18,6 @@ import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { PageService } from './core/page/page.service';
 import { NavMenuItem } from './shared/models/nav-menu-item';
 import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/institution-avatar';
-import { ToastContainer } from './shared/ui/toast/toast-container';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +30,6 @@ import { ToastContainer } from './shared/ui/toast/toast-container';
     RouterLink,
     RouterLinkActive,
     InstitutionAvatar,
-    ToastContainer,
   ],
   providers: [
     provideIcons({

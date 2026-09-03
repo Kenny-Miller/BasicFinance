@@ -1,5 +1,7 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
+import { TimePeriod } from '../../shared/data/time-period';
+import { SpendingByPeriod } from './../../shared/api/spending/spending-by-period';
 
 export interface DailySpendingOverTime {
   x: number;
@@ -17,9 +19,25 @@ export interface SpendingOverTimeSummary {
   providedIn: 'root',
 })
 export class SpendingClient {
-  createSpendingOverTimeSummaryResource() {
-    return httpResource<SpendingOverTimeSummary>(
-      () => 'api/Spending/SpendingOverTimeSummary',
-    );
+  spendingOverTimeSummaryResource() {
+    return httpResource<SpendingOverTimeSummary>(() => 'api/Spending/SpendingOverTimeSummary');
+  }
+
+  spendingByPeriodResource(periodSignal: Signal<TimePeriod>, startDateSignal: Signal<string>) {
+    return httpResource<SpendingByPeriod>(() => {
+      const params = {
+        startDate: startDateSignal(),
+        spendingPeriod: periodSignal(),
+      };
+
+      const queryParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined),
+      );
+
+      return {
+        url: 'api/Spending/SpendingActivityByPeriod',
+        params: queryParams,
+      };
+    });
   }
 }

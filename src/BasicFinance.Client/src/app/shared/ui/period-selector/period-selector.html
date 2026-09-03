@@ -1,0 +1,37 @@
+<section hlmCard class="rounded-sm">
+  <div hlmCardContent>
+    @if (periodLabel()) {
+      <div class="flex items-center justify-between">
+        <button hlmBtn variant="outline" size="icon" class="size-8" (click)="navigateTo('previous')">
+          <ng-icon name="lucideChevronLeft" />
+        </button>
+        <span class="text-lg font-medium">{{ periodLabel() }}</span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="icon"
+          class="size-8"
+          [disabled]="nextDisabled()"
+          (click)="navigateTo('next')"
+        >
+          <ng-icon name="lucideChevronRight" />
+        </button>
+      </div>
+    } @else {
+      <form>
+        <div hlmField>
+          <label hlmFieldLabel for="payment-type">Period</label>
+          <hlm-toggle-group
+            type="single"
+            [(value)]="selectedPeriod"
+            (valueChange)="selectPeriod($event)"
+          >
+            @for (period of periods; track period) {
+              <button hlmToggleGroupItem [value]="period">{{ period }}</button>
+            }
+          </hlm-toggle-group>
+        </div>
+      </form>
+    }
+  </div>
+</section>

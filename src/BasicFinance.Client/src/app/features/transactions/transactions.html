@@ -1,36 +1,64 @@
-<section class="gap-4 flex flex-col">
-  <app-filter-bar (filtersChange)="onFiltersChange($event)" />
-
-  @if (resource.error()) {
+<main class="flex flex-col gap-4 p-4">
+  @if (loading()) {
+    <app-transactions-skeleton />
+  } @else if (error()) {
     <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
-      <p class="text-lg font-medium">Failed to load transactions</p>
-      <button hlmBtn variant="outline" class="mt-2" (click)="page.set(1)">Retry</button>
+      <p class="text-lg font-medium">Failed to load transaction data</p>
+      <button hlmBtn variant="outline" class="mt-2" (click)="refetchAll()">Retry</button>
     </div>
-  } @else if (transactions().length > 0) {
-    <hlm-item-group>
-      @for (transaction of transactions(); track transaction.id; let last = $last) {
-        <app-transaction-item [transaction]="transaction" />
-
-        @if (!last) {
-          <hlm-separator />
-        }
-      }
-    </hlm-item-group>
-    @if (resource.isLoading()) {
-      <hlm-separator />
-      <app-transactions-list-skeleton [skeletonListLength]="3" />
-    }
-  } @else if (resource.isLoading()) {
-    <app-transactions-list-skeleton [skeletonListLength]="20" />
   } @else {
-    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
-      <p class="text-lg font-medium">No transactions found</p>
-      <p class="text-sm">Your transactions will appear here.</p>
+    <app-period-selector [activePeriod]="selectedPeriod()" (periodChange)="selectPeriod($event)" />
+
+    @let transactionSummary = data().transactionSummary;
+
+    <div class="grid gap-3 sm:grid-cols-3">
+      <app-transactions-summary-tile
+        title="Income"
+        [currentValue]="transactionSummary.currentPeriod.totalIncome"
+        [lastPeriodValue]="transactionSummary.previousPeriod.totalIncome"
+        [deltaLabel]="deltaLabel()"
+        [positiveIsGood]="true"
+      />
+      <app-transactions-summary-tile
+        title="Spending"
+        [currentValue]="transactionSummary.currentPeriod.totalSpend"
+        [lastPeriodValue]="transactionSummary.previousPeriod.totalSpend"
+        [deltaLabel]="deltaLabel()"
+        [positiveIsGood]="false"
+      />
+      <app-transactions-summary-tile
+        title="Transactions"
+        [currentValue]="transactionSummary.currentPeriod.totalCount"
+        [lastPeriodValue]="transactionSummary.previousPeriod.totalCount"
+        [deltaLabel]="deltaLabel()"
+        [positiveIsGood]="false"
+        [isCurrency]="false"
+      />
     </div>
+
+    <app-daily-spend-chart
+      [theme]="appTheme()"
+      [data]="data().dailySummary"
+      [deltaLabel]="deltaLabel()"
+    />
+
+    @let transactions = data().transactions;
+
+    @if (transactions.items.length > 0) {
+      <app-transactions-list [transactions]="transactions.items" />
+
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [totalCount]="transactions.totalCount"
+        (pageChange)="setPage($event)"
+        (pageSizeChange)="setPageSize($event)"
+      />
+    } @else {
+      <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+        <p class="text-lg font-medium">No transactions found</p>
+        <p class="text-sm">Your transactions will appear here.</p>
+      </div>
+    }
   }
-  @if (hasMore() && !resource.isLoading()) {
-    <div class="flex justify-center">
-      <button hlmBtn class="w-full lg:w-80" (click)="loadMore()">Load More</button>
-    </div>
-  }
-</section>
+</main>
