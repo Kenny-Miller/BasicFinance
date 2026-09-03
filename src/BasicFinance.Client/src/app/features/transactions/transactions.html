@@ -47,7 +47,7 @@
     @if (transactions.items.length > 0) {
       <app-transactions-list [transactions]="transactions.items" />
 
-      <app-pagination
+      <app-paginator
         [page]="page()"
         [pageSize]="pageSize()"
         [totalCount]="transactions.totalCount"

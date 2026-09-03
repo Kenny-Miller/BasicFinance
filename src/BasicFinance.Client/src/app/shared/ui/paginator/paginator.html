@@ -25,13 +25,13 @@
       variant="outline"
       size="sm"
       [disabled]="previousDisabled()"
-      (click)="goToPage(page() - 1)"
+      (click)="changePage(page() - 1)"
     >
       <ng-icon name="lucideChevronLeft" class="size-4" />
       <span class="hidden sm:inline">Previous</span>
     </button>
     <div class="flex items-center gap-1">
-      @for (item of pageItems(); track $index) {
+      @for (item of pageWindow(); track $index) {
         @if (item === null) {
           <span class="px-1 text-sm text-gray-400">…</span>
         } @else {
@@ -41,7 +41,7 @@
             size="sm"
             class="w-8"
             [class.font-semibold]="item === page()"
-            (click)="goToPage(item)"
+            (click)="changePage(item)"
           >
             {{ item }}
           </button>
@@ -53,25 +53,25 @@
       variant="outline"
       size="sm"
       [disabled]="nextDisabled()"
-      (click)="goToPage(page() + 1)"
+      (click)="changePage(page() + 1)"
     >
       <span class="hidden sm:inline">Next</span>
       <ng-icon name="lucideChevronRight" class="size-4" />
     </button>
     <div class="ml-1 hidden items-center gap-1 md:flex">
-      <label class="text-sm text-gray-500" for="pagination-jump-input">Go to</label>
+      <label class="text-sm text-gray-500" for="page-selector-input">Go to</label>
       <input
-        id="pagination-jump-input"
+        id="page-selector-input"
         type="number"
         hlmInput
         class="w-16"
         min="1"
         [max]="totalPages()"
-        [value]="jumpTo() ?? ''"
-        (change)="jumpInputChanged($event)"
-        (keydown)="onJumpKeydown($event)"
+        [value]="pageSelector() ?? ''"
+        (change)="pageSelectorChanged($event)"
+        (keydown)="pageSelectorKeydown($event)"
       />
-      <button hlmBtn variant="ghost" size="sm" (click)="jumpPage()">
+      <button hlmBtn variant="ghost" size="sm" aria-label="Go to page" (click)="selectPage()">
         <ng-icon name="lucideCornerDownLeft" class="size-4" />
       </button>
     </div>

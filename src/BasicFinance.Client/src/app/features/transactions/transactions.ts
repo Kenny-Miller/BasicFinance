@@ -3,7 +3,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { TimePeriod } from '../../shared/data/time-period';
-import { Pagination } from '../../shared/ui/pagination/pagination';
+import { Paginator } from '../../shared/ui/paginator/paginator';
 import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
 import { TransactionsList } from '../../shared/ui/transactions/transactions-list/transactions-list';
 import { DailySpendChart } from './components/daily-spend-chart/daily-spend-chart';
@@ -26,7 +26,7 @@ const DELTA_LABELS: Record<TimePeriod, string> = {
     TransactionsSummaryTile,
     DailySpendChart,
     TransactionsList,
-    Pagination,
+    Paginator,
     TransactionsSkeleton,
   ],
   templateUrl: './transactions.html',

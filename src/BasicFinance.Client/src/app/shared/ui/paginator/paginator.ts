@@ -9,8 +9,34 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
+const MAX_VISIBLE_PAGES = 7;
+
+function buildPageWindow(total: number, current: number): (number | null)[] {
+  if (total <= MAX_VISIBLE_PAGES) {
+    return Array.from({ length: total }, (_, index) => index + 1);
+  }
+
+  const items: (number | null)[] = [1];
+  if (current > 3) {
+    items.push(null);
+  }
+
+  const windowStart = Math.max(2, current - 1);
+  const windowEnd = Math.min(total - 1, current + 1);
+  for (let page = windowStart; page <= windowEnd; page++) {
+    items.push(page);
+  }
+
+  if (current < total - 2) {
+    items.push(null);
+  }
+  items.push(total);
+
+  return items;
+}
+
 @Component({
-  selector: 'app-pagination',
+  selector: 'app-paginator',
   imports: [HlmButtonImports, HlmInputImports, HlmSelectImports, NgIcon],
   providers: [
     provideIcons({
@@ -19,10 +45,10 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
       lucideCornerDownLeft,
     }),
   ],
-  templateUrl: './pagination.html',
-  styleUrl: './pagination.css',
+  templateUrl: './paginator.html',
+  styleUrl: './paginator.css',
 })
-export class Pagination {
+export class Paginator {
   readonly page = input.required<number>();
   readonly pageSize = input.required<number>();
   readonly totalCount = input.required<number>();
@@ -30,9 +56,11 @@ export class Pagination {
   readonly pageSizeChange = output<number>();
 
   readonly pageSizeOptions = [10, 20, 50, 100];
-  readonly jumpTo = signal<number | null>(null);
+  readonly pageSelector = signal<number | null>(null);
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize())),
+  );
   readonly rangeStart = computed(() => {
     if (this.totalCount() === 0) {
       return 0;
@@ -43,33 +71,9 @@ export class Pagination {
   readonly previousDisabled = computed(() => this.page() <= 1);
   readonly nextDisabled = computed(() => this.page() >= this.totalPages());
 
-  readonly pageItems = computed<(number | null)[]>(() => {
-    const total = this.totalPages();
-    const current = this.page();
-    if (total <= 7) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
+  readonly pageWindow = computed(() => buildPageWindow(this.totalPages(), this.page()));
 
-    const items: (number | null)[] = [1];
-    if (current > 3) {
-      items.push(null);
-    }
-
-    const windowStart = Math.max(2, current - 1);
-    const windowEnd = Math.min(total - 1, current + 1);
-    for (let page = windowStart; page <= windowEnd; page++) {
-      items.push(page);
-    }
-
-    if (current < total - 2) {
-      items.push(null);
-    }
-    items.push(total);
-
-    return items;
-  });
-
-  goToPage(page: number): void {
+  changePage(page: number): void {
     this.pageChange.emit(page);
   }
 
@@ -79,25 +83,25 @@ export class Pagination {
     }
   }
 
-  jumpPage(): void {
-    const target = this.jumpTo();
+  selectPage(): void {
+    const target = this.pageSelector();
     if (target == null) {
       return;
     }
 
-    this.jumpTo.set(null);
-    this.goToPage(Math.min(Math.max(1, Math.trunc(target)), this.totalPages()));
+    this.pageSelector.set(null);
+    this.changePage(Math.min(Math.max(1, Math.trunc(target)), this.totalPages()));
   }
 
-  onJumpKeydown(event: KeyboardEvent): void {
+  pageSelectorKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
       event.preventDefault();
-      this.jumpPage();
+      this.selectPage();
     }
   }
 
-  jumpInputChanged(event: Event): void {
+  pageSelectorChanged(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.jumpTo.set(target.valueAsNumber || null);
+    this.pageSelector.set(target.valueAsNumber || null);
   }
 }
