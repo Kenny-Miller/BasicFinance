@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { SpendingByPeriod } from '../../../../shared/api/spending/spending-by-period';
+import { SpendingByPeriod } from '../../../../core/data-access/spending-client';
 import { getCategoryName, SPENDING_CATEGORY_CODES } from '../../../../shared/data/category-map';
 
 export interface CategoryRow {

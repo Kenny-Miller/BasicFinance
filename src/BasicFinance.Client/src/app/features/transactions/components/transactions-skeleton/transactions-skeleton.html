@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-4">
-  <div class="grid gap-3 sm:grid-cols-3">
+  <div class="grid gap-4 sm:grid-cols-3">
     <app-summary-card-skeleton />
     <app-summary-card-skeleton />
     <app-summary-card-skeleton />
@@ -7,9 +7,5 @@
 
   <app-daily-spend-chart-skeleton />
 
-  <div class="flex flex-col gap-3">
-    @for (row of [0, 1, 2, 3, 4]; track $index) {
-      <app-transaction-item-skeleton />
-    }
-  </div>
+  <app-transactions-list-skeleton />
 </div>

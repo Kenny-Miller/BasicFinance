@@ -11,7 +11,10 @@ describe('Transactions', () => {
       period: signal('Monthly'),
       page: signal(1),
       pageSize: signal(10),
+      filters: signal({}),
       loading: () => false,
+      transactionsLoading: () => false,
+      hasTransactionsData: () => false,
       error: summaryError ? () => new Error('simulated resource error') : () => undefined,
       data: () => ({
         accounts: { page: 1, pageSize: 100, pageCount: 0, totalCount: 0, items: [] },

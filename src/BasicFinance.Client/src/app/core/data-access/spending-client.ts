@@ -1,7 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
 import { TimePeriod } from '../../shared/data/time-period';
-import { SpendingByPeriod } from './../../shared/api/spending/spending-by-period';
 
 export interface DailySpendingOverTime {
   x: number;
@@ -13,6 +12,19 @@ export interface SpendingOverTimeSummary {
   previousMonthActivity: DailySpendingOverTime[];
   totalMonthlySpend: number;
   monthlySpendDifference: number;
+}
+
+export interface SpendingActivity {
+  amount: number;
+  percentOfSpend: number;
+}
+
+export interface SpendingByPeriod {
+  periodStartDate: string;
+  periodEndDate: string;
+  totalSpend: number;
+  totalIncome: number;
+  spendingActivityByCategory: Record<string, SpendingActivity>;
 }
 
 @Injectable({

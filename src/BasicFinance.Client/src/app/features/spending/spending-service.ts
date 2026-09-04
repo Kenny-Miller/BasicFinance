@@ -1,6 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { SpendingClient } from '../../core/data-access/spending-client';
-import { SpendingByPeriod } from '../../shared/api/spending/spending-by-period';
+import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
 const EMPTY_SPENDING: SpendingByPeriod = {

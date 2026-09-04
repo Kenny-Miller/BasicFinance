@@ -1,6 +1,6 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
-import { ListResult } from '../../shared/api/list-result';
+import { ListResult } from './api-interfaces';
 
 export interface Institution {
   id: string;

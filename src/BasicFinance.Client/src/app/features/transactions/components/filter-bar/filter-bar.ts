@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, inject } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Field, form, min, submit } from '@angular/forms/signals';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
@@ -17,11 +16,21 @@ import {
 } from '../../../../shared/data/transaction-type-map';
 import { TRANSACTION_CATEGORY_OPTIONS } from '../../data/transaction-options';
 
+interface FilterDraft {
+  startDate: Date | null;
+  endDate: Date | null;
+  minAmount: string;
+  maxAmount: string;
+  transactionTypeCode: string;
+  transactionCategoryCode: string;
+  accountId: string;
+  search: string;
+}
+
 @Component({
   selector: 'app-filter-bar',
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
+    Field,
     HlmDatePickerImports,
     HlmButtonImports,
     HlmInputImports,
@@ -31,117 +40,87 @@ import { TRANSACTION_CATEGORY_OPTIONS } from '../../data/transaction-options';
   templateUrl: './filter-bar.html',
   styleUrl: './filter-bar.css',
 })
-export class FilterBar implements OnInit, OnChanges {
-  @Input({ required: true }) filters!: TransactionFilters;
-  @Input() accounts: Account[] = [];
-  @Output() filterChange = new EventEmitter<TransactionFilters>();
+export class FilterBar {
+  readonly filters = input.required<TransactionFilters>();
+  readonly accounts = input<Account[]>([]);
 
-  private readonly formBuilder = inject(NonNullableFormBuilder);
-  readonly filterForm = this.formBuilder.group({
-    startDate: [null as Date | null],
-    endDate: [null as Date | null],
-    minAmount: [null as number | null, [Validators.min(0)]],
-    maxAmount: [null as number | null, [Validators.min(0)]],
-    transactionTypeCode: [''],
-    transactionCategoryCode: [''],
-    accountId: [''],
-    search: [''],
+  readonly filterChange = output<TransactionFilters>();
+
+  readonly filterModel = signal<FilterDraft>(this._draftFrom({}));
+  readonly filterForm = form(this.filterModel, (draft) => {
+    min(draft.minAmount, 0);
+    min(draft.maxAmount, 0);
   });
+
   readonly typeOptions: SelectOption[] = TRANSACTION_TYPE_OPTIONS;
   readonly categoryOptions: SelectOption[] = TRANSACTION_CATEGORY_OPTIONS;
-  accountOptions: SelectOption[] = [{ value: '', label: 'All Accounts' }];
+  readonly accountOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Accounts' },
+    ...this.accounts().map((account) => ({
+      value: account.id,
+      label: account.name,
+    })),
+  ]);
 
   readonly typeItemToString = (code: string) => this._labelFor(this.typeOptions, code);
   readonly categoryItemToString = (code: string) => this._labelFor(this.categoryOptions, code);
-  readonly accountItemToString = (code: string) => this._labelFor(this.accountOptions, code);
+  readonly accountItemToString = (code: string) => this._labelFor(this.accountOptions(), code);
 
   minDate = new Date(2025, 0, 1);
 
-  ngOnInit(): void {
-    this.syncFromFilters(this.filters);
-  }
+  private readonly lastSynced = signal<TransactionFilters>({});
 
-  ngOnChanges(): void {
-    this.accountOptions = [
-      { value: '', label: 'All Accounts' },
-      ...this.accounts.map((account) => ({
-        value: account.id,
-        label: account.name,
-      })),
-    ];
-    this.syncFromFilters(this.filters);
-  }
+  constructor() {
+    effect(() => {
+      const filters = this.filters();
+      if (JSON.stringify(filters) === JSON.stringify(this.lastSynced())) {
+        return;
+      }
 
-  private syncFromFilters(filters: TransactionFilters): void {
-    this.startDateControl.setValue(this._parseDate(filters.startDate));
-    this.endDateControl.setValue(this._parseDate(filters.endDate));
-    this.minAmountControl.setValue(filters.minAmount ?? null);
-    this.maxAmountControl.setValue(filters.maxAmount ?? null);
-    this.typeControl.setValue(filters.transactionTypeCode ?? '');
-    this.categoryControl.setValue(filters.transactionCategoryCode ?? '');
-    this.accountControl.setValue(filters.accountId ?? '');
-    this.searchControl.setValue(filters.search ?? '');
+      this.lastSynced.set(filters);
+      this.filterModel.set(this._draftFrom(filters));
+    });
   }
 
   applyFilters(event: Event): void {
     event.preventDefault();
 
-    if (!this.filterForm.valid) {
-      this.filterForm.markAllAsTouched();
-      return;
-    }
-
-    const value = this.filterForm.getRawValue();
-
-    const filters: TransactionFilters = {
-      startDate: this._toDate(value.startDate),
-      endDate: this._toDate(value.endDate),
-      minAmount: value.minAmount ?? undefined,
-      maxAmount: value.maxAmount ?? undefined,
-      transactionTypeCode: this._toTypeCode(value.transactionTypeCode),
-      transactionCategoryCode: value.transactionCategoryCode || undefined,
-      accountId: value.accountId || undefined,
-      search: value.search.trim() || undefined,
-    };
-
-    this.filterChange.emit(filters);
+    void submit(this.filterForm, async () => {
+      this.filterChange.emit(this._toFilters(this.filterModel()));
+      return undefined;
+    });
   }
 
   resetFilters(): void {
-    this.syncFromFilters({});
+    this.filterModel.set(this._draftFrom({}));
+    this.filterForm().reset();
     this.filterChange.emit({});
   }
 
-  get startDateControl() {
-    return this.filterForm.controls['startDate'];
+  private _draftFrom(filters: TransactionFilters): FilterDraft {
+    return {
+      startDate: this._parseDate(filters.startDate),
+      endDate: this._parseDate(filters.endDate),
+      minAmount: this._toDraftAmount(filters.minAmount),
+      maxAmount: this._toDraftAmount(filters.maxAmount),
+      transactionTypeCode: filters.transactionTypeCode ?? '',
+      transactionCategoryCode: filters.transactionCategoryCode ?? '',
+      accountId: filters.accountId ?? '',
+      search: filters.search ?? '',
+    };
   }
 
-  get endDateControl() {
-    return this.filterForm.controls['endDate'];
-  }
-
-  get minAmountControl() {
-    return this.filterForm.controls['minAmount'];
-  }
-
-  get maxAmountControl() {
-    return this.filterForm.controls['maxAmount'];
-  }
-
-  get typeControl() {
-    return this.filterForm.controls['transactionTypeCode'];
-  }
-
-  get categoryControl() {
-    return this.filterForm.controls['transactionCategoryCode'];
-  }
-
-  get accountControl() {
-    return this.filterForm.controls['accountId'];
-  }
-
-  get searchControl() {
-    return this.filterForm.controls['search'];
+  private _toFilters(draft: FilterDraft): TransactionFilters {
+    return {
+      startDate: this._toDate(draft.startDate),
+      endDate: this._toDate(draft.endDate),
+      minAmount: this._toNumber(draft.minAmount),
+      maxAmount: this._toNumber(draft.maxAmount),
+      transactionTypeCode: this._toTypeCode(draft.transactionTypeCode),
+      transactionCategoryCode: draft.transactionCategoryCode || undefined,
+      accountId: draft.accountId || undefined,
+      search: draft.search.trim() || undefined,
+    };
   }
 
   private _toDate(value: unknown): string | undefined {
@@ -154,6 +133,19 @@ export class FilterBar implements OnInit, OnChanges {
     }
 
     return undefined;
+  }
+
+  private _toDraftAmount(value: number | undefined): string {
+    return value != null ? String(value) : '';
+  }
+
+  private _toNumber(value: string): number | undefined {
+    if (value.trim() === '') {
+      return undefined;
+    }
+
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
   }
 
   private _toTypeCode(value: string): TransactionTypeCode | undefined {

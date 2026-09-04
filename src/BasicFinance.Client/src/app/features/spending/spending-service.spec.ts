@@ -1,7 +1,6 @@
 import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { SpendingClient } from '../../core/data-access/spending-client';
-import { SpendingByPeriod } from '../../shared/api/spending/spending-by-period';
+import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { SpendingService } from './spending-service';
 

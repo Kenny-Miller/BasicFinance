@@ -11,7 +11,7 @@
 
     @let transactionSummary = data().transactionSummary;
 
-    <div class="grid gap-3 sm:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-3">
       <app-transactions-summary-tile
         title="Income"
         [currentValue]="transactionSummary.currentPeriod.totalIncome"
@@ -42,18 +42,24 @@
       [deltaLabel]="deltaLabel()"
     />
 
+    <app-filter-bar
+      [filters]="filters()"
+      [accounts]="data().accounts.items"
+      (filterChange)="applyFilters($event)"
+    />
+
     @let transactions = data().transactions;
 
-    @if (transactions.items.length > 0) {
-      <app-transactions-list [transactions]="transactions.items" />
-
-      <app-paginator
-        [page]="page()"
-        [pageSize]="pageSize()"
-        [totalCount]="transactions.totalCount"
-        (pageChange)="setPage($event)"
-        (pageSizeChange)="setPageSize($event)"
-      />
+    @if (transactionsLoading()) {
+      <div class="flex flex-col gap-4">
+        <app-transactions-list-skeleton [numberOfSkeletons]="pageSize()" />
+        <app-paginator [page]="page" [pageSize]="pageSize" [totalCount]="transactions.totalCount" />
+      </div>
+    } @else if (transactions.items.length > 0) {
+      <div class="flex flex-col gap-4">
+        <app-transactions-list [transactions]="transactions.items" />
+        <app-paginator [page]="page" [pageSize]="pageSize" [totalCount]="transactions.totalCount" />
+      </div>
     } @else {
       <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
         <p class="text-lg font-medium">No transactions found</p>

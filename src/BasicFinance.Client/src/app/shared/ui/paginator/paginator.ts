@@ -1,15 +1,11 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, WritableSignal, computed, input, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideChevronLeft,
-  lucideChevronRight,
-  lucideCornerDownLeft,
-} from '@ng-icons/lucide';
+import { lucideChevronLeft, lucideChevronRight, lucideCornerDownLeft } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
-const MAX_VISIBLE_PAGES = 7;
+const MAX_VISIBLE_PAGES = 5;
 
 function buildPageWindow(total: number, current: number): (number | null)[] {
   if (total <= MAX_VISIBLE_PAGES) {
@@ -49,38 +45,41 @@ function buildPageWindow(total: number, current: number): (number | null)[] {
   styleUrl: './paginator.css',
 })
 export class Paginator {
-  readonly page = input.required<number>();
-  readonly pageSize = input.required<number>();
+  readonly page = input.required<WritableSignal<number>>();
+  readonly pageSize = input.required<WritableSignal<number>>();
   readonly totalCount = input.required<number>();
-  readonly pageChange = output<number>();
-  readonly pageSizeChange = output<number>();
 
   readonly pageSizeOptions = [10, 20, 50, 100];
   readonly pageSelector = signal<number | null>(null);
 
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.totalCount() / this.pageSize())),
+  readonly currentPage = computed(() => this.page()());
+  readonly currentPageSize = computed(() => this.pageSize()());
+
+  readonly totalPages = computed(
+    () => Math.max(1, Math.ceil(this.totalCount() / this.currentPageSize())),
   );
   readonly rangeStart = computed(() => {
-    if (this.totalCount() === 0) {
-      return 0;
-    }
-    return (this.page() - 1) * this.pageSize() + 1;
+    return this.totalCount() === 0 ? 0 : (this.currentPage() - 1) * this.currentPageSize() + 1;
   });
-  readonly rangeEnd = computed(() => Math.min(this.page() * this.pageSize(), this.totalCount()));
-  readonly previousDisabled = computed(() => this.page() <= 1);
-  readonly nextDisabled = computed(() => this.page() >= this.totalPages());
+  readonly rangeEnd = computed(
+    () => Math.min(this.currentPage() * this.currentPageSize(), this.totalCount()),
+  );
+  readonly previousDisabled = computed(() => this.currentPage() <= 1);
+  readonly nextDisabled = computed(() => this.currentPage() >= this.totalPages());
 
-  readonly pageWindow = computed(() => buildPageWindow(this.totalPages(), this.page()));
+  readonly pageWindow = computed(() => buildPageWindow(this.totalPages(), this.currentPage()));
 
   changePage(page: number): void {
-    this.pageChange.emit(page);
+    this.page().set(page);
   }
 
   selectPageSize(pageSize: number | null | undefined): void {
-    if (pageSize != null) {
-      this.pageSizeChange.emit(pageSize);
+    if (pageSize == null) {
+      return;
     }
+
+    this.pageSize().set(pageSize);
+    this.page().set(1);
   }
 
   selectPage(): void {

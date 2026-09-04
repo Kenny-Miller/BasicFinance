@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Account, AccountClient } from '../../core/data-access/account-client';
 import { ListResult } from '../../core/data-access/api-interfaces';
 import {
@@ -88,7 +88,6 @@ export class TransactionsService {
     this.sortDirection,
     this.filters,
   );
-
   private readonly transactionSummary = this.transactionsClient.transactionSummaryResource(
     signal<Date | null>(null),
     this.period,
@@ -106,6 +105,8 @@ export class TransactionsService {
       !this.dailySummary.hasValue() &&
       !this.transactionSummary.hasValue(),
   );
+
+  readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
 
   readonly error = computed(
     () =>

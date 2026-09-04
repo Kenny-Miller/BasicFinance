@@ -7,7 +7,7 @@
     </p>
     <div class="hidden items-center gap-2 sm:flex">
       <span class="text-sm text-gray-500">Rows</span>
-      <hlm-select [value]="pageSize()" (valueChange)="selectPageSize($event)">
+      <hlm-select [value]="currentPageSize()" (valueChange)="selectPageSize($event)">
         <hlm-select-trigger size="sm" class="w-20 shrink-0">
           <hlm-select-value />
         </hlm-select-trigger>
@@ -25,7 +25,7 @@
       variant="outline"
       size="sm"
       [disabled]="previousDisabled()"
-      (click)="changePage(page() - 1)"
+      (click)="changePage(currentPage() - 1)"
     >
       <ng-icon name="lucideChevronLeft" class="size-4" />
       <span class="hidden sm:inline">Previous</span>
@@ -40,7 +40,7 @@
             variant="outline"
             size="sm"
             class="w-8"
-            [class.font-semibold]="item === page()"
+            [class.font-semibold]="item === currentPage()"
             (click)="changePage(item)"
           >
             {{ item }}
@@ -53,7 +53,7 @@
       variant="outline"
       size="sm"
       [disabled]="nextDisabled()"
-      (click)="changePage(page() + 1)"
+      (click)="changePage(currentPage() + 1)"
     >
       <span class="hidden sm:inline">Next</span>
       <ng-icon name="lucideChevronRight" class="size-4" />

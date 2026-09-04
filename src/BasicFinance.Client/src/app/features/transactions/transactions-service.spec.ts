@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Account, AccountClient } from '../../core/data-access/account-client';
 import { ListResult } from '../../core/data-access/api-interfaces';
@@ -115,6 +115,64 @@ describe('TransactionsService', () => {
     transactionsHasValue.set(true);
 
     expect(service.loading()).toBe(false);
+  });
+
+  it('should keep the transaction list loading while its resource refetches', () => {
+    transactionsHasValue.set(true);
+
+    expect(service.transactionsLoading()).toBe(false);
+
+    transactionsHasValue.set(false);
+
+    expect(service.transactionsLoading()).toBe(true);
+  });
+
+  it('should keep the latest transactions visible while the list refetches', () => {
+    @Component({ template: '' })
+    class TestHost {}
+
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+
+    expect(service.hasTransactionsData()).toBe(false);
+    expect(service.data().transactions).toEqual({
+      page: 1,
+      pageCount: 0,
+      totalCount: 0,
+      pageSize: 10,
+      items: [],
+    });
+
+    const transactions: ListResult<Transaction> = {
+      page: 1,
+      pageCount: 1,
+      totalCount: 1,
+      pageSize: 10,
+      items: [
+        {
+          id: '1',
+          transactionTypeName: 'Credit',
+          transactionCategoryName: 'Income',
+          accountName: 'Checking',
+          date: '2026-08-01',
+          amount: 4200,
+          description: 'Salary',
+        },
+      ],
+    };
+    transactionsValue.set(transactions);
+    transactionsHasValue.set(true);
+    fixture.detectChanges();
+
+    expect(service.hasTransactionsData()).toBe(true);
+    expect(service.data().transactions).toEqual(transactions);
+
+    transactionsHasValue.set(false);
+    fixture.detectChanges();
+
+    expect(service.transactionsLoading()).toBe(true);
+    expect(service.hasTransactionsData()).toBe(true);
+    expect(service.data().transactions).toEqual(transactions);
   });
 
   it('should report an error when any resource errors', () => {

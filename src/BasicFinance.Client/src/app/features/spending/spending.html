@@ -9,13 +9,10 @@
   } @else {
     <app-period-selector [activePeriod]="selectedPeriod()" (periodChange)="selectPeriod($event)" />
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <app-spending-summary-tile
-        [totalIncome]="data().totalIncome"
-        [totalSpend]="data().totalSpend"
-      />
-      <app-category-pie-chart [theme]="appTheme()" [data]="data()" />
-    </div>
+    <app-spending-summary-tile
+      [totalIncome]="data().totalIncome"
+      [totalSpend]="data().totalSpend"
+    />
 
     <app-category-breakdown-list [data]="data()" />
   }

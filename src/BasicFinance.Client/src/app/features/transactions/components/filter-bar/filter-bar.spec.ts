@@ -21,19 +21,23 @@ describe('FilterBar', () => {
     fixture.detectChanges();
   });
 
-  it('should prevent the native form submit and emit the current filters', () => {
-    component.searchControl.setValue('coffee');
+  const submitForm = () => {
     const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     const event = new Event('submit', { bubbles: true, cancelable: true });
-
     form.dispatchEvent(event);
+    return event;
+  };
+
+  it('should prevent the native form submit and emit the current filters', () => {
+    component.filterModel.update((draft) => ({ ...draft, search: 'coffee' }));
+    const event = submitForm();
 
     expect(event.defaultPrevented).toBe(true);
     expect(emitted).toEqual([{ search: 'coffee' }]);
   });
 
   it('should keep the form in place when the Apply button is clicked', () => {
-    component.searchControl.setValue('espresso');
+    component.filterModel.update((draft) => ({ ...draft, search: 'espresso' }));
     const button = fixture.nativeElement.querySelector(
       'button[type="submit"]',
     ) as HTMLButtonElement;
@@ -43,24 +47,42 @@ describe('FilterBar', () => {
     expect(emitted).toEqual([{ search: 'espresso' }]);
   });
 
-  it('should not emit and should mark controls as touched when the form is invalid', () => {
-    component.minAmountControl.setValue(-5);
-    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+  it('should not emit and should mark fields as touched when the form is invalid', () => {
+    component.filterModel.update((draft) => ({ ...draft, minAmount: '-5' }));
 
-    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    submitForm();
 
     expect(emitted).toEqual([]);
-    expect(component.filterForm.controls['minAmount'].touched).toBe(true);
+    expect(component.filterForm().invalid()).toBe(true);
+    expect(component.filterForm.minAmount().touched()).toBe(true);
+  });
+
+  it('should not emit when only the draft changes', () => {
+    component.filterModel.update((draft) => ({ ...draft, search: 'latte' }));
+
+    expect(emitted).toEqual([]);
+  });
+
+  it('should sync the draft when the applied filters change', () => {
+    fixture.componentRef.setInput('filters', { search: 'coffee', minAmount: 10 });
+    fixture.detectChanges();
+
+    expect(component.filterModel().search).toBe('coffee');
+    expect(component.filterModel().minAmount).toBe('10');
   });
 
   it('should clear the form and emit empty filters on reset', () => {
-    component.searchControl.setValue('coffee');
-    component.accountControl.setValue('account-1');
+    component.filterModel.update((draft) => ({
+      ...draft,
+      search: 'coffee',
+      accountId: 'account-1',
+    }));
 
     component.resetFilters();
 
     expect(emitted).toEqual([{}]);
-    expect(component.searchControl.value).toBe('');
-    expect(component.accountControl.value).toBe('');
+    expect(component.filterModel().search).toBe('');
+    expect(component.filterModel().accountId).toBe('');
+    expect(component.filterForm().dirty()).toBe(false);
   });
 });
