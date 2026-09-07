@@ -58,9 +58,7 @@ export class AccountPageService {
 
   readonly error = computed(() => this.summaryResource.error());
 
-  readonly institutionName = computed(
-    () => this.summaryResource.value()?.institutionName ?? '',
-  );
+  readonly institutionName = computed(() => this.summaryResource.value()?.institutionName ?? '');
 
   readonly data = computed<AccountPageData>(() => {
     const summary = this.summaryResource.value();

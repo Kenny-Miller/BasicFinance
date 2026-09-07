@@ -23,7 +23,9 @@ function makeAccount(id: string, code: string, name: string, balance: number | n
   };
 }
 
-function makeSummary(overrides: Partial<InstitutionSummaryResponse> = {}): InstitutionSummaryResponse {
+function makeSummary(
+  overrides: Partial<InstitutionSummaryResponse> = {},
+): InstitutionSummaryResponse {
   return {
     institutionId: 1,
     institutionName: 'Wells Fargo',
@@ -66,7 +68,10 @@ describe('AccountPageService', () => {
         {
           provide: AccountClient,
           useValue: {
-            institutionSummaryResource: (institutionId: Signal<number>, timePeriod: Signal<TimePeriod>) => {
+            institutionSummaryResource: (
+              institutionId: Signal<number>,
+              timePeriod: Signal<TimePeriod>,
+            ) => {
               providedInstitutionId = institutionId;
               providedTimePeriod = timePeriod;
               return {
@@ -138,7 +143,7 @@ describe('AccountPageService', () => {
       institution: 'Wells Fargo',
       accountName: 'Checking ****1234',
       balance: 5000,
-      percentageOfTotalBalance: 5000 / 14500 * 100,
+      percentageOfTotalBalance: (5000 / 14500) * 100,
       percentageOfAccountTypeBalance: 100,
     });
     expect(accounts[1].balance).toBe(12000);

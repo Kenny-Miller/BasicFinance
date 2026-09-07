@@ -5,8 +5,7 @@ import { Paginator } from './paginator';
 
 @Component({
   selector: 'app-test-host',
-  template:
-    '<app-paginator [page]="page" [pageSize]="pageSize" [totalCount]="totalCount()" />',
+  template: '<app-paginator [page]="page" [pageSize]="pageSize" [totalCount]="totalCount()" />',
   imports: [Paginator],
 })
 class TestHost {
@@ -20,7 +19,9 @@ describe('Paginator', () => {
   let host: TestHost;
   let paginator: Paginator;
 
-  const setup = (overrides: { page?: number; pageSize?: number; totalCount?: number } = {}): void => {
+  const setup = (
+    overrides: { page?: number; pageSize?: number; totalCount?: number } = {},
+  ): void => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [TestHost],
@@ -101,8 +102,10 @@ describe('Paginator', () => {
 
     it('should update the page signal when a page button is clicked', () => {
       setup({ totalCount: 60 });
-      const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-      const pageButton = buttons.find(button => button.textContent?.trim() === '2');
+      const buttons = Array.from(
+        fixture.nativeElement.querySelectorAll('button'),
+      ) as HTMLButtonElement[];
+      const pageButton = buttons.find((button) => button.textContent?.trim() === '2');
 
       pageButton?.click();
 

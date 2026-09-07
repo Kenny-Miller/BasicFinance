@@ -38,7 +38,11 @@ interface ChartView {
   };
 }
 
-function makePoint(date: string, totalSpend: number, transactionCount: number): DailyTransactionPoint {
+function makePoint(
+  date: string,
+  totalSpend: number,
+  transactionCount: number,
+): DailyTransactionPoint {
   return { date, totalSpend, transactionCount };
 }
 
@@ -101,10 +105,7 @@ describe('DailySpendChart', () => {
 
     expect(options.xAxis.data).toEqual(['8/1', '8/2', '8/3']);
     expect(options.yAxis.type).toBe('value');
-    expect(options.series.map((series) => series.name)).toEqual([
-      'Previous period',
-      'This period',
-    ]);
+    expect(options.series.map((series) => series.name)).toEqual(['Previous period', 'This period']);
     expect(seriesNamed('This period').data).toEqual([10, 20, 30]);
     expect(seriesNamed('Previous period').data).toEqual([100, 200, 300]);
   });

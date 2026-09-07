@@ -2,7 +2,13 @@
   <div hlmCardContent>
     @if (periodLabel()) {
       <div class="flex items-center justify-between">
-        <button hlmBtn variant="outline" size="icon" class="size-8" (click)="navigateTo('previous')">
+        <button
+          hlmBtn
+          variant="outline"
+          size="icon"
+          class="size-8"
+          (click)="navigateTo('previous')"
+        >
           <ng-icon name="lucideChevronLeft" />
         </button>
         <span class="text-lg font-medium">{{ periodLabel() }}</span>

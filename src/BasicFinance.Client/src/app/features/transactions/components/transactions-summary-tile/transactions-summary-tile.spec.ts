@@ -13,14 +13,16 @@ interface TileOverrides {
 
 @Component({
   selector: 'app-test-host',
-  template: ` <app-transactions-summary-tile
-    [title]="title()"
-    [currentValue]="currentValue()"
-    [lastPeriodValue]="lastPeriodValue()"
-    [deltaLabel]="deltaLabel()"
-    [positiveIsGood]="positiveIsGood()"
-    [isCurrency]="isCurrency()"
-  /> `,
+  template: `
+    <app-transactions-summary-tile
+      [title]="title()"
+      [currentValue]="currentValue()"
+      [lastPeriodValue]="lastPeriodValue()"
+      [deltaLabel]="deltaLabel()"
+      [positiveIsGood]="positiveIsGood()"
+      [isCurrency]="isCurrency()"
+    />
+  `,
   imports: [TransactionsSummaryTile],
 })
 class TestHost {

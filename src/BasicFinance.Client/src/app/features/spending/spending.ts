@@ -9,12 +9,7 @@ import { SpendingService } from './spending-service';
 
 @Component({
   selector: 'app-spending',
-  imports: [
-    PeriodSelector,
-    SpendingSummaryTile,
-    CategoryBreakdownList,
-    SpendingSkeleton,
-  ],
+  imports: [PeriodSelector, SpendingSummaryTile, CategoryBreakdownList, SpendingSkeleton],
   templateUrl: './spending.html',
   styleUrl: './spending.css',
 })

@@ -143,7 +143,10 @@ describe('HomeService', () => {
     expect(service.data().previousPeriodCheckingBalance).toBe(0);
     expect(service.data().previousPeriodSavingsBalance).toBe(0);
     expect(service.data().previousPeriodInvestmentsBalance).toBe(0);
-    expect(service.data().currentPeriodBreakdown).toEqual({ balance: 0, accountTypeBreakdowns: {} });
+    expect(service.data().currentPeriodBreakdown).toEqual({
+      balance: 0,
+      accountTypeBreakdowns: {},
+    });
   });
 
   it('should map recent transactions from the transactions list result', () => {
@@ -158,7 +161,13 @@ describe('HomeService', () => {
         description: 'Groceries',
       },
     ];
-    transactionsValue.set({ items: transactions, page: 1, pageSize: 5, pageCount: 1, totalCount: 1 });
+    transactionsValue.set({
+      items: transactions,
+      page: 1,
+      pageSize: 5,
+      pageCount: 1,
+      totalCount: 1,
+    });
     transactionsHasValue.set(true);
 
     expect(service.data().recentTransactions).toEqual(transactions);

@@ -10,11 +10,13 @@ interface CardOverrides {
 
 @Component({
   selector: 'app-test-host',
-  template: ` <app-summary-card
-    [title]="title()"
-    [currentPeriodValue]="currentPeriodValue()"
-    [previousPeriodValue]="previousPeriodValue()"
-  /> `,
+  template: `
+    <app-summary-card
+      [title]="title()"
+      [currentPeriodValue]="currentPeriodValue()"
+      [previousPeriodValue]="previousPeriodValue()"
+    />
+  `,
   imports: [SummaryCard],
 })
 class TestHost {
@@ -128,9 +130,7 @@ describe('SummaryCard', () => {
     it('should mark a decline with red', () => {
       const { fixture } = createCard({ currentPeriodValue: 800, previousPeriodValue: 1000 });
 
-      expect(fixture.nativeElement.querySelector('span.text-red-500')?.textContent).toBe(
-        '-20.0%',
-      );
+      expect(fixture.nativeElement.querySelector('span.text-red-500')?.textContent).toBe('-20.0%');
     });
   });
 });

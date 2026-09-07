@@ -14,15 +14,11 @@
             @if (isSpendIncrease()) {
               <ng-icon name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
               <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span>
-              <span class="text-gray-500 dark:text-gray-400">
-                above {{ deltaLabel() }}
-              </span>
+              <span class="text-gray-500 dark:text-gray-400"> above {{ deltaLabel() }} </span>
             } @else if (isSpendDecrease()) {
               <ng-icon name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
               <span class="{{ changeClass() }}">{{ -spendDifference() | currency }}</span>
-              <span class="text-gray-500 dark:text-gray-400">
-                below {{ deltaLabel() }}
-              </span>
+              <span class="text-gray-500 dark:text-gray-400"> below {{ deltaLabel() }} </span>
             } @else {
               <span class="text-gray-500 dark:text-gray-400">
                 No change vs {{ deltaLabel() }}

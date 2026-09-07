@@ -55,14 +55,14 @@ export class Paginator {
   readonly currentPage = computed(() => this.page()());
   readonly currentPageSize = computed(() => this.pageSize()());
 
-  readonly totalPages = computed(
-    () => Math.max(1, Math.ceil(this.totalCount() / this.currentPageSize())),
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.currentPageSize())),
   );
   readonly rangeStart = computed(() => {
     return this.totalCount() === 0 ? 0 : (this.currentPage() - 1) * this.currentPageSize() + 1;
   });
-  readonly rangeEnd = computed(
-    () => Math.min(this.currentPage() * this.currentPageSize(), this.totalCount()),
+  readonly rangeEnd = computed(() =>
+    Math.min(this.currentPage() * this.currentPageSize(), this.totalCount()),
   );
   readonly previousDisabled = computed(() => this.currentPage() <= 1);
   readonly nextDisabled = computed(() => this.currentPage() >= this.totalPages());

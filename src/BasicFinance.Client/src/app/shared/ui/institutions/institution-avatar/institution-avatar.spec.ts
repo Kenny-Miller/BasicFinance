@@ -16,9 +16,8 @@ describe('InstitutionAvatar', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestHost]
-    })
-    .compileComponents();
+      imports: [TestHost],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();

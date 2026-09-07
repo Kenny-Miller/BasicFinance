@@ -52,13 +52,9 @@ export class TransactionsSummaryTile {
   });
 
   readonly isFavorable = computed(() =>
-    this.positiveIsGood()
-      ? this.valueDifference() >= 0
-      : this.valueDifference() <= 0,
+    this.positiveIsGood() ? this.valueDifference() >= 0 : this.valueDifference() <= 0,
   );
 
   readonly topBarClass = computed(() => (this.isFavorable() ? 'bg-emerald-500' : 'bg-red-500'));
-  readonly footerClass = computed(() =>
-    this.isFavorable() ? 'text-emerald-500' : 'text-red-500',
-  );
+  readonly footerClass = computed(() => (this.isFavorable() ? 'text-emerald-500' : 'text-red-500'));
 }
