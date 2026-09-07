@@ -1,9 +1,5 @@
-<hlm-item-group>
-  @for (item of skeletonList(); track $index; let last = $last) {
+<div class="flex flex-col gap-3">
+  @for (row of skeletons(); track $index) {
     <app-transaction-item-skeleton />
-
-    @if (!last) {
-      <hlm-separator />
-    }
   }
-</hlm-item-group>
+</div>

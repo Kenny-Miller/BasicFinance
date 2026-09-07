@@ -1,5 +1,4 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { OAuthService } from 'angular-oauth2-oidc';
@@ -16,7 +15,6 @@ import { HomeService } from './home-service';
 @Component({
   selector: 'app-home',
   imports: [
-    DatePipe,
     HlmButtonImports,
     SummaryCard,
     AccountNetWorthBreakdown,
@@ -35,30 +33,12 @@ export class Home implements OnInit {
 
   readonly loading = this.homeService.loading;
   readonly error = this.homeService.error;
-
-  readonly currentNetWorth = this.homeService.currentNetWorth;
-  readonly previousNetWorth = this.homeService.previousNetWorth;
-  readonly currentChecking = this.homeService.currentChecking;
-  readonly previousChecking = this.homeService.previousChecking;
-  readonly currentSavings = this.homeService.currentSavings;
-  readonly previousSavings = this.homeService.previousSavings;
-  readonly currentInvestments = this.homeService.currentInvestments;
-  readonly previousInvestments = this.homeService.previousInvestments;
-
-  readonly currentPeriodBreakdown = this.homeService.currentPeriodBreakdown;
-  readonly spendingOverTimeData = this.homeService.spendingOverTimeData;
-  readonly recentTransactions = this.homeService.recentTransactions;
+  readonly data = this.homeService.data;
 
   readonly refetchAll = (): void => this.homeService.refetchAll();
 
   readonly appTheme = this.themeService.appTheme;
   readonly user = signal<AuthUserProfile | null>(null);
-  readonly currentDate = new Date();
-  readonly welcomeText = computed(() =>
-    this.currentDate.getHours() < 12
-      ? `Good Morning ${this.user()?.given_name}`
-      : `Good Afternoon ${this.user()?.given_name}`,
-  );
 
   async ngOnInit() {
     this.pageService.setPageTitle('Home');

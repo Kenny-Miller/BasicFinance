@@ -1,1 +1,54 @@
-<p>account works!</p>
+<main class="flex flex-col gap-4 p-4">
+  @if (loading()) {
+    <app-account-skeleton />
+  } @else if (error()) {
+    <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+      <p class="text-lg font-medium">Failed to load account data</p>
+      <button variant="outline" hlmBtn class="mt-2" (click)="refetchAll()">Retry</button>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center gap-3">
+        <app-institution-avatar [name]="data().institutionName" />
+        <h2 class="text-lg font-semibold">{{ data().institutionName }}</h2>
+      </div>
+      <app-period-selector
+        [activePeriod]="selectedPeriod()"
+        (periodChange)="selectPeriod($event)"
+      />
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <app-summary-card
+          title="Total"
+          [currentPeriodValue]="data().totalBalance"
+          [previousPeriodValue]="data().previousTotalBalance"
+        />
+
+        @for (card of data().typeCards; track card.code) {
+          <app-summary-card
+            [title]="card.label"
+            [currentPeriodValue]="card.balance"
+            [previousPeriodValue]="card.previousBalance"
+          />
+        }
+      </div>
+
+      <section hlmCard class="flex flex-col gap-2 rounded-sm">
+        <div hlmCardHeader>
+          <h3 hlmCardTitle class="text-xs">Accounts</h3>
+        </div>
+        <div hlmCardContent class="flex-1">
+          @if (data().accounts.length) {
+            <div class="flex flex-col gap-1">
+              @for (account of data().accounts; track account.id) {
+                <app-account-item [account]="account" />
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-muted-foreground">No active accounts at this institution yet.</p>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</main>

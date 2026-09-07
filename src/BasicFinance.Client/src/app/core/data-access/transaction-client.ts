@@ -1,5 +1,6 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
+import { TimePeriod } from '../../shared/data/time-period';
 import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
 export interface Transaction {
@@ -12,14 +13,17 @@ export interface Transaction {
   description: string;
 }
 
+export type TransactionTypeCode = 'CR' | 'DR';
+
 export interface TransactionFilters {
   startDate?: string;
   endDate?: string;
   minAmount?: number;
   maxAmount?: number;
-  transactionTypeCode?: string;
+  transactionTypeCode?: TransactionTypeCode;
   transactionCategoryCode?: string;
   accountId?: string;
+  search?: string;
 }
 
 interface ListTransactionsParams extends IPagedQuery, ISortedQuery {
@@ -30,6 +34,38 @@ interface ListTransactionsParams extends IPagedQuery, ISortedQuery {
   transactionTypeCode?: string;
   transactionCategoryCode?: string;
   accountId?: string;
+  search?: string;
+}
+
+export interface TransactionPeriodSummary {
+  totalCount: number;
+  totalSpend: number;
+  totalIncome: number;
+  netFlow: number;
+}
+
+export interface TransactionSummaryResponse {
+  currentStart: string;
+  currentEnd: string;
+  previousStart: string;
+  previousEnd: string;
+  currentPeriod: TransactionPeriodSummary;
+  previousPeriod: TransactionPeriodSummary;
+}
+
+export interface DailyTransactionPoint {
+  date: string;
+  totalSpend: number;
+  transactionCount: number;
+}
+
+export interface DailySummaryResponse {
+  currentStart: string;
+  currentEnd: string;
+  previousStart: string;
+  previousEnd: string;
+  currentPeriod: DailyTransactionPoint[];
+  previousPeriod: DailyTransactionPoint[];
 }
 
 @Injectable({
@@ -59,7 +95,7 @@ export class TransactionClient {
       };
 
       const queryParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined),
+        Object.entries(params).filter(([_, value]) => value !== undefined && value !== ''),
       );
 
       return {
@@ -67,5 +103,46 @@ export class TransactionClient {
         params: queryParams,
       };
     });
+  }
+
+  transactionSummaryResource(
+    recordedDateSignal: Signal<Date | null>,
+    timePeriodSignal: Signal<TimePeriod>,
+  ) {
+    return httpResource<TransactionSummaryResponse>(() => {
+      const params: Record<string, string> = { TimePeriod: timePeriodSignal() };
+      const recordedDate = recordedDateSignal();
+      if (recordedDate) {
+        params['RecordedDate'] = this._formatDateOnly(recordedDate);
+      }
+      return {
+        url: 'api/transactions/summary',
+        params,
+      };
+    });
+  }
+
+  dailyTransactionSummaryResource(
+    recordedDateSignal: Signal<Date | null>,
+    timePeriodSignal: Signal<TimePeriod>,
+  ) {
+    return httpResource<DailySummaryResponse>(() => {
+      const params: Record<string, string> = { TimePeriod: timePeriodSignal() };
+      const recordedDate = recordedDateSignal();
+      if (recordedDate) {
+        params['RecordedDate'] = this._formatDateOnly(recordedDate);
+      }
+      return {
+        url: 'api/transactions/dailySummary',
+        params,
+      };
+    });
+  }
+
+  private _formatDateOnly(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

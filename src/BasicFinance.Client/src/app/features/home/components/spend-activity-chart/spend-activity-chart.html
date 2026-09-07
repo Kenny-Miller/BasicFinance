@@ -3,14 +3,14 @@
     <h3 hlmCardTitle class="text-xs">Daily Spending</h3>
   </div>
   <div hlmCardContent class="flex justify-between items-center">
-    <div class="font-semibold text-2xl">{{ totalSpend() | currency }}</div>
+    <div class="font-semibold text-2xl">{{ data().totalMonthlySpend | currency }}</div>
     <div class="text-sm flex items-center gap-1">
       @if (isSpendIncrease()) {
-        <ng-icon name="lucideArrowUpCircle" class="size-4 {{ changeClass() }}" />
-        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> above last month
+        <ng-icon name="lucideArrowUpCircle" class="size-4 text-red-500" />
+        <span class="text-red-500">{{ spendDifference() | currency }}</span> above last month
       } @else {
-        <ng-icon name="lucideArrowDownCircle" class="size-4 {{ changeClass() }}" />
-        <span class="{{ changeClass() }}">{{ spendDifference() | currency }}</span> below last month
+        <ng-icon name="lucideArrowDownCircle" class="size-4 text-emerald-500" />
+        <span class="text-emerald-500">{{ spendDifference() | currency }}</span> below last month
       }
     </div>
   </div>

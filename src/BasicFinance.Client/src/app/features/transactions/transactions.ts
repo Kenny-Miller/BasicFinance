@@ -1,174 +1,70 @@
-import { Component, effect, inject, OnInit, signal, untracked } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { provideIcons } from '@ng-icons/core';
-import { lucideArrowDownAZ, lucideArrowUpAZ } from '@ng-icons/lucide';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmItemImports } from '@spartan-ng/helm/item';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
-import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
+import { TransactionFilters } from '../../core/data-access/transaction-client';
 import { PageService } from '../../core/page/page.service';
-import { Transaction } from '../../shared/api/transactions/transactions';
+import { ThemeService } from '../../core/theme/theme.service';
+import { TimePeriod } from '../../shared/data/time-period';
+import { Paginator } from '../../shared/ui/paginator/paginator';
+import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions/transactions-list-skeleton/transactions-list-skeleton';
+import { TransactionsList } from '../../shared/ui/transactions/transactions-list/transactions-list';
+import { DailySpendChart } from './components/daily-spend-chart/daily-spend-chart';
 import { FilterBar } from './components/filter-bar/filter-bar';
-import { TransactionItem } from '../../shared/ui/transactions/transaction-item/transaction-item';
-import { TransactionFilters, TransactionsClient } from './data/transactions-client';
+import { TransactionsSkeleton } from './components/transactions-skeleton/transactions-skeleton';
+import { TransactionsSummaryTile } from './components/transactions-summary-tile/transactions-summary-tile';
+import { TransactionsService } from './transactions-service';
 
-export interface SortOption {
-  field: string;
-  label: string;
-}
-
-const SORT_OPTIONS: SortOption[] = [
-  { field: 'Date', label: 'Date' },
-  { field: 'Amount', label: 'Amount' },
-  { field: 'Description', label: 'Description' },
-  { field: 'AccountName', label: 'Account' },
-];
+const DELTA_LABELS: Record<TimePeriod, string> = {
+  Weekly: 'last week',
+  Monthly: 'last month',
+  Quarterly: 'last quarter',
+  Yearly: 'last year',
+};
 
 @Component({
   selector: 'app-transactions',
   imports: [
     HlmButtonImports,
-    HlmSelectImports,
-    HlmItemImports,
-    FormsModule,
-    TransactionItem,
+    PeriodSelector,
+    TransactionsSummaryTile,
+    DailySpendChart,
+    TransactionsList,
     TransactionsListSkeleton,
-    HlmSeparatorImports,
-    HlmSkeletonImports,
     FilterBar,
+    Paginator,
+    TransactionsSkeleton,
   ],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
-  providers: [
-    provideIcons({
-      lucideArrowDownAZ,
-      lucideArrowUpAZ,
-    }),
-  ],
 })
 export class Transactions implements OnInit {
-  private readonly client = inject(TransactionsClient);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly transactionService = inject(TransactionsService);
   private readonly pageService = inject(PageService);
+  private readonly themeService = inject(ThemeService);
 
-  readonly page = signal(1);
-  readonly sortField = signal('Date');
-  readonly sortDirection = signal('desc');
-  readonly filters = signal<TransactionFilters>({
-    startDate: '',
-    endDate: '',
-    minAmount: '',
-    maxAmount: '',
-    transactionTypeId: '',
-    transactionCategoryId: '',
-    search: '',
-  });
-  readonly transactions = signal<Transaction[]>([]);
-  readonly hasMore = signal(true);
-  readonly sortOptions = SORT_OPTIONS;
+  readonly appTheme = this.themeService.appTheme;
+  readonly selectedPeriod = this.transactionService.period;
+  readonly page = this.transactionService.page;
+  readonly pageSize = this.transactionService.pageSize;
+  readonly filters = this.transactionService.filters;
+  readonly loading = this.transactionService.loading;
+  readonly transactionsLoading = this.transactionService.transactionsLoading;
+  readonly error = this.transactionService.error;
+  readonly data = this.transactionService.data;
 
-  readonly resource = this.client.createResource(
-    this.page,
-    this.sortField,
-    this.sortDirection,
-    this.filters,
-  );
+  readonly deltaLabel = computed(() => DELTA_LABELS[this.transactionService.period()]);
 
-  private loadedPage = signal(0);
-  sortFieldValue = 'Date';
+  readonly selectPeriod = (period: TimePeriod): void => this.transactionService.period.set(period);
 
-  constructor() {
-    effect(() => {
-      const result = this.resource.value();
-      if (!result || this.resource.isLoading()) {
-        return;
-      }
+  readonly refetchAll = (): void => this.transactionService.refetchAll();
 
-      if (result.page > this.loadedPage()) {
-        const current = this.transactions();
-        this.transactions.set([...current, ...result.items]);
-
-        if (this.transactions().length >= result.totalCount) {
-          this.hasMore.set(false);
-        }
-
-        untracked(() => this.loadedPage.set(result.page));
-      }
-    });
-  }
+  readonly applyFilters = (value: TransactionFilters): void => {
+    this.transactionService.filters.set(value);
+    this.transactionService.page.set(1);
+  };
 
   ngOnInit(): void {
     this.pageService.setPageTitle('Transactions');
     this.pageService.setPageSubtitle('View your transactions');
-    this.page.set(1);
-    this.restoreFiltersFromRoute();
-  }
-
-  restoreFiltersFromRoute(): void {
-    this.route.queryParams.subscribe((params) => {
-      this.filters.set({
-        startDate: params['startDate'] ?? '',
-        endDate: params['endDate'] ?? '',
-        minAmount: params['minAmount'] ?? '',
-        maxAmount: params['maxAmount'] ?? '',
-        transactionTypeId: params['transactionTypeId'] ?? '',
-        transactionCategoryId: params['transactionCategoryId'] ?? '',
-        search: params['search'] ?? '',
-      });
-    });
-  }
-
-  onFiltersChange(filters: TransactionFilters): void {
-    this.filters.set(filters);
-    this.page.set(1);
-    this.transactions.set([]);
-    this.hasMore.set(true);
-    untracked(() => this.loadedPage.set(0));
-    this.syncFiltersToRoute(filters);
-  }
-
-  syncFiltersToRoute(filters: TransactionFilters): void {
-    const qp: Record<string, string | null> = {};
-    if (filters.startDate) qp['startDate'] = filters.startDate;
-    if (filters.endDate) qp['endDate'] = filters.endDate;
-    if (filters.minAmount) qp['minAmount'] = filters.minAmount;
-    if (filters.maxAmount) qp['maxAmount'] = filters.maxAmount;
-    if (filters.transactionTypeId) qp['transactionTypeId'] = filters.transactionTypeId;
-    if (filters.transactionCategoryId) qp['transactionCategoryId'] = filters.transactionCategoryId;
-    if (filters.search) qp['search'] = filters.search;
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: qp,
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  onSortChange(): void {
-    this.page.set(1);
-    this.sortField.set(this.sortFieldValue);
-    this.transactions.set([]);
-    this.hasMore.set(true);
-    untracked(() => this.loadedPage.set(0));
-  }
-
-  toggleSortDirection(): void {
-    this.page.set(1);
-    this.sortDirection.update((dir) => (dir === 'asc' ? 'desc' : 'asc'));
-    this.transactions.set([]);
-    this.hasMore.set(true);
-    untracked(() => this.loadedPage.set(0));
-  }
-
-  loadMore(): void {
-    this.page.update((p) => p + 1);
-  }
-
-  getSortIcon(): string {
-    return this.sortDirection() === 'asc' ? 'lucideArrowUpAZ' : 'lucideArrowDownAZ';
   }
 }

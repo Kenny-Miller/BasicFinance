@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { SpendingOverTimeSummary } from '../../../../core/data-access/spending-client';
-import { ThemeService } from '../../../../core/theme/theme.service';
 
 interface TooltipParam {
   seriesIndex: number;
@@ -34,17 +33,11 @@ const CHART_COLORS = {
   styleUrl: './spend-activity-chart.css',
 })
 export class SpendActivityChart {
-  private readonly themeService = inject(ThemeService);
-
   readonly theme = input.required<string>();
-  readonly data = input<SpendingOverTimeSummary | undefined>();
+  readonly data = input.required<SpendingOverTimeSummary>();
 
-  readonly totalSpend = computed(() => this.data()?.totalMonthlySpend ?? 0);
-  readonly spendDifference = computed(() => Math.abs(this.data()?.monthlySpendDifference ?? 0));
+  readonly spendDifference = computed(() => Math.abs(this.data().monthlySpendDifference));
   readonly isSpendIncrease = computed(() => (this.data()?.monthlySpendDifference ?? 0) >= 0);
-  readonly changeClass = computed(() =>
-    this.isSpendIncrease() ? 'text-red-500' : 'text-emerald-500',
-  );
 
   readonly options = computed<EChartsCoreOption>(() => {
     const spendingData = this.data();
@@ -59,18 +52,7 @@ export class SpendActivityChart {
     return {
       tooltip: {
         trigger: 'axis',
-        formatter: (params: TooltipParam[]) => {
-          const current = params.find((p) => p.seriesIndex === 1);
-          const previous = params.find((p) => p.seriesIndex === 0);
-          if (!current || !previous) return '';
-          const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-          let result = '';
-          if (current)
-            result += `<div style="color:#000000;">Current: ${currency.format(current.value)}</div>`;
-          if (previous)
-            result += `<div style="color:#ffffff;">Previous: ${currency.format(previous.value)}</div>`;
-          return result;
-        },
+        formatter: (params: TooltipParam[]) => this.formatTooltip(params),
       },
       grid: {
         top: 0,
@@ -111,7 +93,7 @@ export class SpendActivityChart {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(217, 119, 6, 0.25)' }, // amber-600 @ 25%
+                { offset: 0, color: 'rgba(217, 119, 6, 0.25)' }, // amber-600
                 { offset: 1, color: 'rgba(217, 119, 6, 0.03)' },
               ],
             },
@@ -131,4 +113,23 @@ export class SpendActivityChart {
       ],
     };
   });
+
+  private formatTooltip(params: TooltipParam[]) {
+    const current = params.find((p) => p.seriesIndex === 1);
+    const previous = params.find((p) => p.seriesIndex === 0);
+    if (!current && !previous) {
+      return '';
+    }
+
+    const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    let result = '';
+    if (current) {
+      result += `<div style="color:#000000;">Current: ${currency.format(current.value)}</div>`;
+    }
+    if (previous) {
+      result += `<div style="color:#ffffff;">Previous: ${currency.format(previous.value)}</div>`;
+    }
+
+    return result;
+  }
 }

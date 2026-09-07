@@ -3,7 +3,7 @@ import { Component, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideReceiptText } from '@ng-icons/lucide';
 import { HlmItemImports } from '@spartan-ng/helm/item';
-import { AccountDto } from '../../../api/accounts/account-analytics';
+import { AccountBalanceDto } from '../../../../core/data-access/account-client';
 import { TruncatePipe } from '../../../pipes/truncate-pipe';
 
 @Component({
@@ -14,5 +14,5 @@ import { TruncatePipe } from '../../../pipes/truncate-pipe';
   styleUrl: './account-item.css',
 })
 export class AccountItem {
-  readonly account = input.required<AccountDto>();
+  readonly account = input.required<AccountBalanceDto>();
 }
