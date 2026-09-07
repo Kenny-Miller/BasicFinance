@@ -56,6 +56,18 @@ export interface AccountAnalyticsResponse {
   previousPeriodEnd: string;
 }
 
+export interface InstitutionSummaryResponse {
+  institutionId: number;
+  institutionName: string;
+  accounts: Account[];
+  accountTypeTotals: Record<string, number>;
+  accountTypePreviousTotals: Record<string, number>;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -101,5 +113,15 @@ export class AccountClient {
     return httpResource<AccountAnalyticsResponse>(
       () => `api/accounts/balanceSummary?TimePeriod=${timePeriodSignal()}`,
     );
+  }
+
+  institutionSummaryResource(
+    institutionIdSignal: Signal<number>,
+    timePeriodSignal: Signal<TimePeriod>,
+  ) {
+    return httpResource<InstitutionSummaryResponse>(() => ({
+      url: `api/accounts/institution/${institutionIdSignal()}/summary`,
+      params: { TimePeriod: timePeriodSignal() },
+    }));
   }
 }
