@@ -9,6 +9,7 @@ import {
   TransactionPeriodSummary,
   TransactionSummaryResponse,
 } from '../../core/data-access/transaction-client';
+import { PageService } from '../../core/page/page.service';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
 export interface TransactionsData {
@@ -65,6 +66,7 @@ const EMPTY_TRANSACTION_SUMMARY: TransactionSummaryResponse = {
 export class TransactionsService {
   private readonly transactionsClient = inject(TransactionClient);
   private readonly accountClient = inject(AccountClient);
+  private readonly pageService = inject(PageService);
 
   readonly period = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
   readonly page = signal<number>(1);
@@ -100,10 +102,11 @@ export class TransactionsService {
 
   readonly loading = computed(
     () =>
-      !this.listAccounts.hasValue() &&
-      !this.listTransactions.hasValue() &&
-      !this.dailySummary.hasValue() &&
-      !this.transactionSummary.hasValue(),
+      this.pageService.loading() ||
+      (!this.listAccounts.hasValue() &&
+        !this.listTransactions.hasValue() &&
+        !this.dailySummary.hasValue() &&
+        !this.transactionSummary.hasValue()),
   );
 
   readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
@@ -119,6 +122,7 @@ export class TransactionsService {
 
   readonly error = computed(
     () =>
+      this.pageService.error() ||
       this.listAccounts.error() ||
       this.listTransactions.error() ||
       this.dailySummary.error() ||
@@ -140,6 +144,7 @@ export class TransactionsService {
   });
 
   refetchAll(): void {
+    this.pageService.refetchAll();
     this.listAccounts.reload();
     this.listTransactions.reload();
     this.transactionSummary.reload();

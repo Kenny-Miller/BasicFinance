@@ -5,6 +5,7 @@ import {
   AccountClient,
   InstitutionSummaryResponse,
 } from '../../core/data-access/account-client';
+import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';
 import { AccountPageService } from './account-page-service';
 
@@ -52,6 +53,10 @@ describe('AccountPageService', () => {
   let summaryError = signal<null | Error>(null);
   let reloadCount = 0;
 
+  let institutionsLoading = signal(false);
+  let institutionsError = signal<null | Error>(null);
+  let institutionsReloadCount = 0;
+
   let providedInstitutionId: Signal<number> | undefined;
   let providedTimePeriod: Signal<TimePeriod> | undefined;
 
@@ -60,6 +65,9 @@ describe('AccountPageService', () => {
     summaryHasValue = signal(false);
     summaryError = signal<null | Error>(null);
     reloadCount = 0;
+    institutionsLoading = signal(false);
+    institutionsError = signal(null);
+    institutionsReloadCount = 0;
     providedInstitutionId = undefined;
     providedTimePeriod = undefined;
 
@@ -83,6 +91,16 @@ describe('AccountPageService', () => {
                   return true;
                 },
               };
+            },
+          },
+        },
+        {
+          provide: PageService,
+          useValue: {
+            loading: () => institutionsLoading(),
+            error: () => institutionsError(),
+            refetchAll: () => {
+              institutionsReloadCount++;
             },
           },
         },
@@ -110,6 +128,32 @@ describe('AccountPageService', () => {
     expect(service.error()).toBeNull();
 
     summaryError.set(new Error('boom'));
+
+    expect(service.error()).toBeTruthy();
+  });
+
+  it('should keep reporting loading while institutions have not loaded', () => {
+    summaryHasValue.set(true);
+    institutionsLoading.set(true);
+
+    expect(service.loading()).toBe(true);
+
+    institutionsLoading.set(false);
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should stop loading when institutions error and the summary is ready', () => {
+    summaryHasValue.set(true);
+    institutionsError.set(new Error('no institutions'));
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should surface institutions fetch errors', () => {
+    expect(service.error()).toBeNull();
+
+    institutionsError.set(new Error('no institutions'));
 
     expect(service.error()).toBeTruthy();
   });
@@ -207,5 +251,6 @@ describe('AccountPageService', () => {
     service.refetchAll();
 
     expect(reloadCount).toBe(1);
+    expect(institutionsReloadCount).toBe(1);
   });
 });

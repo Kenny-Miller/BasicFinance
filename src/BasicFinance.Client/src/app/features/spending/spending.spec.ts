@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { InstitutionClient } from '../../core/data-access/institution-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { Spending } from './spending';
 import { SpendingService } from './spending-service';
@@ -27,6 +28,18 @@ describe('Spending', () => {
             }),
             selectPeriod: () => undefined,
             refetchAll: () => undefined,
+          },
+        },
+        {
+          provide: InstitutionClient,
+          useValue: {
+            myInstitutions: {
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            },
+            refetchMyInstitutions: () => undefined,
           },
         },
       ],

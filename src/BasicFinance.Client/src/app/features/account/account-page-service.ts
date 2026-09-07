@@ -4,6 +4,7 @@ import {
   AccountClient,
   InstitutionSummaryResponse,
 } from '../../core/data-access/account-client';
+import { PageService } from '../../core/page/page.service';
 import { getAccountTypeLabel } from '../../shared/data/account-type-map';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
@@ -44,6 +45,7 @@ function safePercent(part: number, total: number): number {
 })
 export class AccountPageService {
   private readonly accountClient = inject(AccountClient);
+  private readonly pageService = inject(PageService);
 
   readonly institutionId = signal<number>(0);
   readonly timePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
@@ -54,9 +56,9 @@ export class AccountPageService {
     this.timePeriod,
   );
 
-  readonly loading = computed(() => !this.summaryResource.hasValue());
+  readonly loading = computed(() => this.pageService.loading() || !this.summaryResource.hasValue());
 
-  readonly error = computed(() => this.summaryResource.error());
+  readonly error = computed(() => this.pageService.error() || this.summaryResource.error());
 
   readonly institutionName = computed(() => this.summaryResource.value()?.institutionName ?? '');
 
@@ -114,6 +116,7 @@ export class AccountPageService {
   }
 
   refetchAll(): void {
+    this.pageService.refetchAll();
     this.summaryResource.reload();
   }
 }

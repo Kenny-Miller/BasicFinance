@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { InstitutionClient } from '../../core/data-access/institution-client';
 import { ThemeService } from '../../core/theme/theme.service';
 import { Transactions } from './transactions';
 import { TransactionsService } from './transactions-service';
@@ -52,6 +53,18 @@ describe('Transactions', () => {
           provide: ThemeService,
           useValue: {
             appTheme: signal('light'),
+          },
+        },
+        {
+          provide: InstitutionClient,
+          useValue: {
+            myInstitutions: {
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            },
+            refetchMyInstitutions: () => undefined,
           },
         },
       ],

@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
+import { PageService } from '../../core/page/page.service';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
 const EMPTY_SPENDING: SpendingByPeriod = {
@@ -15,6 +16,7 @@ const EMPTY_SPENDING: SpendingByPeriod = {
 })
 export class SpendingService {
   private readonly spendingClient = inject(SpendingClient);
+  private readonly pageService = inject(PageService);
 
   readonly selectedPeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
   private readonly startDate = signal(new Date().toISOString().split('T')[0]);
@@ -24,8 +26,10 @@ export class SpendingService {
     this.startDate,
   );
 
-  readonly loading = computed(() => !this.spendingResource.hasValue());
-  readonly error = computed(() => this.spendingResource.error());
+  readonly loading = computed(
+    () => this.pageService.loading() || !this.spendingResource.hasValue(),
+  );
+  readonly error = computed(() => this.pageService.error() || this.spendingResource.error());
   readonly data = computed<SpendingByPeriod>(() => this.spendingResource.value() ?? EMPTY_SPENDING);
 
   selectPeriod(period: TimePeriod): void {
@@ -33,6 +37,7 @@ export class SpendingService {
   }
 
   refetchAll(): void {
+    this.pageService.refetchAll();
     this.spendingResource.reload();
   }
 }

@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { AccountClient, TotalBalanceBreakdown } from '../../core/data-access/account-client';
 import { SpendingClient, SpendingOverTimeSummary } from '../../core/data-access/spending-client';
 import { Transaction, TransactionClient } from '../../core/data-access/transaction-client';
+import { PageService } from '../../core/page/page.service';
 import { ACCOUNT_TYPE_CODES } from '../../shared/data/account-type-map';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
@@ -35,6 +36,7 @@ export class HomeService {
   private readonly accountClient = inject(AccountClient);
   private readonly transactionClient = inject(TransactionClient);
   private readonly spendingClient = inject(SpendingClient);
+  private readonly pageService = inject(PageService);
 
   private readonly timePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
 
@@ -53,13 +55,15 @@ export class HomeService {
 
   readonly loading = computed(
     () =>
-      !this.balanceSummaryResource.hasValue() &&
-      !this.spendingOverTimeResource.hasValue() &&
-      !this.transactionsResource.hasValue(),
+      this.pageService.loading() ||
+      (!this.balanceSummaryResource.hasValue() &&
+        !this.spendingOverTimeResource.hasValue() &&
+        !this.transactionsResource.hasValue()),
   );
 
   readonly error = computed(
     () =>
+      this.pageService.error() ||
       this.balanceSummaryResource.error() ||
       this.spendingOverTimeResource.error() ||
       this.transactionsResource.error(),
@@ -86,6 +90,7 @@ export class HomeService {
   });
 
   refetchAll(): void {
+    this.pageService.refetchAll();
     this.balanceSummaryResource.reload();
     this.transactionsResource.reload();
     this.spendingOverTimeResource.reload();

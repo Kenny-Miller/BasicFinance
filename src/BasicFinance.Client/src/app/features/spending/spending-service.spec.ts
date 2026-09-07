@@ -1,6 +1,7 @@
 import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
+import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';
 import { SpendingService } from './spending-service';
 
@@ -11,6 +12,10 @@ describe('SpendingService', () => {
   let spendingHasValue = signal(false);
   let spendingError = signal<undefined | Error>(undefined);
 
+  let institutionsLoading = signal(false);
+  let institutionsError = signal<null | Error>(null);
+  let institutionsReloadCount = 0;
+
   let capturedPeriodSignal: Signal<TimePeriod> | undefined;
   let capturedStartDateSignal: Signal<string> | undefined;
   let reloadCount = 0;
@@ -19,6 +24,9 @@ describe('SpendingService', () => {
     spendingValue = signal(undefined);
     spendingHasValue = signal(false);
     spendingError = signal(undefined);
+    institutionsLoading = signal(false);
+    institutionsError = signal(null);
+    institutionsReloadCount = 0;
     capturedPeriodSignal = undefined;
     capturedStartDateSignal = undefined;
     reloadCount = 0;
@@ -47,6 +55,16 @@ describe('SpendingService', () => {
             },
           },
         },
+        {
+          provide: PageService,
+          useValue: {
+            loading: () => institutionsLoading(),
+            error: () => institutionsError(),
+            refetchAll: () => {
+              institutionsReloadCount++;
+            },
+          },
+        },
       ],
     });
     service = TestBed.inject(SpendingService);
@@ -70,6 +88,32 @@ describe('SpendingService', () => {
     expect(service.error()).toBeFalsy();
 
     spendingError.set(new Error('boom'));
+
+    expect(service.error()).toBeTruthy();
+  });
+
+  it('should keep reporting loading while institutions have not loaded', () => {
+    spendingHasValue.set(true);
+    institutionsLoading.set(true);
+
+    expect(service.loading()).toBe(true);
+
+    institutionsLoading.set(false);
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should stop loading when institutions error and the spending data is ready', () => {
+    spendingHasValue.set(true);
+    institutionsError.set(new Error('no institutions'));
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should surface institutions fetch errors', () => {
+    expect(service.error()).toBeFalsy();
+
+    institutionsError.set(new Error('no institutions'));
 
     expect(service.error()).toBeTruthy();
   });
@@ -109,5 +153,6 @@ describe('SpendingService', () => {
     service.refetchAll();
 
     expect(reloadCount).toBe(1);
+    expect(institutionsReloadCount).toBe(1);
   });
 });

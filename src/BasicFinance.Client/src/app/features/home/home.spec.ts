@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { ENVIRONMENT_CONFIG } from '../../environment-config';
+import { InstitutionClient } from '../../core/data-access/institution-client';
 import { ThemeService } from '../../core/theme/theme.service';
 import { Home } from './home';
 import { HomeService } from './home-service';
@@ -21,6 +22,18 @@ describe('Home', () => {
             basicFinanceApi: 'http://localhost:5001',
             openIdAuthority: 'https://localhost:8080/realms/basic-hub',
             openIdClientId: 'basic-finance-client',
+          },
+        },
+        {
+          provide: InstitutionClient,
+          useValue: {
+            myInstitutions: {
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            },
+            refetchMyInstitutions: () => undefined,
           },
         },
         {

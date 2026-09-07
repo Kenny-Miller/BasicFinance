@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
+import { InstitutionClient } from '../../core/data-access/institution-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { PageService } from '../../core/page/page.service';
 import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
@@ -101,6 +102,18 @@ describe('Account', () => {
           provide: ActivatedRoute,
           useValue: {
             params: paramsSubject,
+          },
+        },
+        {
+          provide: InstitutionClient,
+          useValue: {
+            myInstitutions: {
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            },
+            refetchMyInstitutions: () => undefined,
           },
         },
       ],
