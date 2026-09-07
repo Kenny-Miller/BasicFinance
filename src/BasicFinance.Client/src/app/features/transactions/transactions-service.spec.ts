@@ -8,6 +8,7 @@ import {
   TransactionClient,
   TransactionSummaryResponse,
 } from '../../core/data-access/transaction-client';
+import { PageService } from '../../core/page/page.service';
 import { DEFAULT_TIME_PERIOD } from '../../shared/data/time-period';
 import { TransactionsService } from './transactions-service';
 
@@ -30,7 +31,9 @@ describe('TransactionsService', () => {
   let dailyHasValue = signal(false);
   let dailyError = signal<undefined | Error>(undefined);
 
-  let refetchCounts = { accounts: 0, transactions: 0, summary: 0, daily: 0 };
+  let institutionsLoading = signal(false);
+  let institutionsError = signal<null | Error>(null);
+  let refetchCounts = { accounts: 0, transactions: 0, summary: 0, daily: 0, institutions: 0 };
 
   beforeEach(() => {
     accountsValue = signal(null);
@@ -45,7 +48,9 @@ describe('TransactionsService', () => {
     dailyValue = signal(null);
     dailyHasValue = signal(false);
     dailyError = signal(undefined);
-    refetchCounts = { accounts: 0, transactions: 0, summary: 0, daily: 0 };
+    institutionsLoading = signal(false);
+    institutionsError = signal(null);
+    refetchCounts = { accounts: 0, transactions: 0, summary: 0, daily: 0, institutions: 0 };
 
     TestBed.configureTestingModule({
       providers: [
@@ -93,6 +98,16 @@ describe('TransactionsService', () => {
                 return true;
               },
             }),
+          },
+        },
+        {
+          provide: PageService,
+          useValue: {
+            loading: () => institutionsLoading(),
+            error: () => institutionsError(),
+            refetchAll: () => {
+              refetchCounts.institutions++;
+            },
           },
         },
       ],
@@ -179,6 +194,38 @@ describe('TransactionsService', () => {
     expect(service.error()).toBeFalsy();
 
     summaryError.set(new Error('boom'));
+
+    expect(service.error()).toBeTruthy();
+  });
+
+  it('should keep reporting loading while institutions have not loaded', () => {
+    accountsHasValue.set(true);
+    transactionsHasValue.set(true);
+    summaryHasValue.set(true);
+    dailyHasValue.set(true);
+    institutionsLoading.set(true);
+
+    expect(service.loading()).toBe(true);
+
+    institutionsLoading.set(false);
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should stop loading when institutions error and the page data is ready', () => {
+    accountsHasValue.set(true);
+    transactionsHasValue.set(true);
+    summaryHasValue.set(true);
+    dailyHasValue.set(true);
+    institutionsError.set(new Error('no institutions'));
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should surface institutions fetch errors', () => {
+    expect(service.error()).toBeFalsy();
+
+    institutionsError.set(new Error('no institutions'));
 
     expect(service.error()).toBeTruthy();
   });
@@ -280,6 +327,12 @@ describe('TransactionsService', () => {
   it('should reload every resource', () => {
     service.refetchAll();
 
-    expect(refetchCounts).toEqual({ accounts: 1, transactions: 1, summary: 1, daily: 1 });
+    expect(refetchCounts).toEqual({
+      accounts: 1,
+      transactions: 1,
+      summary: 1,
+      daily: 1,
+      institutions: 1,
+    });
   });
 });

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AccountClient } from '../../core/data-access/account-client';
 import { SpendingClient } from '../../core/data-access/spending-client';
 import { TransactionClient } from '../../core/data-access/transaction-client';
+import { PageService } from '../../core/page/page.service';
 import { HomeService } from './home-service';
 
 describe('HomeService', () => {
@@ -20,7 +21,9 @@ describe('HomeService', () => {
   let spendingHasValue = signal(false);
   let spendingError = signal<undefined | Error>(undefined);
 
-  let refetchCounts = { balance: 0, transactions: 0, spending: 0 };
+  let institutionsLoading = signal(false);
+  let institutionsError = signal<null | Error>(null);
+  let refetchCounts = { balance: 0, transactions: 0, spending: 0, institutions: 0 };
 
   beforeEach(() => {
     balanceSummaryValue = signal(null);
@@ -32,7 +35,9 @@ describe('HomeService', () => {
     spendingValue = signal(null);
     spendingHasValue = signal(false);
     spendingError = signal(undefined);
-    refetchCounts = { balance: 0, transactions: 0, spending: 0 };
+    institutionsLoading = signal(false);
+    institutionsError = signal(null);
+    refetchCounts = { balance: 0, transactions: 0, spending: 0, institutions: 0 };
 
     TestBed.configureTestingModule({
       providers: [
@@ -78,6 +83,16 @@ describe('HomeService', () => {
             }),
           },
         },
+        {
+          provide: PageService,
+          useValue: {
+            loading: () => institutionsLoading(),
+            error: () => institutionsError(),
+            refetchAll: () => {
+              refetchCounts.institutions++;
+            },
+          },
+        },
       ],
     });
     service = TestBed.inject(HomeService);
@@ -97,6 +112,36 @@ describe('HomeService', () => {
     expect(service.error()).toBeFalsy();
 
     transactionsError.set(new Error('boom'));
+
+    expect(service.error()).toBeTruthy();
+  });
+
+  it('should keep reporting loading while institutions have not loaded', () => {
+    balanceSummaryHasValue.set(true);
+    transactionsHasValue.set(true);
+    spendingHasValue.set(true);
+    institutionsLoading.set(true);
+
+    expect(service.loading()).toBe(true);
+
+    institutionsLoading.set(false);
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should stop loading when institutions error and the page data is ready', () => {
+    balanceSummaryHasValue.set(true);
+    transactionsHasValue.set(true);
+    spendingHasValue.set(true);
+    institutionsError.set(new Error('no institutions'));
+
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should surface institutions fetch errors', () => {
+    expect(service.error()).toBeFalsy();
+
+    institutionsError.set(new Error('no institutions'));
 
     expect(service.error()).toBeTruthy();
   });
@@ -199,6 +244,11 @@ describe('HomeService', () => {
   it('should reload every resource', () => {
     service.refetchAll();
 
-    expect(refetchCounts).toEqual({ balance: 1, transactions: 1, spending: 1 });
+    expect(refetchCounts).toEqual({
+      balance: 1,
+      transactions: 1,
+      spending: 1,
+      institutions: 1,
+    });
   });
 });

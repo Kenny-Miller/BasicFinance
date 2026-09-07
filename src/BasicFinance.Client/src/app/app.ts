@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -62,12 +62,16 @@ export class App {
     { label: 'Spending', icon: 'lucideWallet', routerLink: 'Spending' },
   ];
 
-  readonly accountNavigationItems: NavMenuItem[] = [
-    { label: 'Wells Fargo', icon: 'lucideLayoutDashboard', routerLink: 'Accounts/1' },
-    { label: 'Charles Schwab', icon: 'lucideSettings', routerLink: 'Accounts/2' },
-    { label: 'Discover', icon: 'lucideSettings', routerLink: 'Accounts/3' },
-    { label: 'Chase', icon: 'lucideSettings', routerLink: 'Accounts/4' },
-  ];
+  readonly accountNavigationItems = computed<NavMenuItem[]>(
+    () =>
+      this._pageService.data()?.map((institution) => ({
+        label: institution.name,
+        icon: 'lucideLandmark',
+        routerLink: `Accounts/${institution.id}`,
+      })) ?? [],
+  );
+
+  readonly institutionsLoading = this._pageService.loading;
 
   public toggleSidebarOpen(): void {
     this._sidebarService.setOpen(!this.isDesktopSidebarOpen());

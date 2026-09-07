@@ -42,12 +42,23 @@
         </div>
       </hlm-sidebar-group>
 
-      @if (accountNavigationItems.length > 0) {
+      @if (institutionsLoading()) {
         <hlm-sidebar-group>
           <div hlmSidebarGroupLabel>Accounts</div>
           <div hlmSidebarGroupContent>
             <ul hlmSidebarMenu>
-              @for (item of accountNavigationItems; track item.label) {
+              @for (i of [0, 1, 2]; track i) {
+                <hlm-sidebar-menu-skeleton [showIcon]="true" />
+              }
+            </ul>
+          </div>
+        </hlm-sidebar-group>
+      } @else if (accountNavigationItems().length > 0) {
+        <hlm-sidebar-group>
+          <div hlmSidebarGroupLabel>Accounts</div>
+          <div hlmSidebarGroupContent>
+            <ul hlmSidebarMenu>
+              @for (item of accountNavigationItems(); track item.label) {
                 <li hlmSidebarMenuItem>
                   <a
                     hlmSidebarMenuButton

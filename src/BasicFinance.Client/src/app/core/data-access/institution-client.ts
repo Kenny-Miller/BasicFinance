@@ -3,10 +3,10 @@ import { Injectable, Signal, inject } from '@angular/core';
 import { ListResult } from './api-interfaces';
 
 export interface Institution {
-  id: string;
+  id: number;
   code: string;
   name: string;
-  logoUrl: string;
+  logoUrl: string | null;
 }
 
 @Injectable({
@@ -15,12 +15,24 @@ export interface Institution {
 export class InstitutionClient {
   client = inject(HttpClient);
 
-  getInstitution(institutionId: string) {
-    return this.client.get<Institution>(`api/institutions/${institutionId}`);
+  /**
+   * The user's active institutions, fetched once when this client is first
+   * injected (post-authentication) and shared across the app. Pages gate on
+   * this resource before their content renders.
+   */
+  readonly myInstitutions = httpResource<Institution[]>(() => 'api/my/institutions');
+
+  /**
+   * Refetches the user's institutions. Intended for use after an action that
+   * updates the user's institutions. The current value is preserved while the
+   * refresh is in flight.
+   */
+  refetchMyInstitutions(): void {
+    this.myInstitutions.reload();
   }
 
-  getMyInstitutions() {
-    return this.client.get<Institution>('api/my/institutions');
+  getInstitution(institutionId: string) {
+    return this.client.get<Institution>(`api/institutions/${institutionId}`);
   }
 
   listInstitutions(
