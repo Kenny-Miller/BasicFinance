@@ -102,6 +102,12 @@ describe('AccountPageService', () => {
             refetchAll: () => {
               institutionsReloadCount++;
             },
+            accountTypes: () => [
+              { code: 'CHK', name: 'Checking' },
+              { code: 'SAV', name: 'Savings' },
+              { code: 'INV', name: 'Investment' },
+              { code: 'CC', name: 'Credit Card' },
+            ],
           },
         },
       ],
@@ -170,7 +176,7 @@ describe('AccountPageService', () => {
     expect(data.typeCards).toEqual([
       { code: 'CHK', label: 'Checking', balance: 5000, previousBalance: 4000 },
       { code: 'SAV', label: 'Savings', balance: 12000, previousBalance: 11000 },
-      { code: 'CC', label: 'Credit Cards', balance: -2500, previousBalance: -3000 },
+      { code: 'CC', label: 'Credit Card', balance: -2500, previousBalance: -3000 },
     ]);
   });
 

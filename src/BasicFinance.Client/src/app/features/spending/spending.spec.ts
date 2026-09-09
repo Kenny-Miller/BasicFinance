@@ -1,6 +1,9 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
+import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
+import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { Spending } from './spending';
 import { SpendingService } from './spending-service';
@@ -33,13 +36,45 @@ describe('Spending', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => true,
               value: () => [],
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
+          },
+        },
+        {
+          provide: AccountTypeClient,
+          useValue: {
+            accountTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionTypeClient,
+          useValue: {
+            transactionTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionCategoryClient,
+          useValue: {
+            transactionCategories: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
           },
         },
       ],

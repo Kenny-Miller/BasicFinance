@@ -1,7 +1,10 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
+import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
+import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
 import { ThemeService } from '../../core/theme/theme.service';
 import { Transactions } from './transactions';
 import { TransactionsService } from './transactions-service';
@@ -16,6 +19,8 @@ describe('Transactions', () => {
       loading: () => false,
       transactionsLoading: () => false,
       hasTransactionsData: () => false,
+      transactionTypes: () => [],
+      transactionCategories: () => [],
       error: summaryError ? () => new Error('simulated resource error') : () => undefined,
       data: () => ({
         accounts: { page: 1, pageSize: 100, pageCount: 0, totalCount: 0, items: [] },
@@ -58,13 +63,45 @@ describe('Transactions', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => true,
               value: () => [],
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
+          },
+        },
+        {
+          provide: AccountTypeClient,
+          useValue: {
+            accountTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionTypeClient,
+          useValue: {
+            transactionTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionCategoryClient,
+          useValue: {
+            transactionCategories: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
           },
         },
       ],

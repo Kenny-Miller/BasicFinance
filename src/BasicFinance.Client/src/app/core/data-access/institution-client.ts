@@ -16,19 +16,13 @@ export class InstitutionClient {
   client = inject(HttpClient);
 
   /**
-   * The user's active institutions, fetched once when this client is first
-   * injected (post-authentication) and shared across the app. Pages gate on
-   * this resource before their content renders.
+   * Provides the user's active institutions resource (post-authentication).
+   * The calling service stores the returned resource and exposes its
+   * value/loading/error; refetches are the service's job via the resource's
+   * `reload()`.
    */
-  readonly myInstitutions = httpResource<Institution[]>(() => 'api/my/institutions');
-
-  /**
-   * Refetches the user's institutions. Intended for use after an action that
-   * updates the user's institutions. The current value is preserved while the
-   * refresh is in flight.
-   */
-  refetchMyInstitutions(): void {
-    this.myInstitutions.reload();
+  myInstitutions() {
+    return httpResource<Institution[]>(() => 'api/my/institutions');
   }
 
   getInstitution(institutionId: string) {

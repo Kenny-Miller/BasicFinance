@@ -109,6 +109,12 @@ export class TransactionsService {
         !this.transactionSummary.hasValue()),
   );
 
+  /** The global transaction types, shared via page-level state. */
+  readonly transactionTypes = this.pageService.transactionTypes;
+
+  /** The global transaction categories, shared via page-level state. */
+  readonly transactionCategories = this.pageService.transactionCategories;
+
   readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
 
   private readonly hasSeenTransactions = signal(false);

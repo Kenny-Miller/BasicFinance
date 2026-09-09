@@ -5,8 +5,8 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
+import { AccountType } from '../../../../core/data-access/account-type-client';
 import { TotalBalanceBreakdown } from '../../../../core/data-access/account-client';
-import { ACCOUNT_TYPE_LABELS } from '../../../../shared/data/account-type-map';
 import { AbsPipe } from '../../../../shared/pipes/abs-pipe';
 
 @Component({
@@ -26,6 +26,7 @@ import { AbsPipe } from '../../../../shared/pipes/abs-pipe';
 })
 export class AccountNetWorthBreakdown {
   readonly data = input.required<TotalBalanceBreakdown>();
+  readonly accountTypes = input<AccountType[]>([]);
   readonly breakdownEntries = computed(() =>
     Object.entries(this.data().accountTypeBreakdowns).map(([code, breakdown]) => ({
       code,
@@ -33,5 +34,7 @@ export class AccountNetWorthBreakdown {
     })),
   );
 
-  protected readonly accountTypeLabels = ACCOUNT_TYPE_LABELS;
+  protected readonly accountTypeLabels = computed<Record<string, string>>(() =>
+    Object.fromEntries(this.accountTypes().map((type) => [type.code, type.name] as [string, string])),
+  );
 }
