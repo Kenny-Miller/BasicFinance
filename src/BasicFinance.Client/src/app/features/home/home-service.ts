@@ -3,7 +3,7 @@ import { AccountClient, TotalBalanceBreakdown } from '../../core/data-access/acc
 import { SpendingClient, SpendingOverTimeSummary } from '../../core/data-access/spending-client';
 import { Transaction, TransactionClient } from '../../core/data-access/transaction-client';
 import { PageService } from '../../core/page/page.service';
-import { ACCOUNT_TYPE_CODES } from '../../shared/data/account-type-map';
+import { ACCOUNT_TYPE_CODES } from '../../shared/data/account-type-codes';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
 export interface HomeData {

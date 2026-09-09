@@ -8,6 +8,22 @@ public record InstitutionDto(
     string Name,
     string? LogoUrl);
 
+public record AccountTypeDto(
+    int Id,
+    string Code,
+    string Name,
+    bool IsLiability);
+
+public record TransactionTypeDto(
+    int Id,
+    string Code,
+    string Name);
+
+public record TransactionCategoryDto(
+    int Id,
+    string Code,
+    string Name);
+
 public record AccountDto(
     Guid Id,
     string Name,

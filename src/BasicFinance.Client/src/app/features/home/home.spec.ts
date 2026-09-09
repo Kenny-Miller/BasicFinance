@@ -3,7 +3,10 @@ import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { ENVIRONMENT_CONFIG } from '../../environment-config';
+import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
+import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
+import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
 import { ThemeService } from '../../core/theme/theme.service';
 import { Home } from './home';
 import { HomeService } from './home-service';
@@ -27,13 +30,45 @@ describe('Home', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => true,
               value: () => [],
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
+          },
+        },
+        {
+          provide: AccountTypeClient,
+          useValue: {
+            accountTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionTypeClient,
+          useValue: {
+            transactionTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionCategoryClient,
+          useValue: {
+            transactionCategories: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
           },
         },
         {

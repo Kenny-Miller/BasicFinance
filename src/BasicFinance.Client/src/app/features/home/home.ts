@@ -34,6 +34,7 @@ export class Home implements OnInit {
   readonly loading = this.homeService.loading;
   readonly error = this.homeService.error;
   readonly data = this.homeService.data;
+  readonly accountTypes = this.pageService.accountTypes;
 
   readonly refetchAll = (): void => this.homeService.refetchAll();
 

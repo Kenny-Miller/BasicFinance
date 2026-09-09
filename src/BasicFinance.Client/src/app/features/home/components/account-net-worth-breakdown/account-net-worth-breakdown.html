@@ -11,7 +11,7 @@
         <hlm-item size="xs">
           <hlm-item-content>
             <hlm-item-title>
-              {{ accountTypeLabels[code] }}
+              {{ accountTypeLabels()[code] }}
             </hlm-item-title>
             <p hlmItemDescription>
               {{ breakdown.percentageOfTotalBalance | number: '1.0-0' }}% of net worth
