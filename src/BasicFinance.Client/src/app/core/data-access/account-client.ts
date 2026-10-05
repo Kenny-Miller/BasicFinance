@@ -74,10 +74,6 @@ export interface InstitutionSummaryResponse {
 export class AccountClient {
   client = inject(HttpClient);
 
-  getAccount(accountId: string) {
-    return this.client.get<Account>(`api/accounts/${accountId}`);
-  }
-
   getMyAccounts() {
     return this.client.get<Account[]>('api/my/accounts');
   }

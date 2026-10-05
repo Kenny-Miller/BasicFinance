@@ -1,5 +1,5 @@
-import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Signal, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Injectable, Signal } from '@angular/core';
 import { TimePeriod } from '../../shared/data/time-period';
 import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
@@ -70,12 +70,6 @@ export interface DailySummaryResponse {
   providedIn: 'root',
 })
 export class TransactionClient {
-  client = inject(HttpClient);
-
-  getTransaction(transactionId: string) {
-    return this.client.get<Transaction>(`api/transactions/${transactionId}`);
-  }
-
   listTransactions(
     pageSignal: Signal<number>,
     pageSizeSignal: Signal<number>,

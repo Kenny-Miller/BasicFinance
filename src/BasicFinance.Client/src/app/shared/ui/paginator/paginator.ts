@@ -2,6 +2,7 @@ import { Component, WritableSignal, computed, input, signal } from '@angular/cor
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronLeft, lucideChevronRight, lucideCornerDownLeft } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 
@@ -33,7 +34,7 @@ function buildPageWindow(total: number, current: number): (number | null)[] {
 
 @Component({
   selector: 'app-paginator',
-  imports: [HlmButtonImports, HlmInputImports, HlmSelectImports, NgIcon],
+  imports: [HlmButtonImports, HlmFieldImports, HlmInputImports, HlmSelectImports, NgIcon],
   providers: [
     provideIcons({
       lucideChevronLeft,

@@ -117,15 +117,6 @@ export class TransactionsService {
 
   readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
 
-  private readonly hasSeenTransactions = signal(false);
-
-  hasTransactionsData(): boolean {
-    if (this.listTransactions.hasValue() && !this.hasSeenTransactions()) {
-      this.hasSeenTransactions.set(true);
-    }
-    return this.hasSeenTransactions();
-  }
-
   readonly error = computed(
     () =>
       this.pageService.error() ||

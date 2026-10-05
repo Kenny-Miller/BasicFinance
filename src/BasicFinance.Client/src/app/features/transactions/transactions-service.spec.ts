@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import { Account, AccountClient } from '../../core/data-access/account-client';
 import { ListResult } from '../../core/data-access/api-interfaces';
 import {
@@ -148,13 +149,6 @@ describe('TransactionsService', () => {
   });
 
   it('should keep the latest transactions visible while the list refetches', () => {
-    @Component({ template: '' })
-    class TestHost {}
-
-    const fixture = TestBed.createComponent(TestHost);
-    fixture.detectChanges();
-
-    expect(service.hasTransactionsData()).toBe(false);
     expect(service.data().transactions).toEqual({
       page: 1,
       pageCount: 0,
@@ -182,16 +176,12 @@ describe('TransactionsService', () => {
     };
     transactionsValue.set(transactions);
     transactionsHasValue.set(true);
-    fixture.detectChanges();
 
-    expect(service.hasTransactionsData()).toBe(true);
     expect(service.data().transactions).toEqual(transactions);
 
     transactionsHasValue.set(false);
-    fixture.detectChanges();
 
     expect(service.transactionsLoading()).toBe(true);
-    expect(service.hasTransactionsData()).toBe(true);
     expect(service.data().transactions).toEqual(transactions);
   });
 
@@ -334,7 +324,9 @@ describe('TransactionsService', () => {
       { id: 1, code: 'CR', name: 'Credit' },
       { id: 2, code: 'DR', name: 'Debit' },
     ]);
-    expect(service.transactionCategories()).toEqual([{ id: 1, code: 'UNC', name: 'Uncategorized' }]);
+    expect(service.transactionCategories()).toEqual([
+      { id: 1, code: 'UNC', name: 'Uncategorized' },
+    ]);
   });
 
   it('should reload every resource', () => {

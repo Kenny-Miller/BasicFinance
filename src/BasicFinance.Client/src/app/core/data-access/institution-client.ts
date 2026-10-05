@@ -1,6 +1,5 @@
-import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Signal, inject } from '@angular/core';
-import { ListResult } from './api-interfaces';
+import { httpResource } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 
 export interface Institution {
   id: number;
@@ -13,8 +12,6 @@ export interface Institution {
   providedIn: 'root',
 })
 export class InstitutionClient {
-  client = inject(HttpClient);
-
   /**
    * Provides the user's active institutions resource (post-authentication).
    * The calling service stores the returned resource and exposes its
@@ -23,27 +20,5 @@ export class InstitutionClient {
    */
   myInstitutions() {
     return httpResource<Institution[]>(() => 'api/my/institutions');
-  }
-
-  getInstitution(institutionId: string) {
-    return this.client.get<Institution>(`api/institutions/${institutionId}`);
-  }
-
-  listInstitutions(
-    pageSignal: Signal<number>,
-    sortFieldSignal: Signal<string>,
-    sortDirectionSignal: Signal<string>,
-  ) {
-    return httpResource<ListResult<Institution>>(() => {
-      const params = new URLSearchParams();
-
-      params.set('page', String(pageSignal()));
-      params.set('pageSize', '20');
-      params.set('sortField', sortFieldSignal());
-      params.set('sortDirection', sortDirectionSignal());
-
-      const qs = params.toString();
-      return qs ? `api/institutions?${qs}` : 'api/institutions';
-    });
   }
 }
