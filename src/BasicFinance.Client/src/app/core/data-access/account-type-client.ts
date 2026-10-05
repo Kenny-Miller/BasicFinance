@@ -18,6 +18,6 @@ export class AccountTypeClient {
    * refetches are the service's job via the resource's `reload()`.
    */
   accountTypes() {
-    return httpResource<AccountType[]>(() => 'api/account-types/');
+    return httpResource<AccountType[]>(() => 'api/account-types');
   }
 }

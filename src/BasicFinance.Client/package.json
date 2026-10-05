@@ -13,6 +13,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:unit": "ng test --watch=false --coverage",
+    "gen:api": "npx openapi-ts",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "lint": "ng lint"
   },
@@ -46,12 +47,13 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@angular-eslint/template-parser": "^20.6.0",
     "@angular/build": "^21.0.2",
     "@angular/cli": "^21.0.2",
     "@angular/compiler-cli": "^21.0.3",
-    "@angular-eslint/template-parser": "^20.6.0",
+    "@hey-api/openapi-ts": "0.99.0",
     "@spartan-ng/cli": "^1.1.0",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^24.19.1",
     "@vitest/browser-playwright": "^4.1.10",

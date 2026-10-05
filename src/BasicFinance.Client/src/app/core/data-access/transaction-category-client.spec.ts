@@ -1,5 +1,6 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
 import { TransactionCategoryClient } from './transaction-category-client';
 
 const TRANSACTION_CATEGORIES = [
@@ -24,7 +25,7 @@ describe('TransactionCategoryClient', () => {
     // httpResource asserts an injection context, so the provider call is wrapped the way
     // PageService's field initializer runs it.
     const transactionCategories = TestBed.runInInjectionContext(() =>
-      client.transactionCategories(),
+      client.transactionCategories()
     );
 
     // The httpResource effect that starts the request is scheduled when the
@@ -32,7 +33,7 @@ describe('TransactionCategoryClient', () => {
     // can be expected.
     TestBed.flushEffects();
 
-    const request = controller.expectOne('api/transaction-categories/');
+    const request = controller.expectOne('api/transaction-categories');
 
     expect(request.request.method).toBe('GET');
 
@@ -44,11 +45,11 @@ describe('TransactionCategoryClient', () => {
 
   it('should issue a new request when the resource is reloaded', async () => {
     const transactionCategories = TestBed.runInInjectionContext(() =>
-      client.transactionCategories(),
+      client.transactionCategories()
     );
     TestBed.flushEffects();
 
-    const firstRequest = controller.expectOne('api/transaction-categories/');
+    const firstRequest = controller.expectOne('api/transaction-categories');
     firstRequest.flush([]);
     // reload() is a no-op until the resource has settled to a resolved state, which
     // happens in an async continuation after the response is flushed.
@@ -57,7 +58,7 @@ describe('TransactionCategoryClient', () => {
     transactionCategories.reload();
     TestBed.flushEffects();
 
-    const secondRequest = controller.expectOne('api/transaction-categories/');
+    const secondRequest = controller.expectOne('api/transaction-categories');
     secondRequest.flush(TRANSACTION_CATEGORIES);
     await Promise.resolve();
     expect(transactionCategories.hasValue()).toBeTruthy();

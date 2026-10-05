@@ -7,6 +7,9 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
+    ignores: ['src/app/core/api/generated/**'],
+  },
+  {
     files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,
@@ -20,10 +23,7 @@ export default tseslint.config(
     },
     processor: angular.processInlineTemplates,
     rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@angular-eslint/directive-selector': [
         'error',
         {
@@ -47,5 +47,5 @@ export default tseslint.config(
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},
-  },
+  }
 );

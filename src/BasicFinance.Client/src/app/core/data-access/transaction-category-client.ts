@@ -18,6 +18,6 @@ export class TransactionCategoryClient {
    * `reload()`.
    */
   transactionCategories() {
-    return httpResource<TransactionCategory[]>(() => 'api/transaction-categories/');
+    return httpResource<TransactionCategory[]>(() => 'api/transaction-categories');
   }
 }

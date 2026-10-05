@@ -1,5 +1,6 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
+
 import { TimePeriod } from '../../shared/data/time-period';
 import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
@@ -83,7 +84,7 @@ export class AccountClient {
     pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
-    filtersSignal: Signal<AccountFilters>,
+    filtersSignal: Signal<AccountFilters>
   ) {
     return httpResource<ListResult<Account>>(() => {
       const params: ListAccountsParams = {
@@ -95,7 +96,7 @@ export class AccountClient {
       };
 
       const queryParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined),
+        Object.entries(params).filter(([_, value]) => value !== undefined)
       );
 
       return {
@@ -107,13 +108,13 @@ export class AccountClient {
 
   balanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
     return httpResource<AccountAnalyticsResponse>(
-      () => `api/accounts/balanceSummary?TimePeriod=${timePeriodSignal()}`,
+      () => `api/accounts/balance-summary?TimePeriod=${timePeriodSignal()}`
     );
   }
 
   institutionSummaryResource(
     institutionIdSignal: Signal<number>,
-    timePeriodSignal: Signal<TimePeriod>,
+    timePeriodSignal: Signal<TimePeriod>
   ) {
     return httpResource<InstitutionSummaryResponse>(() => ({
       url: `api/accounts/institution/${institutionIdSignal()}/summary`,

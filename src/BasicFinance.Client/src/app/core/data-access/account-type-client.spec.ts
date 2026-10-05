@@ -1,5 +1,6 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
 import { AccountTypeClient } from './account-type-client';
 
 const ACCOUNT_TYPES = [
@@ -31,7 +32,7 @@ describe('AccountTypeClient', () => {
     // can be expected.
     TestBed.flushEffects();
 
-    const request = controller.expectOne('api/account-types/');
+    const request = controller.expectOne('api/account-types');
 
     expect(request.request.method).toBe('GET');
 
@@ -45,7 +46,7 @@ describe('AccountTypeClient', () => {
     const accountTypes = TestBed.runInInjectionContext(() => client.accountTypes());
     TestBed.flushEffects();
 
-    const firstRequest = controller.expectOne('api/account-types/');
+    const firstRequest = controller.expectOne('api/account-types');
     firstRequest.flush([]);
     // reload() is a no-op until the resource has settled to a resolved state, which
     // happens in an async continuation after the response is flushed.
@@ -54,7 +55,7 @@ describe('AccountTypeClient', () => {
     accountTypes.reload();
     TestBed.flushEffects();
 
-    const secondRequest = controller.expectOne('api/account-types/');
+    const secondRequest = controller.expectOne('api/account-types');
     secondRequest.flush(ACCOUNT_TYPES);
     await Promise.resolve();
     expect(accountTypes.hasValue()).toBeTruthy();

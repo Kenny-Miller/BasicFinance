@@ -18,6 +18,6 @@ export class TransactionTypeClient {
    * `reload()`.
    */
   transactionTypes() {
-    return httpResource<TransactionType[]>(() => 'api/transaction-types/');
+    return httpResource<TransactionType[]>(() => 'api/transaction-types');
   }
 }

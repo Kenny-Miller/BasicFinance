@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
+
 import { TimePeriod } from '../../shared/data/time-period';
 import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
 
@@ -75,7 +76,7 @@ export class TransactionClient {
     pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
-    filtersSignal: Signal<TransactionFilters>,
+    filtersSignal: Signal<TransactionFilters>
   ) {
     return httpResource<ListResult<Transaction>>(() => {
       const params: ListTransactionsParams = {
@@ -87,7 +88,7 @@ export class TransactionClient {
       };
 
       const queryParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined && value !== ''),
+        Object.entries(params).filter(([_, value]) => value !== undefined && value !== '')
       );
 
       return {
@@ -99,7 +100,7 @@ export class TransactionClient {
 
   transactionSummaryResource(
     recordedDateSignal: Signal<Date | null>,
-    timePeriodSignal: Signal<TimePeriod>,
+    timePeriodSignal: Signal<TimePeriod>
   ) {
     return httpResource<TransactionSummaryResponse>(() => {
       const params: Record<string, string> = { TimePeriod: timePeriodSignal() };
@@ -116,7 +117,7 @@ export class TransactionClient {
 
   dailyTransactionSummaryResource(
     recordedDateSignal: Signal<Date | null>,
-    timePeriodSignal: Signal<TimePeriod>,
+    timePeriodSignal: Signal<TimePeriod>
   ) {
     return httpResource<DailySummaryResponse>(() => {
       const params: Record<string, string> = { TimePeriod: timePeriodSignal() };
@@ -125,7 +126,7 @@ export class TransactionClient {
         params['RecordedDate'] = this._formatDateOnly(recordedDate);
       }
       return {
-        url: 'api/transactions/dailySummary',
+        url: 'api/transactions/daily-summary',
         params,
       };
     });
