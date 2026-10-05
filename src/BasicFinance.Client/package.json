@@ -16,18 +16,6 @@
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "lint": "ng lint"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
   "private": true,
   "dependencies": {
     "@angular/cdk": "^21.0.2",
