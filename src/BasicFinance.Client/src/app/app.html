@@ -1,11 +1,11 @@
 <hlm-sidebar-wrapper>
   <hlm-sidebar variant="inset" collapsible="icon">
-    <hlm-sidebar-header class="justify-center h-16">
+    <hlm-sidebar-header class="h-16 justify-center">
       <ul hlmSidebarMenu>
         <li hlmSidebarMenuItem>
           <a hlmSidebarMenuButton size="lg" routerLink="" class="p-2">
             <div
-              class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
             >
               <ng-icon name="lucideChartLine" class="text-base" />
             </div>
@@ -125,7 +125,7 @@
       </div>
     </header>
     <hlm-separator />
-    <div class="p-5 flex-1 flex flex-col min-h-0">
+    <div class="flex min-h-0 flex-1 flex-col p-5">
       <div class="mb-4">
         <p class="text-muted-foreground">{{ pageSubtitle() }}</p>
       </div>
