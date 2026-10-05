@@ -4,7 +4,10 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { AccountTypeClient } from './core/data-access/account-type-client';
 import { Institution, InstitutionClient } from './core/data-access/institution-client';
+import { TransactionCategoryClient } from './core/data-access/transaction-category-client';
+import { TransactionTypeClient } from './core/data-access/transaction-type-client';
 import { App } from './app';
 
 describe('App', () => {
@@ -22,13 +25,45 @@ describe('App', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => institutions() !== null,
               value: () => institutions(),
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
+          },
+        },
+        {
+          provide: AccountTypeClient,
+          useValue: {
+            accountTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionTypeClient,
+          useValue: {
+            transactionTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionCategoryClient,
+          useValue: {
+            transactionCategories: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
           },
         },
       ],

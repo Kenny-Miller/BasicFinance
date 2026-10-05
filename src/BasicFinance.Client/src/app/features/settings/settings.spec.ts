@@ -16,13 +16,12 @@ describe('Settings', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => true,
               value: () => [],
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
           },
         },
       ],

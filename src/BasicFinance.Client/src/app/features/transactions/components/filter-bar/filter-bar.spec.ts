@@ -48,7 +48,7 @@ describe('FilterBar', () => {
   });
 
   it('should not emit and should mark fields as touched when the form is invalid', () => {
-    component.filterModel.update((draft) => ({ ...draft, minAmount: '-5' }));
+    component.filterModel.update((draft) => ({ ...draft, minAmount: -5 }));
 
     submitForm();
 
@@ -68,7 +68,78 @@ describe('FilterBar', () => {
     fixture.detectChanges();
 
     expect(component.filterModel().search).toBe('coffee');
-    expect(component.filterModel().minAmount).toBe('10');
+    expect(component.filterModel().minAmount).toBe(10);
+  });
+
+  it('should emit numeric amounts from the draft', () => {
+    component.filterModel.update((draft) => ({ ...draft, minAmount: 10, maxAmount: 99.99 }));
+
+    submitForm();
+
+    expect(emitted).toEqual([{ minAmount: 10, maxAmount: 99.99 }]);
+  });
+
+  it('should omit amount filters when the draft amounts are empty', () => {
+    component.filterModel.update((draft) => ({ ...draft, minAmount: Number.NaN, maxAmount: Number.NaN }));
+
+    submitForm();
+
+    expect(emitted).toEqual([{}]);
+  });
+
+  it('should read typed amounts as numbers from the native number input', () => {
+    const input = fixture.nativeElement.querySelector('#minimum-amount') as HTMLInputElement;
+
+    input.value = '42';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(component.filterModel().minAmount).toBe(42);
+
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(Number.isNaN(component.filterModel().minAmount)).toBe(true);
+  });
+
+  it('should show only the placeholder options until the reference lists are provided', () => {
+    expect(component.typeOptions()).toEqual([{ value: '', label: 'All Types' }]);
+    expect(component.categoryOptions()).toEqual([{ value: '', label: 'All Categories' }]);
+  });
+
+  it('should build the type and category options from the reference inputs, placeholder first', () => {
+    fixture.componentRef.setInput('transactionTypes', [
+      { id: 1, code: 'CR', name: 'Credit' },
+      { id: 2, code: 'DR', name: 'Debit' },
+    ]);
+    fixture.componentRef.setInput('transactionCategories', [
+      { id: 1, code: 'UNC', name: 'Uncategorized' },
+      { id: 2, code: 'DINING', name: 'Dining' },
+    ]);
+
+    expect(component.typeOptions()).toEqual([
+      { value: '', label: 'All Types' },
+      { value: 'CR', label: 'Credit' },
+      { value: 'DR', label: 'Debit' },
+    ]);
+    expect(component.categoryOptions()).toEqual([
+      { value: '', label: 'All Categories' },
+      { value: 'UNC', label: 'Uncategorized' },
+      { value: 'DINING', label: 'Dining' },
+    ]);
+  });
+
+  it('should resolve type and category codes to labels, falling back to the code', () => {
+    fixture.componentRef.setInput('transactionTypes', [{ id: 1, code: 'CR', name: 'Credit' }]);
+    fixture.componentRef.setInput('transactionCategories', [{ id: 1, code: 'TAXES', name: 'Taxes' }]);
+
+    expect(component.typeItemToString('CR')).toBe('Credit');
+    expect(component.typeItemToString('')).toBe('All Types');
+    expect(component.typeItemToString('UNKNOWN')).toBe('UNKNOWN');
+    expect(component.categoryItemToString('TAXES')).toBe('Taxes');
+    expect(component.categoryItemToString('')).toBe('All Categories');
+    expect(component.categoryItemToString('UNKNOWN')).toBe('UNKNOWN');
   });
 
   it('should clear the form and emit empty filters on reset', () => {
@@ -83,6 +154,7 @@ describe('FilterBar', () => {
     expect(emitted).toEqual([{}]);
     expect(component.filterModel().search).toBe('');
     expect(component.filterModel().accountId).toBe('');
+    expect(Number.isNaN(component.filterModel().minAmount)).toBe(true);
     expect(component.filterForm().dirty()).toBe(false);
   });
 });

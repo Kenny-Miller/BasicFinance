@@ -13,14 +13,12 @@ export interface Transaction {
   description: string;
 }
 
-export type TransactionTypeCode = 'CR' | 'DR';
-
 export interface TransactionFilters {
   startDate?: string;
   endDate?: string;
   minAmount?: number;
   maxAmount?: number;
-  transactionTypeCode?: TransactionTypeCode;
+  transactionTypeCode?: string;
   transactionCategoryCode?: string;
   accountId?: string;
   search?: string;

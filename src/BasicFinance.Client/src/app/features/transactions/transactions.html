@@ -45,6 +45,8 @@
     <app-filter-bar
       [filters]="filters()"
       [accounts]="data().accounts.items"
+      [transactionTypes]="transactionTypes()"
+      [transactionCategories]="transactionCategories()"
       (filterChange)="applyFilters($event)"
     />
 

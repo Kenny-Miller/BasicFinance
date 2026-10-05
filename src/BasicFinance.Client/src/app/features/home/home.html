@@ -35,7 +35,10 @@
 
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
-      <app-account-net-worth-breakdown [data]="data().currentPeriodBreakdown" />
+      <app-account-net-worth-breakdown
+        [data]="data().currentPeriodBreakdown"
+        [accountTypes]="accountTypes()"
+      />
     </div>
 
     <app-recent-transactions [transactions]="data().recentTransactions" />

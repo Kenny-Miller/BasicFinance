@@ -21,6 +21,7 @@ export class Spending implements OnInit {
   readonly loading = this.spendingService.loading;
   readonly error = this.spendingService.error;
   readonly data = this.spendingService.data;
+  readonly categories = this.pageService.transactionCategories;
 
   readonly selectPeriod = (period: TimePeriod): void => this.spendingService.selectPeriod(period);
 

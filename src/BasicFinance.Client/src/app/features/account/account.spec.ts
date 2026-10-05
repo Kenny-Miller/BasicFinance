@@ -3,7 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
+import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
+import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
+import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { PageService } from '../../core/page/page.service';
 import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
@@ -107,13 +110,45 @@ describe('Account', () => {
         {
           provide: InstitutionClient,
           useValue: {
-            myInstitutions: {
+            myInstitutions: () => ({
               hasValue: () => true,
               value: () => [],
               error: () => null,
               reload: () => true,
-            },
-            refetchMyInstitutions: () => undefined,
+            }),
+          },
+        },
+        {
+          provide: AccountTypeClient,
+          useValue: {
+            accountTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionTypeClient,
+          useValue: {
+            transactionTypes: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
+          },
+        },
+        {
+          provide: TransactionCategoryClient,
+          useValue: {
+            transactionCategories: () => ({
+              hasValue: () => true,
+              value: () => [],
+              error: () => null,
+              reload: () => true,
+            }),
           },
         },
       ],

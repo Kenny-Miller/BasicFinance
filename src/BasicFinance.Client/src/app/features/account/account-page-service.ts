@@ -5,7 +5,6 @@ import {
   InstitutionSummaryResponse,
 } from '../../core/data-access/account-client';
 import { PageService } from '../../core/page/page.service';
-import { getAccountTypeLabel } from '../../shared/data/account-type-map';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 
 export interface AccountTypeCard {
@@ -75,7 +74,7 @@ export class AccountPageService {
     const typeCards: AccountTypeCard[] = TYPE_ORDER.filter((code) => presentCodes.has(code)).map(
       (code) => ({
         code,
-        label: getAccountTypeLabel(code),
+        label: this.pageService.accountTypes().find((type) => type.code === code)?.name ?? code,
         balance: summary.accountTypeTotals[code] ?? 0,
         previousBalance: summary.accountTypePreviousTotals[code] ?? 0,
       }),

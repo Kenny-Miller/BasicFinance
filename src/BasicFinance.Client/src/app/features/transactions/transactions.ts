@@ -51,6 +51,8 @@ export class Transactions implements OnInit {
   readonly transactionsLoading = this.transactionService.transactionsLoading;
   readonly error = this.transactionService.error;
   readonly data = this.transactionService.data;
+  readonly transactionTypes = this.transactionService.transactionTypes;
+  readonly transactionCategories = this.transactionService.transactionCategories;
 
   readonly deltaLabel = computed(() => DELTA_LABELS[this.transactionService.period()]);
 

@@ -108,6 +108,11 @@ describe('TransactionsService', () => {
             refetchAll: () => {
               refetchCounts.institutions++;
             },
+            transactionTypes: () => [
+              { id: 1, code: 'CR', name: 'Credit' },
+              { id: 2, code: 'DR', name: 'Debit' },
+            ],
+            transactionCategories: () => [{ id: 1, code: 'UNC', name: 'Uncategorized' }],
           },
         },
       ],
@@ -322,6 +327,14 @@ describe('TransactionsService', () => {
         previousPeriod: { totalCount: 0, totalSpend: 0, totalIncome: 0, netFlow: 0 },
       },
     });
+  });
+
+  it('should expose the shared reference lists from the page service', () => {
+    expect(service.transactionTypes()).toEqual([
+      { id: 1, code: 'CR', name: 'Credit' },
+      { id: 2, code: 'DR', name: 'Debit' },
+    ]);
+    expect(service.transactionCategories()).toEqual([{ id: 1, code: 'UNC', name: 'Uncategorized' }]);
   });
 
   it('should reload every resource', () => {

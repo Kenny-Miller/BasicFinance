@@ -6,21 +6,22 @@ import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { Account } from '../../../../core/data-access/account-client';
-import {
-  TransactionFilters,
-  TransactionTypeCode,
-} from '../../../../core/data-access/transaction-client';
-import {
-  SelectOption,
-  TRANSACTION_TYPE_OPTIONS,
-} from '../../../../shared/data/transaction-type-map';
-import { TRANSACTION_CATEGORY_OPTIONS } from '../../data/transaction-options';
+import { TransactionCategory } from '../../../../core/data-access/transaction-category-client';
+import { TransactionType } from '../../../../core/data-access/transaction-type-client';
+import { TransactionFilters } from '../../../../core/data-access/transaction-client';
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
 interface FilterDraft {
   startDate: Date | null;
   endDate: Date | null;
-  minAmount: string;
-  maxAmount: string;
+  /** `Number.NaN` when no minimum is set — the empty value of a signal-forms number input. */
+  minAmount: number;
+  /** `Number.NaN` when no maximum is set — the empty value of a signal-forms number input. */
+  maxAmount: number;
   transactionTypeCode: string;
   transactionCategoryCode: string;
   accountId: string;
@@ -43,6 +44,8 @@ interface FilterDraft {
 export class FilterBar {
   readonly filters = input.required<TransactionFilters>();
   readonly accounts = input<Account[]>([]);
+  readonly transactionTypes = input<TransactionType[]>([]);
+  readonly transactionCategories = input<TransactionCategory[]>([]);
 
   readonly filterChange = output<TransactionFilters>();
 
@@ -52,8 +55,20 @@ export class FilterBar {
     min(draft.maxAmount, 0);
   });
 
-  readonly typeOptions: SelectOption[] = TRANSACTION_TYPE_OPTIONS;
-  readonly categoryOptions: SelectOption[] = TRANSACTION_CATEGORY_OPTIONS;
+  readonly typeOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Types' },
+    ...this.transactionTypes().map((type) => ({
+      value: type.code,
+      label: type.name,
+    })),
+  ]);
+  readonly categoryOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Categories' },
+    ...this.transactionCategories().map((category) => ({
+      value: category.code,
+      label: category.name,
+    })),
+  ]);
   readonly accountOptions = computed<SelectOption[]>(() => [
     { value: '', label: 'All Accounts' },
     ...this.accounts().map((account) => ({
@@ -62,8 +77,8 @@ export class FilterBar {
     })),
   ]);
 
-  readonly typeItemToString = (code: string) => this._labelFor(this.typeOptions, code);
-  readonly categoryItemToString = (code: string) => this._labelFor(this.categoryOptions, code);
+  readonly typeItemToString = (code: string) => this._labelFor(this.typeOptions(), code);
+  readonly categoryItemToString = (code: string) => this._labelFor(this.categoryOptions(), code);
   readonly accountItemToString = (code: string) => this._labelFor(this.accountOptions(), code);
 
   minDate = new Date(2025, 0, 1);
@@ -101,8 +116,8 @@ export class FilterBar {
     return {
       startDate: this._parseDate(filters.startDate),
       endDate: this._parseDate(filters.endDate),
-      minAmount: this._toDraftAmount(filters.minAmount),
-      maxAmount: this._toDraftAmount(filters.maxAmount),
+      minAmount: filters.minAmount ?? Number.NaN,
+      maxAmount: filters.maxAmount ?? Number.NaN,
       transactionTypeCode: filters.transactionTypeCode ?? '',
       transactionCategoryCode: filters.transactionCategoryCode ?? '',
       accountId: filters.accountId ?? '',
@@ -114,9 +129,9 @@ export class FilterBar {
     return {
       startDate: this._toDate(draft.startDate),
       endDate: this._toDate(draft.endDate),
-      minAmount: this._toNumber(draft.minAmount),
-      maxAmount: this._toNumber(draft.maxAmount),
-      transactionTypeCode: this._toTypeCode(draft.transactionTypeCode),
+      minAmount: Number.isNaN(draft.minAmount) ? undefined : draft.minAmount,
+      maxAmount: Number.isNaN(draft.maxAmount) ? undefined : draft.maxAmount,
+      transactionTypeCode: draft.transactionTypeCode || undefined,
       transactionCategoryCode: draft.transactionCategoryCode || undefined,
       accountId: draft.accountId || undefined,
       search: draft.search.trim() || undefined,
@@ -133,23 +148,6 @@ export class FilterBar {
     }
 
     return undefined;
-  }
-
-  private _toDraftAmount(value: number | undefined): string {
-    return value != null ? String(value) : '';
-  }
-
-  private _toNumber(value: string): number | undefined {
-    if (value.trim() === '') {
-      return undefined;
-    }
-
-    const parsed = Number(value);
-    return Number.isNaN(parsed) ? undefined : parsed;
-  }
-
-  private _toTypeCode(value: string): TransactionTypeCode | undefined {
-    return value === 'CR' || value === 'DR' ? value : undefined;
   }
 
   private _labelFor(options: SelectOption[], code: string): string {
