@@ -23,7 +23,7 @@ public class ListInstitutionsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -42,7 +42,7 @@ public class ListInstitutionsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(institution, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?page=1&pageSize=2", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions?page=1&pageSize=2", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -61,7 +61,7 @@ public class ListInstitutionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([zebraInstitution, alphaInstitution], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?sortField=Name&sortDirection=Asc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions?sortField=Name&sortDirection=Asc", CancellationToken);
 
         // Assert
         Assert.Equal(5, result.TotalCount);
@@ -78,7 +78,7 @@ public class ListInstitutionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([zebraInstitution, alphaInstitution], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions/?sortField=Name&sortDirection=Desc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<InstitutionDto>>("/api/institutions?sortField=Name&sortDirection=Desc", CancellationToken);
 
         // Assert
         Assert.Equal(5, result.TotalCount);

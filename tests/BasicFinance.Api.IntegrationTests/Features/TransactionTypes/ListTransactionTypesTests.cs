@@ -24,7 +24,7 @@ public class ListTransactionTypesTests : ApiTestFixtureBase
     public async Task ListTransactionTypes_SeededReferenceData_ReturnsAllActiveTransactionTypes()
     {
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types", CancellationToken);
 
         // Assert
         Assert.Equal(SeededTransactionTypeCodes.Length, result.Count);
@@ -42,7 +42,7 @@ public class ListTransactionTypesTests : ApiTestFixtureBase
         await DbContext.SaveChangesAsync(CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types", CancellationToken);
 
         // Assert
         Assert.Single(result);
@@ -58,7 +58,7 @@ public class ListTransactionTypesTests : ApiTestFixtureBase
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsActive, false), CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types", CancellationToken);
 
         // Assert
         Assert.Empty(result);

@@ -78,7 +78,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// Unrecognized time period values fall back to <see cref="TimePeriod.Monthly"/>.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/transactions/dailySummary")]
+        [WolverineGet("api/transactions/daily-summary")]
         public static async Task<Ok<DailySummaryResponse>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,

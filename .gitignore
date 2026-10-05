@@ -496,3 +496,6 @@ FodyWeavers.xsd
 *.msp
 **/test-results/*
 opencode.json
+
+# Recaptured OpenAPI document (local diff artifact; only openapi.json is committed)
+contracts/openapi.actual.json

@@ -40,7 +40,7 @@ namespace BasicFinance.Api.Features.Institutions
         /// Returns <see cref="Ok{TValue}"/> with a <see cref="ListResult{TValue}"/> of <see cref="InstitutionDto"/> when successful.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/institutions/")]
+        [WolverineGet("api/institutions")]
         public static async Task<Ok<ListResult<InstitutionDto>>> HandleAsync(
             [FromQuery] Request request,
             AppDbContext dbContext,

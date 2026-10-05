@@ -31,7 +31,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/dailySummary?recordedDate=2026-08-05&timePeriod=Monthly", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/daily-summary?recordedDate=2026-08-05&timePeriod=Monthly", CancellationToken);
 
         // Assert
         Assert.Equal(new DateOnly(2026, 8, 1), result.CurrentStart);
@@ -71,7 +71,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/dailySummary?recordedDate=2026-08-05&timePeriod=Weekly", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/daily-summary?recordedDate=2026-08-05&timePeriod=Weekly", CancellationToken);
 
         // Assert
         Assert.Equal(new DateOnly(2026, 8, 3), result.CurrentStart);
@@ -96,7 +96,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         const string parameters = "recordedDate=2026-08-05&timePeriod=Weekly";
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?{parameters}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?{parameters}", CancellationToken);
 
         // Assert
         Assert.Equal(7, result.CurrentPeriod.Count);
@@ -120,7 +120,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         const string parameters = "recordedDate=2026-08-05&timePeriod=Annualish";
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?{parameters}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?{parameters}", CancellationToken);
 
         // Assert
         Assert.Equal(new DateOnly(2026, 8, 1), result.CurrentStart);
@@ -142,7 +142,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?recordedDate=2026-08-05&accountId={firstAccount.AccountId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?recordedDate=2026-08-05&accountId={firstAccount.AccountId}", CancellationToken);
 
         // Assert
         Assert.Equal(31, result.CurrentPeriod.Count);
@@ -165,7 +165,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?recordedDate=2026-08-05&institutionId={TestConstants.ChaseInstitutionId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?recordedDate=2026-08-05&institutionId={TestConstants.ChaseInstitutionId}", CancellationToken);
 
         // Assert
         Assert.Equal(31, result.CurrentPeriod.Count);
@@ -181,7 +181,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         var parameters = $"recordedDate=2026-08-05&timePeriod=Weekly&institutionId={TestConstants.NonExistentInstitutionId}";
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?{parameters}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?{parameters}", CancellationToken);
 
         // Assert
         Assert.Equal(7, result.CurrentPeriod.Count);
@@ -214,7 +214,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?recordedDate=2026-08-05&institutionId={TestConstants.WellsFargoInstitutionId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?recordedDate=2026-08-05&institutionId={TestConstants.WellsFargoInstitutionId}", CancellationToken);
 
         // Assert
         Assert.Equal(100.00m, result.CurrentPeriod[4].TotalSpend);
@@ -235,7 +235,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedAsync(transaction, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/dailySummary?recordedDate=2026-08-05&institutionId={inactiveInstitution.InstitutionId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>($"/api/transactions/daily-summary?recordedDate=2026-08-05&institutionId={inactiveInstitution.InstitutionId}", CancellationToken);
 
         // Assert
         Assert.Equal(0m, result.CurrentPeriod[4].TotalSpend);
@@ -257,7 +257,7 @@ public class GetDailyTransactionSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/dailySummary?recordedDate=2026-08-05", CancellationToken);
+        var result = await HttpClient.GetResultAsync<DailySummaryResponseDto>("/api/transactions/daily-summary?recordedDate=2026-08-05", CancellationToken);
 
         // Assert
         Assert.Equal(31, result.CurrentPeriod.Count);

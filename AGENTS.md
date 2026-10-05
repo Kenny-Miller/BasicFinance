@@ -40,7 +40,8 @@ cd src/BasicFinance.Client
 npm install
 npm run start-standalone         # dev server on :4200
 npm run build                    # production build
-npm run test                     # Karma unit tests
+npm run test                     # watch mode (ng test)
+npm run test:unit                # headless unit tests with coverage
 npm run lint                     # ESLint (TS + HTML templates)
 npm run format                   # Prettier write
 ```
@@ -92,22 +93,23 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 - NuGet versions centralized in `Directory.Packages.props` (CPM enabled, transitive pinning on).
 - Solution file is `.slnx` format (Visual Studio 2022+).
 - StyleCop and SonarAnalyzer run as build analyzers.
+- API routes: kebab-case segments, no trailing slashes, camelCase path params (see `DevDocuments/Task/openapi-heyapi-client.md`).
 
 ### Angular
 
 - Component selectors: `app-kebab-case` (elements), `appCamelCase` (directives).
-- UI components live in `libs/ui` (spartan-ng helm layer). Import alias: `@spartan-ng/helm`.
+- UI components live in `libs/ui` (spartan-ng helm layer). Import per module as `@spartan-ng/helm/<module>` (tsconfig paths map to `libs/ui/<module>/src/index.ts`). App code uses the helm layer only; `@spartan-ng/brain` and `@angular/cdk` are internal to `libs/ui` (enforcement tracked in `DevDocuments/Task/spartan-lint-enforcement.md`).
 - Auth guard (`authGuard`) protects all routes. OAuth initialized via `provideAppInitializer`.
-- Feature modules follow `features/<domain>/` structure with colocated `*-client.ts` data services.
-- Tests use Jasmine + Karma. Spec files colocated as `*.spec.ts`.
+- Feature modules follow `features/<domain>/` structure; shared data-access services live in `core/data-access/` as `*-client.ts` (or generated OpenAPI client wrappers, see `DevDocuments/Task/openapi-heyapi-client.md`). Never hand-edit `core/api/generated/` — regenerate via `npm run gen:api` from `contracts/openapi.json`.
+- Tests use Vitest (`@angular/build:unit-test`). Spec files colocated as `*.spec.ts`; run headless with `npm run test:unit`.
 - All component CSS files are intentionally left empty. Styling is applied via Tailwind CSS v4 utility classes inline in templates.
 
 ## Documentation
 
-Project documentation lives in `Documents/` organized in three tiers:
+Project documentation lives in `DevDocuments/` organized in three tiers:
 
 | Folder    | Purpose                                                                                |
-| --------- | -------------------------------------------------------------------------------------- |
+| --- | --- |
 | `Design/` | Loose, exploratory ideas. Hazy or unclear concepts that need refinement.               |
 | `Spec/`   | Refined specifications produced by research, analysis, and review of design documents. |
 | `Task/`   | Concrete, actionable implementation steps derived from specifications.                 |

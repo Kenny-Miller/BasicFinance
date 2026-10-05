@@ -45,7 +45,7 @@ namespace BasicFinance.Api.Features.Spending
         /// or <see cref="BadRequest"/> when no transactions exist.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/Spending/SpendingOverTimeSummary")]
+        [WolverineGet("api/spending/over-time-summary")]
         public static async Task<Results<Ok<Response>, BadRequest<string>>> HandleAsync(
             AuthenticatedUser user,
             TimeProvider timeProvider,

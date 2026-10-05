@@ -1,0 +1,2133 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "BasicFinance.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/transaction-types": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.TransactionTypes.ListTransactionTypes"
+        ],
+        "summary": "Retrieves the active TransactionTypes.",
+        "description": "GET_api_transaction_types",
+        "operationId": "GET_api_transaction_types",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionTypeDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/daily-summary": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Transactions.GetDailyTransactionSummary"
+        ],
+        "summary": "Retrieves per-calendar-day spend points for the user\u0027s active accounts for the current and\r\nprevious period. The period is resolved from \u0060timePeriod\u0060 plus \u0060recordedDate\u0060.\r\nDays without activity are zero-filled.",
+        "description": "GET_api_transactions_daily_summary",
+        "operationId": "GET_api_transactions_daily_summary",
+        "parameters": [
+          {
+            "name": "RecordedDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          },
+          {
+            "name": "AccountId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailySummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{transactionId}": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Transactions.GetTransactionById"
+        ],
+        "summary": "Gets a Transactions associated with the authenticated user and the specified Id.",
+        "description": "GET_api_transactions_transactionId",
+        "operationId": "GET_api_transactions_transactionId",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "description": "The request query parameters.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/summary": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Transactions.GetTransactionSummary"
+        ],
+        "summary": "Retrieves headline transaction aggregates (count, spend, income, net flow) for the user\u0027s\r\nactive accounts for the current and previous period. The period is resolved from\r\n\u0060timePeriod\u0060 plus \u0060recordedDate\u0060.",
+        "description": "GET_api_transactions_summary",
+        "operationId": "GET_api_transactions_summary",
+        "parameters": [
+          {
+            "name": "RecordedDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          },
+          {
+            "name": "AccountId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Transactions.ListTransactions"
+        ],
+        "summary": "Retrieves Transactions associated with the authenticated user\r\nbased on the provided search criteria.",
+        "description": "GET_api_transactions",
+        "operationId": "GET_api_transactions",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortField",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "MinAmount",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "MaxAmount",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "TransactionTypeCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "TransactionCategoryCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AccountId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListResultOfTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction-categories": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.TransactionCategories.ListTransactionCategories"
+        ],
+        "summary": "Retrieves the active TransactionCategorys.",
+        "description": "GET_api_transaction_categories",
+        "operationId": "GET_api_transaction_categories",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionCategoryDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spreadsheets": {
+      "post": {
+        "tags": [
+          "BasicFinance.Api.Features.Spreadsheets.CreateUserGoogleSpreadsheet"
+        ],
+        "summary": "Creates a new UserGoogleSpreadsheet for the authenticated user and the specified Google Spreadsheet.",
+        "description": "POST_api_spreadsheets",
+        "operationId": "POST_api_spreadsheets",
+        "parameters": [
+          {
+            "name": "x-google-auth-token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Cancellation token for the request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Spreadsheets.ListUserGoogleSpreadsheets"
+        ],
+        "summary": "Lists UserGoogleSpreadsheets associated with the authenticated user.",
+        "description": "GET_api_spreadsheets",
+        "operationId": "GET_api_spreadsheets",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListResultOfUserGoogleSpreadSheetDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spreadsheets/{spreadsheetId}": {
+      "delete": {
+        "tags": [
+          "BasicFinance.Api.Features.Spreadsheets.DeleteUserGoogleSpreadsheet"
+        ],
+        "summary": "Soft-deletes (deactivates) a user google spreadsheet owned by the authenticated user.",
+        "description": "DELETE_api_spreadsheets_spreadsheetId",
+        "operationId": "DELETE_api_spreadsheets_spreadsheetId",
+        "parameters": [
+          {
+            "name": "spreadsheetId",
+            "in": "path",
+            "description": "The identifier of the data spreadsheet to delete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spreadsheets/{userGoogleSpreadsheetId}": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Spreadsheets.GetUserGoogleSpreadsheet"
+        ],
+        "summary": "Gets a UserGoogleSpreadsheet for the authenticated user and the specified Google Spreadsheet.",
+        "description": "GET_api_spreadsheets_userGoogleSpreadsheetId",
+        "operationId": "GET_api_spreadsheets_userGoogleSpreadsheetId",
+        "parameters": [
+          {
+            "name": "userGoogleSpreadsheetId",
+            "in": "path",
+            "description": "Id of the UserGoogleSpreadsheet to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spending/activity-by-period": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Spending.GetSpendingActivityByPeriod"
+        ],
+        "summary": "Retrieves spending activity for the authenticated user for a given period.",
+        "description": "GET_api_spending_activity_by_period",
+        "operationId": "GET_api_spending_activity_by_period",
+        "parameters": [
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SpendingPeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SpendingPeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpendingByPeriod"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spending/over-time-summary": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Spending.GetSpendingOverTimeSummary"
+        ],
+        "summary": "Retrieves spending over time summary for the authenticated user.",
+        "description": "GET_api_spending_over_time_summary",
+        "operationId": "GET_api_spending_over_time_summary",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/institutions/{institutionId}": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Institutions.GetInstitutionById"
+        ],
+        "summary": "Gets an Institution with the specified Id.",
+        "description": "GET_api_institutions_institutionId",
+        "operationId": "GET_api_institutions_institutionId",
+        "parameters": [
+          {
+            "name": "institutionId",
+            "in": "path",
+            "description": "The institution identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstitutionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/my/institutions": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Institutions.GetMyInstitutions"
+        ],
+        "summary": "Retrieves distinct institutions for the authenticated user.\r\nOnly includes institutions that have at least one active account belonging to the user.",
+        "description": "GET_api_my_institutions",
+        "operationId": "GET_api_my_institutions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InstitutionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/institutions": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Institutions.ListInstitutions"
+        ],
+        "summary": "Retrieves active Institutions based on the provided search criteria.",
+        "description": "GET_api_institutions",
+        "operationId": "GET_api_institutions",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortField",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListResultOfInstitutionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-types": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.AccountTypes.ListAccountTypes"
+        ],
+        "summary": "Retrieves the active AccountTypes.",
+        "description": "GET_api_account_types",
+        "operationId": "GET_api_account_types",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountTypeDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/balance-summary": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Accounts.GetAccountBalanceSummary"
+        ],
+        "summary": "Retrieves the total balance breakdown for the user\u0027s active accounts for the current and\r\nprevious period.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward).\r\nAccounts without a ledger entry that far back appear in that period\u0027s\r\nbreakdown with a zero balance.",
+        "description": "GET_api_accounts_balance_summary",
+        "operationId": "GET_api_accounts_balance_summary",
+        "parameters": [
+          {
+            "name": "RecordedDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{accountId}": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Accounts.GetAccountById"
+        ],
+        "summary": "Gets the Account associated with the authenticated user that has the specified Id.",
+        "description": "GET_api_accounts_accountId",
+        "operationId": "GET_api_accounts_accountId",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "The Id of the account to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/institution/{institutionId}/summary": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Accounts.GetInstitutionSummary"
+        ],
+        "summary": "Retrieves account-level summary for a specific institution.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward;\r\naccounts without a ledger entry that far back carry a zero balance).\r\nThe per-account-type totals are zero-filled for every active account type.\r\nIf the institution is deactivated no accounts are returned, but the\r\ninstitution name and zero-filled totals are.",
+        "description": "GET_api_accounts_institution_institutionId_summary",
+        "operationId": "GET_api_accounts_institution_institutionId_summary",
+        "parameters": [
+          {
+            "name": "institutionId",
+            "in": "path",
+            "description": "The unique identifier of the institution.",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "RecordedDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstitutionSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/my/accounts": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Accounts.GetMyAccounts"
+        ],
+        "summary": "Retrieves the active Accounts for the authenticated user.",
+        "description": "GET_api_my_accounts",
+        "operationId": "GET_api_my_accounts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api.Features.Accounts.ListAccounts"
+        ],
+        "summary": "Retrieves Accounts associated with the authenticated user\r\nbased on the provided search criteria.",
+        "description": "GET_api_accounts",
+        "operationId": "GET_api_accounts",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortField",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AccountTypeCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Institution",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListResultOfAccountDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "BasicFinance.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountDto": {
+        "required": [
+          "id",
+          "name",
+          "accountTypeCode",
+          "accountTypeName",
+          "institutionCode",
+          "institutionName",
+          "currency",
+          "isLiability",
+          "latestBalance",
+          "latestBalanceRecordedDate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the account.",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the account."
+          },
+          "accountTypeCode": {
+            "type": "string",
+            "description": "The code of the account type."
+          },
+          "accountTypeName": {
+            "type": "string",
+            "description": "The display name of the account type."
+          },
+          "institutionCode": {
+            "type": "string",
+            "description": "The code of the institution."
+          },
+          "institutionName": {
+            "type": "string",
+            "description": "The display name of the institution."
+          },
+          "currency": {
+            "type": "string",
+            "description": "The ISO 4217 currency code of the account."
+          },
+          "isLiability": {
+            "type": "boolean",
+            "description": "Whether the account type is a liability (balances are stored as negative values)."
+          },
+          "latestBalance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The latest ledger balance on or before the reference date, or \u00600\u0060 when the account has no ledger entry that far back.",
+            "format": "double"
+          },
+          "latestBalanceRecordedDate": {
+            "type": "string",
+            "description": "The recorded date of the latest ledger balance on or before the reference date, or the fallback reference date when the account has no ledger entry that far back.",
+            "format": "date-time"
+          }
+        },
+        "description": "Dto containing Account data."
+      },
+      "AccountTypeDto": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "isLiability"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The unique identifier of the account type.",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "The code of the account type."
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the account type."
+          },
+          "isLiability": {
+            "type": "boolean",
+            "description": "Whether the account type is a liability (balances are stored as negative values)."
+          }
+        },
+        "description": "Dto containing AccountType data."
+      },
+      "DailySummaryResponse": {
+        "required": [
+          "currentStart",
+          "currentEnd",
+          "previousStart",
+          "previousEnd",
+          "currentPeriod",
+          "previousPeriod"
+        ],
+        "type": "object",
+        "properties": {
+          "currentStart": {
+            "type": "string",
+            "description": "The first day of the current period (inclusive).",
+            "format": "date"
+          },
+          "currentEnd": {
+            "type": "string",
+            "description": "The first day excluded from the current period (exclusive).",
+            "format": "date"
+          },
+          "previousStart": {
+            "type": "string",
+            "description": "The first day of the previous period (inclusive).",
+            "format": "date"
+          },
+          "previousEnd": {
+            "type": "string",
+            "description": "The first day excluded from the previous period (exclusive).",
+            "format": "date"
+          },
+          "currentPeriod": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyTransactionSummary"
+            },
+            "description": "One zero-filled spend point per calendar day of the current period."
+          },
+          "previousPeriod": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyTransactionSummary"
+            },
+            "description": "One zero-filled spend point per calendar day of the previous period."
+          }
+        },
+        "description": "Response Dto for the GetDailyTransactionSummary endpoint."
+      },
+      "DailyTransactionSummary": {
+        "required": [
+          "date",
+          "totalSpend",
+          "transactionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The day (UTC).",
+            "format": "date"
+          },
+          "totalSpend": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Sum of debit amounts for the day.",
+            "format": "double"
+          },
+          "transactionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of all transaction types for the day.",
+            "format": "int32"
+          }
+        },
+        "description": "Spend and transaction count for a single calendar day."
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "InstitutionDto": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "logoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Dto containing Institution data."
+      },
+      "InstitutionSummaryResponse": {
+        "required": [
+          "institutionId",
+          "institutionName",
+          "accounts",
+          "accountTypeTotals",
+          "accountTypePreviousTotals",
+          "currentPeriodStart",
+          "currentPeriodEnd",
+          "previousPeriodStart",
+          "previousPeriodEnd"
+        ],
+        "type": "object",
+        "properties": {
+          "institutionId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The Id of the institution.",
+            "format": "int32"
+          },
+          "institutionName": {
+            "type": "string",
+            "description": "The full name of the institution."
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountDto"
+            },
+            "description": "The user\u0027s active accounts at the institution, with their latest balance on or before the current period end."
+          },
+          "accountTypeTotals": {
+            "type": "object",
+            "additionalProperties": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            },
+            "description": "Sum of the latest balances per account type for the current period, zero-filled for every active account type."
+          },
+          "accountTypePreviousTotals": {
+            "type": "object",
+            "additionalProperties": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            },
+            "description": "Sum of the latest balances per account type for the previous period, zero-filled for every active account type."
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "description": "The first day of the current period (inclusive).",
+            "format": "date-time"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "description": "The first day excluded from the current period (exclusive).",
+            "format": "date-time"
+          },
+          "previousPeriodStart": {
+            "type": "string",
+            "description": "The first day of the previous period (inclusive).",
+            "format": "date-time"
+          },
+          "previousPeriodEnd": {
+            "type": "string",
+            "description": "The first day excluded from the previous period (exclusive).",
+            "format": "date-time"
+          }
+        },
+        "description": "Response Dto for the GetInstitutionSummary endpoint."
+      },
+      "ListResultOfAccountDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ListResultOfInstitutionDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstitutionDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ListResultOfTransactionDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ListResultOfUserGoogleSpreadSheetDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGoogleSpreadSheetDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "Request": {
+        "required": [
+          "googleSpreadsheetId"
+        ],
+        "type": "object",
+        "properties": {
+          "googleSpreadsheetId": {
+            "type": "string",
+            "description": "The Google Spreadsheet identifier to associate with the authenticated user."
+          }
+        },
+        "description": "Request Dto for the CreateUserGoogleSpreadsheet endpoint."
+      },
+      "Response": {
+        "required": [
+          "userGoogleSpreadsheetId",
+          "userId",
+          "googleSpreadsheetId",
+          "googleSpreadsheetName",
+          "createdDate"
+        ],
+        "type": "object",
+        "properties": {
+          "userGoogleSpreadsheetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "googleSpreadsheetId": {
+            "type": "string"
+          },
+          "googleSpreadsheetName": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Response Dto for the CreateUserGoogleSpreadsheet endpoint."
+      },
+      "SpendingActivity": {
+        "required": [
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "percentOfSpend": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double",
+            "default": 0
+          }
+        },
+        "description": "Represents the amount spent and percent of total spend for a given category within a time period."
+      },
+      "SpendingByPeriod": {
+        "required": [
+          "periodStartDate",
+          "periodEndDate",
+          "totalSpend",
+          "totalIncome",
+          "spendingActivityByCategory"
+        ],
+        "type": "object",
+        "properties": {
+          "periodStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodEndDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalSpend": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "totalIncome": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "spendingActivityByCategory": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SpendingActivity"
+            }
+          }
+        },
+        "description": "Represents the aggregated spending activity for a given time period."
+      },
+      "SpendingPeriod": {
+        "type": "integer",
+        "description": "Defines time periods to group spending activity by."
+      },
+      "TimePeriod": {
+        "type": "integer"
+      },
+      "TransactionCategoryDto": {
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The unique identifier of the transaction category.",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "The code of the transaction category."
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the transaction category."
+          }
+        },
+        "description": "Dto containing TransactionCategory data."
+      },
+      "TransactionDto": {
+        "required": [
+          "id",
+          "transactionTypeName",
+          "transactionCategoryName",
+          "accountName",
+          "date",
+          "amount",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionTypeName": {
+            "type": "string"
+          },
+          "transactionCategoryName": {
+            "type": "string"
+          },
+          "accountName": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "description": "Dto containing Transaction data."
+      },
+      "TransactionPeriodSummary": {
+        "required": [
+          "totalCount",
+          "totalSpend",
+          "totalIncome"
+        ],
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of all transaction types in the period.",
+            "format": "int32"
+          },
+          "totalSpend": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Sum of debit amounts in the period.",
+            "format": "double"
+          },
+          "totalIncome": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Sum of credit amounts in the period.",
+            "format": "double"
+          },
+          "netFlow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Represents the net income for the given period.",
+            "format": "double"
+          }
+        },
+        "description": "Headline aggregates for a single period."
+      },
+      "TransactionSummaryResponse": {
+        "required": [
+          "currentStart",
+          "currentEnd",
+          "previousStart",
+          "previousEnd",
+          "currentPeriod",
+          "previousPeriod"
+        ],
+        "type": "object",
+        "properties": {
+          "currentStart": {
+            "type": "string",
+            "description": "The first day of the current period (inclusive).",
+            "format": "date"
+          },
+          "currentEnd": {
+            "type": "string",
+            "description": "The first day excluded from the current period (exclusive).",
+            "format": "date"
+          },
+          "previousStart": {
+            "type": "string",
+            "description": "The first day of the previous period (inclusive).",
+            "format": "date"
+          },
+          "previousEnd": {
+            "type": "string",
+            "description": "The first day excluded from the previous period (exclusive).",
+            "format": "date"
+          },
+          "currentPeriod": {
+            "description": "Headline aggregates for the current period.",
+            "$ref": "#/components/schemas/TransactionPeriodSummary"
+          },
+          "previousPeriod": {
+            "description": "Headline aggregates for the previous period.",
+            "$ref": "#/components/schemas/TransactionPeriodSummary"
+          }
+        },
+        "description": "Response Dto for the GetTransactionSummary endpoint."
+      },
+      "TransactionTypeDto": {
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The unique identifier of the transaction type.",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "The code of the transaction type."
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the transaction type."
+          }
+        },
+        "description": "Dto containing TransactionType data."
+      },
+      "UserGoogleSpreadSheetDto": {
+        "required": [
+          "id",
+          "googleSheetId",
+          "googleSheetName",
+          "createdDate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "googleSheetId": {
+            "type": "string"
+          },
+          "googleSheetName": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Dto containing UserGoogleSpreadsheet data."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "BasicFinance.Api.Features.TransactionTypes.ListTransactionTypes"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Transactions.GetDailyTransactionSummary"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Transactions.GetTransactionById"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Transactions.GetTransactionSummary"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Transactions.ListTransactions"
+    },
+    {
+      "name": "BasicFinance.Api.Features.TransactionCategories.ListTransactionCategories"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spreadsheets.CreateUserGoogleSpreadsheet"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spreadsheets.ListUserGoogleSpreadsheets"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spreadsheets.DeleteUserGoogleSpreadsheet"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spreadsheets.GetUserGoogleSpreadsheet"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spending.GetSpendingActivityByPeriod"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Spending.GetSpendingOverTimeSummary"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Institutions.GetInstitutionById"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Institutions.GetMyInstitutions"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Institutions.ListInstitutions"
+    },
+    {
+      "name": "BasicFinance.Api.Features.AccountTypes.ListAccountTypes"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Accounts.GetAccountBalanceSummary"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Accounts.GetAccountById"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Accounts.GetInstitutionSummary"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Accounts.GetMyAccounts"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Accounts.ListAccounts"
+    },
+    {
+      "name": "BasicFinance.Api"
+    }
+  ]
+}
