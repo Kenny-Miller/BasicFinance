@@ -10,18 +10,9 @@ export const zAccountBalanceDto = z.object({
     accountTypeCode: z.string(),
     institution: z.string(),
     accountName: z.string(),
-    balance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    percentageOfTotalBalance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    percentageOfAccountTypeBalance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ])
+    balance: z.number(),
+    percentageOfTotalBalance: z.number(),
+    percentageOfAccountTypeBalance: z.number()
 });
 
 /**
@@ -36,10 +27,7 @@ export const zAccountDto = z.object({
     institutionName: z.string(),
     currency: z.string(),
     isLiability: z.boolean(),
-    latestBalance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
+    latestBalance: z.number(),
     latestBalanceRecordedDate: z.iso.datetime()
 });
 
@@ -47,14 +35,8 @@ export const zAccountDto = z.object({
  * Balance and breakdown for a single account type within a period.
  */
 export const zAccountTypeBreakdown = z.object({
-    balance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    percentageOfTotalBalance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
+    balance: z.number(),
+    percentageOfTotalBalance: z.number(),
     accounts: z.array(zAccountBalanceDto)
 });
 
@@ -62,10 +44,7 @@ export const zAccountTypeBreakdown = z.object({
  * Dto containing AccountType data.
  */
 export const zAccountTypeDto = z.object({
-    id: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
+    id: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     code: z.string(),
     name: z.string(),
     isLiability: z.boolean()
@@ -75,14 +54,8 @@ export const zAccountTypeDto = z.object({
  * Represents the total amount spent for the month at a given date.
  */
 export const zDailySpendingOverTime = z.object({
-    x: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
-    y: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ])
+    x: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    y: z.number()
 });
 
 /**
@@ -90,14 +63,8 @@ export const zDailySpendingOverTime = z.object({
  */
 export const zDailyTransactionSummary = z.object({
     date: z.iso.date(),
-    totalSpend: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    transactionCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ])
+    totalSpend: z.number(),
+    transactionCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })
 });
 
 /**
@@ -115,10 +82,7 @@ export const zDailySummaryResponse = z.object({
 export const zHttpValidationProblemDetails = z.object({
     type: z.string().nullish(),
     title: z.string().nullish(),
-    status: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).nullish(),
+    status: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).nullish(),
     detail: z.string().nullish(),
     instance: z.string().nullish(),
     errors: z.record(z.string(), z.array(z.string())).optional()
@@ -128,10 +92,7 @@ export const zHttpValidationProblemDetails = z.object({
  * Dto containing Institution data.
  */
 export const zInstitutionDto = z.object({
-    id: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
+    id: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     code: z.string(),
     name: z.string(),
     logoUrl: z.string().nullable()
@@ -141,20 +102,11 @@ export const zInstitutionDto = z.object({
  * Response Dto for the GetInstitutionSummary endpoint.
  */
 export const zInstitutionSummaryResponse = z.object({
-    institutionId: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
+    institutionId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     institutionName: z.string(),
     accounts: z.array(zAccountDto),
-    accountTypeTotals: z.record(z.string(), z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ])),
-    accountTypePreviousTotals: z.record(z.string(), z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ])),
+    accountTypeTotals: z.record(z.string(), z.number()),
+    accountTypePreviousTotals: z.record(z.string(), z.number()),
     currentPeriodStart: z.iso.datetime(),
     currentPeriodEnd: z.iso.datetime(),
     previousPeriodStart: z.iso.datetime(),
@@ -163,51 +115,24 @@ export const zInstitutionSummaryResponse = z.object({
 
 export const zListResultOfAccountDto = z.object({
     items: z.array(zAccountDto).optional(),
-    page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    totalCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    totalCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 export const zListResultOfInstitutionDto = z.object({
     items: z.array(zInstitutionDto).optional(),
-    page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    totalCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    totalCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 export const zProblemDetails = z.object({
     type: z.string().nullish(),
     title: z.string().nullish(),
-    status: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).nullish(),
+    status: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).nullish(),
     detail: z.string().nullish(),
     instance: z.string().nullish()
 });
@@ -223,14 +148,8 @@ export const zRequest = z.object({
  * Represents the amount spent and percent of total spend for a given category within a time period.
  */
 export const zSpendingActivity = z.object({
-    amount: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    percentOfSpend: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/)
-    ]).optional().default(0)
+    amount: z.number(),
+    percentOfSpend: z.number().optional().default(0)
 });
 
 /**
@@ -239,14 +158,8 @@ export const zSpendingActivity = z.object({
 export const zSpendingByPeriod = z.object({
     periodStartDate: z.iso.datetime(),
     periodEndDate: z.iso.datetime(),
-    totalSpend: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    totalIncome: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
+    totalSpend: z.number(),
+    totalIncome: z.number(),
     spendingActivityByCategory: z.record(z.string(), zSpendingActivity)
 });
 
@@ -256,14 +169,8 @@ export const zSpendingByPeriod = z.object({
 export const zSpendingOverTimeSummaryResponse = z.object({
     currentMonthActivity: z.array(zDailySpendingOverTime),
     previousMonthActivity: z.array(zDailySpendingOverTime),
-    totalMonthlySpend: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    monthlySpendDifference: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ])
+    totalMonthlySpend: z.number(),
+    monthlySpendDifference: z.number()
 });
 
 /**
@@ -277,10 +184,7 @@ export const zTimePeriod = z.int();
  * Total balance and breakdown by account type for a period.
  */
 export const zTotalBalanceBreakdown = z.object({
-    balance: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
+    balance: z.number(),
     accountTypeBreakdowns: z.record(z.string(), zAccountTypeBreakdown)
 });
 
@@ -300,10 +204,7 @@ export const zAccountBalanceSummaryResponse = z.object({
  * Dto containing TransactionCategory data.
  */
 export const zTransactionCategoryDto = z.object({
-    id: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
+    id: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     code: z.string(),
     name: z.string()
 });
@@ -317,53 +218,26 @@ export const zTransactionDto = z.object({
     transactionCategoryName: z.string(),
     accountName: z.string(),
     date: z.iso.datetime(),
-    amount: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
+    amount: z.number(),
     description: z.string()
 });
 
 export const zListResultOfTransactionDto = z.object({
     items: z.array(zTransactionDto).optional(),
-    page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    totalCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    totalCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 /**
  * Headline aggregates for a single period.
  */
 export const zTransactionPeriodSummary = z.object({
-    totalCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
-    totalSpend: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    totalIncome: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]),
-    netFlow: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]).optional()
+    totalCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    totalSpend: z.number(),
+    totalIncome: z.number(),
+    netFlow: z.number().optional()
 });
 
 /**
@@ -382,10 +256,7 @@ export const zTransactionSummaryResponse = z.object({
  * Dto containing TransactionType data.
  */
 export const zTransactionTypeDto = z.object({
-    id: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]),
+    id: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     code: z.string(),
     name: z.string()
 });
@@ -402,22 +273,10 @@ export const zUserGoogleSpreadSheetDto = z.object({
 
 export const zListResultOfUserGoogleSpreadSheetDto = z.object({
     items: z.array(zUserGoogleSpreadSheetDto).optional(),
-    page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    pageCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    totalCount: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    pageCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    totalCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 /**
@@ -440,10 +299,7 @@ export const zGetApiTransactionsDailySummaryQuery = z.object({
     RecordedDate: z.iso.datetime().optional(),
     TimePeriod: zTimePeriod.optional(),
     AccountId: z.uuid().optional(),
-    InstitutionId: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    InstitutionId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 /**
@@ -464,10 +320,7 @@ export const zGetApiTransactionsSummaryQuery = z.object({
     RecordedDate: z.iso.datetime().optional(),
     TimePeriod: zTimePeriod.optional(),
     AccountId: z.uuid().optional(),
-    InstitutionId: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional()
+    InstitutionId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
 });
 
 /**
@@ -476,26 +329,14 @@ export const zGetApiTransactionsSummaryQuery = z.object({
 export const zGetApiTransactionsSummaryResponse = zTransactionSummaryResponse;
 
 export const zGetApiTransactionsQuery = z.object({
-    Page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    PageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
+    Page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    PageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
     SortField: z.string().optional(),
     SortDirection: z.string().optional(),
     StartDate: z.iso.datetime().optional(),
     EndDate: z.iso.datetime().optional(),
-    MinAmount: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]).optional(),
-    MaxAmount: z.union([
-        z.number(),
-        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
-    ]).optional(),
+    MinAmount: z.number().optional(),
+    MaxAmount: z.number().optional(),
     TransactionTypeCode: z.string().optional(),
     TransactionCategoryCode: z.string().optional(),
     AccountId: z.uuid().optional(),
@@ -565,10 +406,7 @@ export const zGetApiSpendingActivityByPeriodResponse = zSpendingByPeriod;
 export const zGetApiSpendingOverTimeSummaryResponse = zSpendingOverTimeSummaryResponse;
 
 export const zGetApiInstitutionsInstitutionIdPath = z.object({
-    institutionId: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ])
+    institutionId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })
 });
 
 /**
@@ -582,14 +420,8 @@ export const zGetApiInstitutionsInstitutionIdResponse = zInstitutionDto;
 export const zGetApiMyInstitutionsResponse = z.array(zInstitutionDto);
 
 export const zGetApiInstitutionsQuery = z.object({
-    Page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    PageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
+    Page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    PageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
     SortField: z.string().optional(),
     SortDirection: z.string().optional()
 });
@@ -624,10 +456,7 @@ export const zGetApiAccountsAccountIdPath = z.object({
 export const zGetApiAccountsAccountIdResponse = zAccountDto;
 
 export const zGetApiAccountsInstitutionInstitutionIdSummaryPath = z.object({
-    institutionId: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ])
+    institutionId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })
 });
 
 export const zGetApiAccountsInstitutionInstitutionIdSummaryQuery = z.object({
@@ -646,14 +475,8 @@ export const zGetApiAccountsInstitutionInstitutionIdSummaryResponse = zInstituti
 export const zGetApiMyAccountsResponse = z.array(zAccountDto);
 
 export const zGetApiAccountsQuery = z.object({
-    Page: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
-    PageSize: z.union([
-        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
-        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
-    ]).optional(),
+    Page: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    PageSize: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
     SortField: z.string().optional(),
     SortDirection: z.string().optional(),
     AccountTypeCode: z.string().optional(),

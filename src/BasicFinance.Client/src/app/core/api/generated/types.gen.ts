@@ -27,15 +27,15 @@ export type AccountBalanceDto = {
     /**
      * The balance of the account on or before the period end.
      */
-    balance: number | string;
+    balance: number;
     /**
      * This account's balance as a percentage of the total balance for the period.
      */
-    percentageOfTotalBalance: number | string;
+    percentageOfTotalBalance: number;
     /**
      * This account's balance as a percentage of the total balance for its account type.
      */
-    percentageOfAccountTypeBalance: number | string;
+    percentageOfAccountTypeBalance: number;
 };
 
 /**
@@ -107,7 +107,7 @@ export type AccountDto = {
     /**
      * The latest ledger balance on or before the reference date, or `0` when the account has no ledger entry that far back.
      */
-    latestBalance: number | string;
+    latestBalance: number;
     /**
      * The recorded date of the latest ledger balance on or before the reference date, or the fallback reference date when the account has no ledger entry that far back.
      */
@@ -121,11 +121,11 @@ export type AccountTypeBreakdown = {
     /**
      * Total balance of all accounts of this type for the period.
      */
-    balance: number | string;
+    balance: number;
     /**
      * This type's balance as a percentage of the total balance for the period.
      */
-    percentageOfTotalBalance: number | string;
+    percentageOfTotalBalance: number;
     /**
      * Breakdown of the type's balance by individual account.
      */
@@ -139,7 +139,7 @@ export type AccountTypeDto = {
     /**
      * The unique identifier of the account type.
      */
-    id: number | string;
+    id: number;
     /**
      * The code of the account type.
      */
@@ -161,11 +161,11 @@ export type DailySpendingOverTime = {
     /**
      * The x-coordinate of the activity point.
      */
-    x: number | string;
+    x: number;
     /**
      * The y-coordinate of the activity point.
      */
-    y: number | string;
+    y: number;
 };
 
 /**
@@ -209,17 +209,17 @@ export type DailyTransactionSummary = {
     /**
      * Sum of debit amounts for the day.
      */
-    totalSpend: number | string;
+    totalSpend: number;
     /**
      * Count of all transaction types for the day.
      */
-    transactionCount: number | string;
+    transactionCount: number;
 };
 
 export type HttpValidationProblemDetails = {
     type?: null | string;
     title?: null | string;
-    status?: null | number | string;
+    status?: null | number;
     detail?: null | string;
     instance?: null | string;
     errors?: {
@@ -231,7 +231,7 @@ export type HttpValidationProblemDetails = {
  * Dto containing Institution data.
  */
 export type InstitutionDto = {
-    id: number | string;
+    id: number;
     code: string;
     name: string;
     logoUrl: null | string;
@@ -244,7 +244,7 @@ export type InstitutionSummaryResponse = {
     /**
      * The Id of the institution.
      */
-    institutionId: number | string;
+    institutionId: number;
     /**
      * The full name of the institution.
      */
@@ -257,13 +257,13 @@ export type InstitutionSummaryResponse = {
      * Sum of the latest balances per account type for the current period, zero-filled for every active account type.
      */
     accountTypeTotals: {
-        [key: string]: number | string;
+        [key: string]: number;
     };
     /**
      * Sum of the latest balances per account type for the previous period, zero-filled for every active account type.
      */
     accountTypePreviousTotals: {
-        [key: string]: number | string;
+        [key: string]: number;
     };
     /**
      * The first day of the current period (inclusive).
@@ -285,40 +285,40 @@ export type InstitutionSummaryResponse = {
 
 export type ListResultOfAccountDto = {
     items?: Array<AccountDto>;
-    page?: number | string;
-    pageSize?: number | string;
-    pageCount?: number | string;
-    totalCount?: number | string;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
+    totalCount?: number;
 };
 
 export type ListResultOfInstitutionDto = {
     items?: Array<InstitutionDto>;
-    page?: number | string;
-    pageSize?: number | string;
-    pageCount?: number | string;
-    totalCount?: number | string;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
+    totalCount?: number;
 };
 
 export type ListResultOfTransactionDto = {
     items?: Array<TransactionDto>;
-    page?: number | string;
-    pageSize?: number | string;
-    pageCount?: number | string;
-    totalCount?: number | string;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
+    totalCount?: number;
 };
 
 export type ListResultOfUserGoogleSpreadSheetDto = {
     items?: Array<UserGoogleSpreadSheetDto>;
-    page?: number | string;
-    pageSize?: number | string;
-    pageCount?: number | string;
-    totalCount?: number | string;
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
+    totalCount?: number;
 };
 
 export type ProblemDetails = {
     type?: null | string;
     title?: null | string;
-    status?: null | number | string;
+    status?: null | number;
     detail?: null | string;
     instance?: null | string;
 };
@@ -337,8 +337,8 @@ export type Request = {
  * Represents the amount spent and percent of total spend for a given category within a time period.
  */
 export type SpendingActivity = {
-    amount: number | string;
-    percentOfSpend?: number | string;
+    amount: number;
+    percentOfSpend?: number;
 };
 
 /**
@@ -347,8 +347,8 @@ export type SpendingActivity = {
 export type SpendingByPeriod = {
     periodStartDate: string;
     periodEndDate: string;
-    totalSpend: number | string;
-    totalIncome: number | string;
+    totalSpend: number;
+    totalIncome: number;
     spendingActivityByCategory: {
         [key: string]: SpendingActivity;
     };
@@ -369,11 +369,11 @@ export type SpendingOverTimeSummaryResponse = {
     /**
      * Total calculated spend for the current month.
      */
-    totalMonthlySpend: number | string;
+    totalMonthlySpend: number;
     /**
      * Difference in spending between the current and previous month.
      */
-    monthlySpendDifference: number | string;
+    monthlySpendDifference: number;
 };
 
 /**
@@ -390,7 +390,7 @@ export type TotalBalanceBreakdown = {
     /**
      * Total balance across all accounts for the period.
      */
-    balance: number | string;
+    balance: number;
     /**
      * Breakdown of the total balance by account type, keyed by account type code.
      */
@@ -406,7 +406,7 @@ export type TransactionCategoryDto = {
     /**
      * The unique identifier of the transaction category.
      */
-    id: number | string;
+    id: number;
     /**
      * The code of the transaction category.
      */
@@ -426,7 +426,7 @@ export type TransactionDto = {
     transactionCategoryName: string;
     accountName: string;
     date: string;
-    amount: number | string;
+    amount: number;
     description: string;
 };
 
@@ -437,19 +437,19 @@ export type TransactionPeriodSummary = {
     /**
      * Count of all transaction types in the period.
      */
-    totalCount: number | string;
+    totalCount: number;
     /**
      * Sum of debit amounts in the period.
      */
-    totalSpend: number | string;
+    totalSpend: number;
     /**
      * Sum of credit amounts in the period.
      */
-    totalIncome: number | string;
+    totalIncome: number;
     /**
      * Represents the net income for the given period.
      */
-    netFlow?: number | string;
+    netFlow?: number;
 };
 
 /**
@@ -489,7 +489,7 @@ export type TransactionTypeDto = {
     /**
      * The unique identifier of the transaction type.
      */
-    id: number | string;
+    id: number;
     /**
      * The code of the transaction type.
      */
@@ -553,7 +553,7 @@ export type GetApiTransactionsDailySummaryData = {
         RecordedDate?: string;
         TimePeriod?: TimePeriod;
         AccountId?: string;
-        InstitutionId?: number | string;
+        InstitutionId?: number;
     };
     url: '/api/transactions/daily-summary';
 };
@@ -613,7 +613,7 @@ export type GetApiTransactionsSummaryData = {
         RecordedDate?: string;
         TimePeriod?: TimePeriod;
         AccountId?: string;
-        InstitutionId?: number | string;
+        InstitutionId?: number;
     };
     url: '/api/transactions/summary';
 };
@@ -640,14 +640,14 @@ export type GetApiTransactionsData = {
     body?: never;
     path?: never;
     query?: {
-        Page?: number | string;
-        PageSize?: number | string;
+        Page?: number;
+        PageSize?: number;
         SortField?: string;
         SortDirection?: string;
         StartDate?: string;
         EndDate?: string;
-        MinAmount?: number | string;
-        MaxAmount?: number | string;
+        MinAmount?: number;
+        MaxAmount?: number;
         TransactionTypeCode?: string;
         TransactionCategoryCode?: string;
         AccountId?: string;
@@ -890,7 +890,7 @@ export type GetApiInstitutionsInstitutionIdData = {
         /**
          * The institution identifier.
          */
-        institutionId: number | string;
+        institutionId: number;
     };
     query?: never;
     url: '/api/institutions/{institutionId}';
@@ -943,8 +943,8 @@ export type GetApiInstitutionsData = {
     body?: never;
     path?: never;
     query?: {
-        Page?: number | string;
-        PageSize?: number | string;
+        Page?: number;
+        PageSize?: number;
         SortField?: string;
         SortDirection?: string;
     };
@@ -1062,7 +1062,7 @@ export type GetApiAccountsInstitutionInstitutionIdSummaryData = {
         /**
          * The unique identifier of the institution.
          */
-        institutionId: number | string;
+        institutionId: number;
     };
     query?: {
         RecordedDate?: string;
@@ -1118,8 +1118,8 @@ export type GetApiAccountsData = {
     body?: never;
     path?: never;
     query?: {
-        Page?: number | string;
-        PageSize?: number | string;
+        Page?: number;
+        PageSize?: number;
         SortField?: string;
         SortDirection?: string;
         AccountTypeCode?: string;

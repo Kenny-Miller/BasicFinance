@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using BasicFinance.Api.Common.Authentication;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Clients;
@@ -17,6 +18,10 @@ using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+});
 builder.Services.AddOpenApi();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()

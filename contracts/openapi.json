@@ -76,11 +76,7 @@
             "name": "InstitutionId",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -189,11 +185,7 @@
             "name": "InstitutionId",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -235,11 +227,7 @@
             "name": "Page",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -247,11 +235,7 @@
             "name": "PageSize",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -289,11 +273,7 @@
             "name": "MinAmount",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-              "type": [
-                "number",
-                "string"
-              ],
+              "type": "number",
               "format": "double"
             }
           },
@@ -301,11 +281,7 @@
             "name": "MaxAmount",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-              "type": [
-                "number",
-                "string"
-              ],
+              "type": "number",
               "format": "double"
             }
           },
@@ -697,11 +673,7 @@
             "description": "The institution identifier.",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -778,11 +750,7 @@
             "name": "Page",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -790,11 +758,7 @@
             "name": "PageSize",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -983,11 +947,7 @@
             "description": "The unique identifier of the institution.",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1079,11 +1039,7 @@
             "name": "Page",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1091,11 +1047,7 @@
             "name": "PageSize",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1207,29 +1159,17 @@
             "description": "The name of the account."
           },
           "balance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "The balance of the account on or before the period end.",
             "format": "double"
           },
           "percentageOfTotalBalance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "This account\u0027s balance as a percentage of the total balance for the period.",
             "format": "double"
           },
           "percentageOfAccountTypeBalance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "This account\u0027s balance as a percentage of the total balance for its account type.",
             "format": "double"
           }
@@ -1327,11 +1267,7 @@
             "description": "Whether the account type is a liability (balances are stored as negative values)."
           },
           "latestBalance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "The latest ledger balance on or before the reference date, or \u00600\u0060 when the account has no ledger entry that far back.",
             "format": "double"
           },
@@ -1352,20 +1288,12 @@
         "type": "object",
         "properties": {
           "balance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Total balance of all accounts of this type for the period.",
             "format": "double"
           },
           "percentageOfTotalBalance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "This type\u0027s balance as a percentage of the total balance for the period.",
             "format": "double"
           },
@@ -1389,11 +1317,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "The unique identifier of the account type.",
             "format": "int32"
           },
@@ -1420,20 +1344,12 @@
         "type": "object",
         "properties": {
           "x": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "The x-coordinate of the activity point.",
             "format": "int32"
           },
           "y": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "The y-coordinate of the activity point.",
             "format": "double"
           }
@@ -1502,20 +1418,12 @@
             "format": "date"
           },
           "totalSpend": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Sum of debit amounts for the day.",
             "format": "double"
           },
           "transactionCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "Count of all transaction types for the day.",
             "format": "int32"
           }
@@ -1538,11 +1446,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -1579,11 +1485,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "code": {
@@ -1616,11 +1518,7 @@
         "type": "object",
         "properties": {
           "institutionId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "The Id of the institution.",
             "format": "int32"
           },
@@ -1638,11 +1536,7 @@
           "accountTypeTotals": {
             "type": "object",
             "additionalProperties": {
-              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-              "type": [
-                "number",
-                "string"
-              ],
+              "type": "number",
               "format": "double"
             },
             "description": "Sum of the latest balances per account type for the current period, zero-filled for every active account type."
@@ -1650,11 +1544,7 @@
           "accountTypePreviousTotals": {
             "type": "object",
             "additionalProperties": {
-              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-              "type": [
-                "number",
-                "string"
-              ],
+              "type": "number",
               "format": "double"
             },
             "description": "Sum of the latest balances per account type for the previous period, zero-filled for every active account type."
@@ -1692,35 +1582,19 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1735,35 +1609,19 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1778,35 +1636,19 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1821,35 +1663,19 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1870,11 +1696,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -1912,19 +1736,11 @@
         "type": "object",
         "properties": {
           "amount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "percentOfSpend": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double",
             "default": 0
           }
@@ -1950,19 +1766,11 @@
             "format": "date-time"
           },
           "totalSpend": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "totalIncome": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "spendingActivityByCategory": {
@@ -1998,20 +1806,12 @@
             "description": "List of spending over time for the previous month."
           },
           "totalMonthlySpend": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Total calculated spend for the current month.",
             "format": "double"
           },
           "monthlySpendDifference": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Difference in spending between the current and previous month.",
             "format": "double"
           }
@@ -2033,11 +1833,7 @@
         "type": "object",
         "properties": {
           "balance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Total balance across all accounts for the period.",
             "format": "double"
           },
@@ -2060,11 +1856,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "The unique identifier of the transaction category.",
             "format": "int32"
           },
@@ -2109,11 +1901,7 @@
             "format": "date-time"
           },
           "amount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "description": {
@@ -2131,38 +1919,22 @@
         "type": "object",
         "properties": {
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "Count of all transaction types in the period.",
             "format": "int32"
           },
           "totalSpend": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Sum of debit amounts in the period.",
             "format": "double"
           },
           "totalIncome": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Sum of credit amounts in the period.",
             "format": "double"
           },
           "netFlow": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "Represents the net income for the given period.",
             "format": "double"
           }
@@ -2220,11 +1992,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "The unique identifier of the transaction type.",
             "format": "int32"
           },
