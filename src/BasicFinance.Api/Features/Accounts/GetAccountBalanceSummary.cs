@@ -31,7 +31,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// <param name="CurrentPeriodEnd">Exclusive end date of the current period.</param>
         /// <param name="PreviousPeriodStart">Inclusive start date of the previous period.</param>
         /// <param name="PreviousPeriodEnd">Exclusive end date of the previous period.</param>
-        public record Response(
+        public record AccountBalanceSummaryResponse(
             TotalBalanceBreakdown CurrentPeriodBreakdown,
             TotalBalanceBreakdown PreviousPeriodBreakdown,
             DateOnly CurrentPeriodStart,
@@ -98,7 +98,7 @@ namespace BasicFinance.Api.Features.Accounts
         /// </returns>
         [Authorize]
         [WolverineGet("api/accounts/balance-summary")]
-        public static async Task<Ok<Response>> HandleAsync(
+        public static async Task<Ok<AccountBalanceSummaryResponse>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,
             TimeProvider timeProvider,
@@ -136,7 +136,7 @@ namespace BasicFinance.Api.Features.Accounts
                 .Select(x => x.AccountTypeCode)
                 .ToListAsync(cancellationToken);
 
-            return TypedResults.Ok(new Response(
+            return TypedResults.Ok(new AccountBalanceSummaryResponse(
                 BuildPeriodBreakdown(currentItems, accountTypeCodes),
                 BuildPeriodBreakdown(previousItems, accountTypeCodes),
                 DateOnly.FromDateTime(currentPeriod.RangeStartDate.Date),

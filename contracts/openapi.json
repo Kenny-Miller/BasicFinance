@@ -432,7 +432,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/UserGoogleSpreadSheetResponse"
                 }
               }
             }
@@ -573,7 +573,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/UserGoogleSpreadSheetResponse"
                 }
               }
             }
@@ -664,7 +664,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/SpendingOverTimeSummaryResponse"
                 }
               }
             }
@@ -903,7 +903,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/AccountBalanceSummaryResponse"
                 }
               }
             }
@@ -1177,6 +1177,107 @@
   },
   "components": {
     "schemas": {
+      "AccountBalanceDto": {
+        "required": [
+          "id",
+          "accountTypeCode",
+          "institution",
+          "accountName",
+          "balance",
+          "percentageOfTotalBalance",
+          "percentageOfAccountTypeBalance"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the account.",
+            "format": "uuid"
+          },
+          "accountTypeCode": {
+            "type": "string",
+            "description": "The code of the account type."
+          },
+          "institution": {
+            "type": "string",
+            "description": "The name of the institution the account belongs to."
+          },
+          "accountName": {
+            "type": "string",
+            "description": "The name of the account."
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The balance of the account on or before the period end.",
+            "format": "double"
+          },
+          "percentageOfTotalBalance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "This account\u0027s balance as a percentage of the total balance for the period.",
+            "format": "double"
+          },
+          "percentageOfAccountTypeBalance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "This account\u0027s balance as a percentage of the total balance for its account type.",
+            "format": "double"
+          }
+        },
+        "description": "Balance and percentage breakdown for a single account within a period."
+      },
+      "AccountBalanceSummaryResponse": {
+        "required": [
+          "currentPeriodBreakdown",
+          "previousPeriodBreakdown",
+          "currentPeriodStart",
+          "currentPeriodEnd",
+          "previousPeriodStart",
+          "previousPeriodEnd"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPeriodBreakdown": {
+            "description": "Total balances and breakdown for the period containing CurrentPeriodStart.",
+            "$ref": "#/components/schemas/TotalBalanceBreakdown"
+          },
+          "previousPeriodBreakdown": {
+            "description": "Total balances and breakdown for the period immediately preceding CurrentPeriodStart.",
+            "$ref": "#/components/schemas/TotalBalanceBreakdown"
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "description": "Inclusive start date of the current period.",
+            "format": "date"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "description": "Exclusive end date of the current period.",
+            "format": "date"
+          },
+          "previousPeriodStart": {
+            "type": "string",
+            "description": "Inclusive start date of the previous period.",
+            "format": "date"
+          },
+          "previousPeriodEnd": {
+            "type": "string",
+            "description": "Exclusive end date of the previous period.",
+            "format": "date"
+          }
+        },
+        "description": "Response Dto for the GetAccountBalanceSummary endpoint."
+      },
       "AccountDto": {
         "required": [
           "id",
@@ -1242,6 +1343,42 @@
         },
         "description": "Dto containing Account data."
       },
+      "AccountTypeBreakdown": {
+        "required": [
+          "balance",
+          "percentageOfTotalBalance",
+          "accounts"
+        ],
+        "type": "object",
+        "properties": {
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Total balance of all accounts of this type for the period.",
+            "format": "double"
+          },
+          "percentageOfTotalBalance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "This type\u0027s balance as a percentage of the total balance for the period.",
+            "format": "double"
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountBalanceDto"
+            },
+            "description": "Breakdown of the type\u0027s balance by individual account."
+          }
+        },
+        "description": "Balance and breakdown for a single account type within a period."
+      },
       "AccountTypeDto": {
         "required": [
           "id",
@@ -1274,6 +1411,34 @@
           }
         },
         "description": "Dto containing AccountType data."
+      },
+      "DailySpendingOverTime": {
+        "required": [
+          "x",
+          "y"
+        ],
+        "type": "object",
+        "properties": {
+          "x": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The x-coordinate of the activity point.",
+            "format": "int32"
+          },
+          "y": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The y-coordinate of the activity point.",
+            "format": "double"
+          }
+        },
+        "description": "Represents the total amount spent for the month at a given date."
       },
       "DailySummaryResponse": {
         "required": [
@@ -1740,36 +1905,6 @@
         },
         "description": "Request Dto for the CreateUserGoogleSpreadsheet endpoint."
       },
-      "Response": {
-        "required": [
-          "userGoogleSpreadsheetId",
-          "userId",
-          "googleSpreadsheetId",
-          "googleSpreadsheetName",
-          "createdDate"
-        ],
-        "type": "object",
-        "properties": {
-          "userGoogleSpreadsheetId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "googleSpreadsheetId": {
-            "type": "string"
-          },
-          "googleSpreadsheetName": {
-            "type": "string"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "description": "Response Dto for the CreateUserGoogleSpreadsheet endpoint."
-      },
       "SpendingActivity": {
         "required": [
           "amount"
@@ -1839,12 +1974,82 @@
         },
         "description": "Represents the aggregated spending activity for a given time period."
       },
+      "SpendingOverTimeSummaryResponse": {
+        "required": [
+          "currentMonthActivity",
+          "previousMonthActivity",
+          "totalMonthlySpend",
+          "monthlySpendDifference"
+        ],
+        "type": "object",
+        "properties": {
+          "currentMonthActivity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailySpendingOverTime"
+            },
+            "description": "List of spending over time for the current month."
+          },
+          "previousMonthActivity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailySpendingOverTime"
+            },
+            "description": "List of spending over time for the previous month."
+          },
+          "totalMonthlySpend": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Total calculated spend for the current month.",
+            "format": "double"
+          },
+          "monthlySpendDifference": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Difference in spending between the current and previous month.",
+            "format": "double"
+          }
+        },
+        "description": "Represents the aggregated spending summary for current and previous months."
+      },
       "SpendingPeriod": {
         "type": "integer",
         "description": "Defines time periods to group spending activity by."
       },
       "TimePeriod": {
         "type": "integer"
+      },
+      "TotalBalanceBreakdown": {
+        "required": [
+          "balance",
+          "accountTypeBreakdowns"
+        ],
+        "type": "object",
+        "properties": {
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Total balance across all accounts for the period.",
+            "format": "double"
+          },
+          "accountTypeBreakdowns": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AccountTypeBreakdown"
+            },
+            "description": "Breakdown of the total balance by account type, keyed by account type code."
+          }
+        },
+        "description": "Total balance and breakdown by account type for a period."
       },
       "TransactionCategoryDto": {
         "required": [
@@ -2059,6 +2264,36 @@
           }
         },
         "description": "Dto containing UserGoogleSpreadsheet data."
+      },
+      "UserGoogleSpreadSheetResponse": {
+        "required": [
+          "userGoogleSpreadsheetId",
+          "userId",
+          "googleSpreadsheetId",
+          "googleSpreadsheetName",
+          "createdDate"
+        ],
+        "type": "object",
+        "properties": {
+          "userGoogleSpreadsheetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "googleSpreadsheetId": {
+            "type": "string"
+          },
+          "googleSpreadsheetName": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Response Dto for the CreateUserGoogleSpreadsheet endpoint."
       }
     }
   },

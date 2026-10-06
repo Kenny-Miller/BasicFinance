@@ -3,6 +3,28 @@
 import * as z from 'zod';
 
 /**
+ * Balance and percentage breakdown for a single account within a period.
+ */
+export const zAccountBalanceDto = z.object({
+    id: z.uuid(),
+    accountTypeCode: z.string(),
+    institution: z.string(),
+    accountName: z.string(),
+    balance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    percentageOfTotalBalance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    percentageOfAccountTypeBalance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ])
+});
+
+/**
  * Dto containing Account data.
  */
 export const zAccountDto = z.object({
@@ -22,6 +44,21 @@ export const zAccountDto = z.object({
 });
 
 /**
+ * Balance and breakdown for a single account type within a period.
+ */
+export const zAccountTypeBreakdown = z.object({
+    balance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    percentageOfTotalBalance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    accounts: z.array(zAccountBalanceDto)
+});
+
+/**
  * Dto containing AccountType data.
  */
 export const zAccountTypeDto = z.object({
@@ -32,6 +69,20 @@ export const zAccountTypeDto = z.object({
     code: z.string(),
     name: z.string(),
     isLiability: z.boolean()
+});
+
+/**
+ * Represents the total amount spent for the month at a given date.
+ */
+export const zDailySpendingOverTime = z.object({
+    x: z.union([
+        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+        z.string().regex(/^-?(?:0|[1-9]\d*)$/)
+    ]),
+    y: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ])
 });
 
 /**
@@ -169,17 +220,6 @@ export const zRequest = z.object({
 });
 
 /**
- * Response Dto for the CreateUserGoogleSpreadsheet endpoint.
- */
-export const zResponse = z.object({
-    userGoogleSpreadsheetId: z.uuid(),
-    userId: z.string(),
-    googleSpreadsheetId: z.string(),
-    googleSpreadsheetName: z.string(),
-    createdDate: z.iso.datetime()
-});
-
-/**
  * Represents the amount spent and percent of total spend for a given category within a time period.
  */
 export const zSpendingActivity = z.object({
@@ -211,11 +251,50 @@ export const zSpendingByPeriod = z.object({
 });
 
 /**
+ * Represents the aggregated spending summary for current and previous months.
+ */
+export const zSpendingOverTimeSummaryResponse = z.object({
+    currentMonthActivity: z.array(zDailySpendingOverTime),
+    previousMonthActivity: z.array(zDailySpendingOverTime),
+    totalMonthlySpend: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    monthlySpendDifference: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ])
+});
+
+/**
  * Defines time periods to group spending activity by.
  */
 export const zSpendingPeriod = z.int();
 
 export const zTimePeriod = z.int();
+
+/**
+ * Total balance and breakdown by account type for a period.
+ */
+export const zTotalBalanceBreakdown = z.object({
+    balance: z.union([
+        z.number(),
+        z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    ]),
+    accountTypeBreakdowns: z.record(z.string(), zAccountTypeBreakdown)
+});
+
+/**
+ * Response Dto for the GetAccountBalanceSummary endpoint.
+ */
+export const zAccountBalanceSummaryResponse = z.object({
+    currentPeriodBreakdown: zTotalBalanceBreakdown,
+    previousPeriodBreakdown: zTotalBalanceBreakdown,
+    currentPeriodStart: z.iso.date(),
+    currentPeriodEnd: z.iso.date(),
+    previousPeriodStart: z.iso.date(),
+    previousPeriodEnd: z.iso.date()
+});
 
 /**
  * Dto containing TransactionCategory data.
@@ -342,6 +421,17 @@ export const zListResultOfUserGoogleSpreadSheetDto = z.object({
 });
 
 /**
+ * Response Dto for the CreateUserGoogleSpreadsheet endpoint.
+ */
+export const zUserGoogleSpreadSheetResponse = z.object({
+    userGoogleSpreadsheetId: z.uuid(),
+    userId: z.string(),
+    googleSpreadsheetId: z.string(),
+    googleSpreadsheetName: z.string(),
+    createdDate: z.iso.datetime()
+});
+
+/**
  * OK
  */
 export const zGetApiTransactionTypesResponse = z.array(zTransactionTypeDto);
@@ -439,7 +529,7 @@ export const zPostApiSpreadsheetsHeaders = z.object({
 /**
  * Created
  */
-export const zPostApiSpreadsheetsResponse = zResponse;
+export const zPostApiSpreadsheetsResponse = zUserGoogleSpreadSheetResponse;
 
 export const zDeleteApiSpreadsheetsSpreadsheetIdPath = z.object({
     spreadsheetId: z.uuid()
@@ -457,7 +547,7 @@ export const zGetApiSpreadsheetsUserGoogleSpreadsheetIdPath = z.object({
 /**
  * OK
  */
-export const zGetApiSpreadsheetsUserGoogleSpreadsheetIdResponse = zResponse;
+export const zGetApiSpreadsheetsUserGoogleSpreadsheetIdResponse = zUserGoogleSpreadSheetResponse;
 
 export const zGetApiSpendingActivityByPeriodQuery = z.object({
     StartDate: z.iso.datetime().optional(),
@@ -472,7 +562,7 @@ export const zGetApiSpendingActivityByPeriodResponse = zSpendingByPeriod;
 /**
  * OK
  */
-export const zGetApiSpendingOverTimeSummaryResponse = zResponse;
+export const zGetApiSpendingOverTimeSummaryResponse = zSpendingOverTimeSummaryResponse;
 
 export const zGetApiInstitutionsInstitutionIdPath = z.object({
     institutionId: z.union([
@@ -522,7 +612,7 @@ export const zGetApiAccountsBalanceSummaryQuery = z.object({
 /**
  * OK
  */
-export const zGetApiAccountsBalanceSummaryResponse = zResponse;
+export const zGetApiAccountsBalanceSummaryResponse = zAccountBalanceSummaryResponse;
 
 export const zGetApiAccountsAccountIdPath = z.object({
     accountId: z.uuid()

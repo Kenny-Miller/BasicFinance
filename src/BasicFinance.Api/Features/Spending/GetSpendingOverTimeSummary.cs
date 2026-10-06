@@ -20,7 +20,7 @@ namespace BasicFinance.Api.Features.Spending
         /// <param name="PreviousMonthActivity">List of spending over time for the previous month.</param>
         /// <param name="TotalMonthlySpend">Total calculated spend for the current month.</param>
         /// <param name="MonthlySpendDifference">Difference in spending between the current and previous month.</param>
-        public record Response(
+        public record SpendingOverTimeSummaryResponse(
             List<DailySpendingOverTime> CurrentMonthActivity,
             List<DailySpendingOverTime> PreviousMonthActivity,
             decimal TotalMonthlySpend,
@@ -46,7 +46,7 @@ namespace BasicFinance.Api.Features.Spending
         /// </returns>
         [Authorize]
         [WolverineGet("api/spending/over-time-summary")]
-        public static async Task<Results<Ok<Response>, BadRequest<string>>> HandleAsync(
+        public static async Task<Results<Ok<SpendingOverTimeSummaryResponse>, BadRequest<string>>> HandleAsync(
             AuthenticatedUser user,
             TimeProvider timeProvider,
             AppDbContext dbContext,
@@ -76,7 +76,7 @@ namespace BasicFinance.Api.Features.Spending
             var currentMonthTotal = currentMonthSpendOverTime[^1].Y;
             var previousMonthTotal = previousMonthSpendOverTime[^1].Y;
 
-            return TypedResults.Ok(new Response(
+            return TypedResults.Ok(new SpendingOverTimeSummaryResponse(
                 currentMonthSpendOverTime,
                 previousMonthSpendOverTime,
                 currentMonthTotal,

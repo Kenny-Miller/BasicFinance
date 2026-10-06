@@ -5,6 +5,70 @@ export type ClientOptions = {
 };
 
 /**
+ * Balance and percentage breakdown for a single account within a period.
+ */
+export type AccountBalanceDto = {
+    /**
+     * The unique identifier of the account.
+     */
+    id: string;
+    /**
+     * The code of the account type.
+     */
+    accountTypeCode: string;
+    /**
+     * The name of the institution the account belongs to.
+     */
+    institution: string;
+    /**
+     * The name of the account.
+     */
+    accountName: string;
+    /**
+     * The balance of the account on or before the period end.
+     */
+    balance: number | string;
+    /**
+     * This account's balance as a percentage of the total balance for the period.
+     */
+    percentageOfTotalBalance: number | string;
+    /**
+     * This account's balance as a percentage of the total balance for its account type.
+     */
+    percentageOfAccountTypeBalance: number | string;
+};
+
+/**
+ * Response Dto for the GetAccountBalanceSummary endpoint.
+ */
+export type AccountBalanceSummaryResponse = {
+    /**
+     * Total balances and breakdown for the period containing CurrentPeriodStart.
+     */
+    currentPeriodBreakdown: TotalBalanceBreakdown;
+    /**
+     * Total balances and breakdown for the period immediately preceding CurrentPeriodStart.
+     */
+    previousPeriodBreakdown: TotalBalanceBreakdown;
+    /**
+     * Inclusive start date of the current period.
+     */
+    currentPeriodStart: string;
+    /**
+     * Exclusive end date of the current period.
+     */
+    currentPeriodEnd: string;
+    /**
+     * Inclusive start date of the previous period.
+     */
+    previousPeriodStart: string;
+    /**
+     * Exclusive end date of the previous period.
+     */
+    previousPeriodEnd: string;
+};
+
+/**
  * Dto containing Account data.
  */
 export type AccountDto = {
@@ -51,6 +115,24 @@ export type AccountDto = {
 };
 
 /**
+ * Balance and breakdown for a single account type within a period.
+ */
+export type AccountTypeBreakdown = {
+    /**
+     * Total balance of all accounts of this type for the period.
+     */
+    balance: number | string;
+    /**
+     * This type's balance as a percentage of the total balance for the period.
+     */
+    percentageOfTotalBalance: number | string;
+    /**
+     * Breakdown of the type's balance by individual account.
+     */
+    accounts: Array<AccountBalanceDto>;
+};
+
+/**
  * Dto containing AccountType data.
  */
 export type AccountTypeDto = {
@@ -70,6 +152,20 @@ export type AccountTypeDto = {
      * Whether the account type is a liability (balances are stored as negative values).
      */
     isLiability: boolean;
+};
+
+/**
+ * Represents the total amount spent for the month at a given date.
+ */
+export type DailySpendingOverTime = {
+    /**
+     * The x-coordinate of the activity point.
+     */
+    x: number | string;
+    /**
+     * The y-coordinate of the activity point.
+     */
+    y: number | string;
 };
 
 /**
@@ -238,17 +334,6 @@ export type Request = {
 };
 
 /**
- * Response Dto for the CreateUserGoogleSpreadsheet endpoint.
- */
-export type Response = {
-    userGoogleSpreadsheetId: string;
-    userId: string;
-    googleSpreadsheetId: string;
-    googleSpreadsheetName: string;
-    createdDate: string;
-};
-
-/**
  * Represents the amount spent and percent of total spend for a given category within a time period.
  */
 export type SpendingActivity = {
@@ -270,11 +355,49 @@ export type SpendingByPeriod = {
 };
 
 /**
+ * Represents the aggregated spending summary for current and previous months.
+ */
+export type SpendingOverTimeSummaryResponse = {
+    /**
+     * List of spending over time for the current month.
+     */
+    currentMonthActivity: Array<DailySpendingOverTime>;
+    /**
+     * List of spending over time for the previous month.
+     */
+    previousMonthActivity: Array<DailySpendingOverTime>;
+    /**
+     * Total calculated spend for the current month.
+     */
+    totalMonthlySpend: number | string;
+    /**
+     * Difference in spending between the current and previous month.
+     */
+    monthlySpendDifference: number | string;
+};
+
+/**
  * Defines time periods to group spending activity by.
  */
 export type SpendingPeriod = number;
 
 export type TimePeriod = number;
+
+/**
+ * Total balance and breakdown by account type for a period.
+ */
+export type TotalBalanceBreakdown = {
+    /**
+     * Total balance across all accounts for the period.
+     */
+    balance: number | string;
+    /**
+     * Breakdown of the total balance by account type, keyed by account type code.
+     */
+    accountTypeBreakdowns: {
+        [key: string]: AccountTypeBreakdown;
+    };
+};
 
 /**
  * Dto containing TransactionCategory data.
@@ -384,6 +507,17 @@ export type UserGoogleSpreadSheetDto = {
     id: string;
     googleSheetId: string;
     googleSheetName: string;
+    createdDate: string;
+};
+
+/**
+ * Response Dto for the CreateUserGoogleSpreadsheet endpoint.
+ */
+export type UserGoogleSpreadSheetResponse = {
+    userGoogleSpreadsheetId: string;
+    userId: string;
+    googleSpreadsheetId: string;
+    googleSpreadsheetName: string;
     createdDate: string;
 };
 
@@ -624,7 +758,7 @@ export type PostApiSpreadsheetsResponses = {
     /**
      * Created
      */
-    201: Response;
+    201: UserGoogleSpreadSheetResponse;
 };
 
 export type PostApiSpreadsheetsResponse = PostApiSpreadsheetsResponses[keyof PostApiSpreadsheetsResponses];
@@ -692,7 +826,7 @@ export type GetApiSpreadsheetsUserGoogleSpreadsheetIdResponses = {
     /**
      * OK
      */
-    200: Response;
+    200: UserGoogleSpreadSheetResponse;
 };
 
 export type GetApiSpreadsheetsUserGoogleSpreadsheetIdResponse = GetApiSpreadsheetsUserGoogleSpreadsheetIdResponses[keyof GetApiSpreadsheetsUserGoogleSpreadsheetIdResponses];
@@ -745,7 +879,7 @@ export type GetApiSpendingOverTimeSummaryResponses = {
     /**
      * OK
      */
-    200: Response;
+    200: SpendingOverTimeSummaryResponse;
 };
 
 export type GetApiSpendingOverTimeSummaryResponse = GetApiSpendingOverTimeSummaryResponses[keyof GetApiSpendingOverTimeSummaryResponses];
@@ -883,7 +1017,7 @@ export type GetApiAccountsBalanceSummaryResponses = {
     /**
      * OK
      */
-    200: Response;
+    200: AccountBalanceSummaryResponse;
 };
 
 export type GetApiAccountsBalanceSummaryResponse = GetApiAccountsBalanceSummaryResponses[keyof GetApiAccountsBalanceSummaryResponses];
