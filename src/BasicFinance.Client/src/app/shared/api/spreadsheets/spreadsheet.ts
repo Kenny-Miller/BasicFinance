@@ -1,6 +1,1 @@
-export interface Spreadsheet {
-  id: string;
-  googleSheetId: string;
-  googleSheetName: string;
-  createdDate: string;
-}
+export type { UserGoogleSpreadSheetDto as Spreadsheet } from '../../../core/api/generated/types.gen';

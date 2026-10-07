@@ -1,5 +1,6 @@
-import { signal, Signal } from '@angular/core';
+import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import {
   Account,
   AccountClient,
@@ -19,13 +20,13 @@ function makeAccount(id: string, code: string, name: string, balance: number | n
     institutionName: 'Wells Fargo',
     currency: 'USD',
     isLiability: code === 'CC',
-    latestBalance: balance,
+    latestBalance: balance ?? 0,
     latestBalanceRecordedDate: '2026-09-01T00:00:00Z',
   };
 }
 
 function makeSummary(
-  overrides: Partial<InstitutionSummaryResponse> = {},
+  overrides: Partial<InstitutionSummaryResponse> = {}
 ): InstitutionSummaryResponse {
   return {
     institutionId: 1,
@@ -78,7 +79,7 @@ describe('AccountPageService', () => {
           useValue: {
             institutionSummaryResource: (
               institutionId: Signal<number>,
-              timePeriod: Signal<TimePeriod>,
+              timePeriod: Signal<TimePeriod>
             ) => {
               providedInstitutionId = institutionId;
               providedTimePeriod = timePeriod;
@@ -207,7 +208,7 @@ describe('AccountPageService', () => {
         accounts: [makeAccount('a1', 'CHK', 'Checking', null)],
         accountTypeTotals: { CHK: 0, SAV: 0, INV: 0, CC: 0 },
         accountTypePreviousTotals: { CHK: 0, SAV: 0, INV: 0, CC: 0 },
-      }),
+      })
     );
     summaryHasValue.set(true);
 
@@ -224,7 +225,7 @@ describe('AccountPageService', () => {
         accounts: [],
         accountTypeTotals: { CHK: 0, SAV: 0, INV: 0, CC: 0 },
         accountTypePreviousTotals: { CHK: 0, SAV: 0, INV: 0, CC: 0 },
-      }),
+      })
     );
     summaryHasValue.set(true);
 

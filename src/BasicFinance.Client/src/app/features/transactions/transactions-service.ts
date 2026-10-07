@@ -1,6 +1,7 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+
+import type { ListResult } from '../../core/api/list-result';
 import { Account, AccountClient } from '../../core/data-access/account-client';
-import { ListResult } from '../../core/data-access/api-interfaces';
 import {
   DailySummaryResponse,
   Transaction,
@@ -80,7 +81,7 @@ export class TransactionsService {
     signal(100),
     signal('name'),
     signal('asc'),
-    signal({}),
+    signal({})
   );
 
   private readonly listTransactions = this.transactionsClient.listTransactions(
@@ -88,16 +89,16 @@ export class TransactionsService {
     this.pageSize,
     this.sortField,
     this.sortDirection,
-    this.filters,
+    this.filters
   );
   private readonly transactionSummary = this.transactionsClient.transactionSummaryResource(
     signal<Date | null>(null),
-    this.period,
+    this.period
   );
 
   private readonly dailySummary = this.transactionsClient.dailyTransactionSummaryResource(
     signal<Date | null>(null),
-    this.period,
+    this.period
   );
 
   readonly loading = computed(
@@ -106,7 +107,7 @@ export class TransactionsService {
       (!this.listAccounts.hasValue() &&
         !this.listTransactions.hasValue() &&
         !this.dailySummary.hasValue() &&
-        !this.transactionSummary.hasValue()),
+        !this.transactionSummary.hasValue())
   );
 
   /** The global transaction types, shared via page-level state. */
@@ -117,22 +118,13 @@ export class TransactionsService {
 
   readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
 
-  private readonly hasSeenTransactions = signal(false);
-
-  hasTransactionsData(): boolean {
-    if (this.listTransactions.hasValue() && !this.hasSeenTransactions()) {
-      this.hasSeenTransactions.set(true);
-    }
-    return this.hasSeenTransactions();
-  }
-
   readonly error = computed(
     () =>
       this.pageService.error() ||
       this.listAccounts.error() ||
       this.listTransactions.error() ||
       this.dailySummary.error() ||
-      this.transactionSummary.error(),
+      this.transactionSummary.error()
   );
 
   readonly data = computed<TransactionsData>(() => {

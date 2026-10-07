@@ -1,0 +1,11 @@
+{
+  "name": "basicfinance",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "lefthook": "^2.1.16"
+  }
+}

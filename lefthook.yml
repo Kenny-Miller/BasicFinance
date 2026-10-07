@@ -1,0 +1,26 @@
+pre-commit:
+  commands:
+    eslint:
+      root: "src/BasicFinance.Client/"
+      glob: "src/**/*.{ts,html}"
+      run: npx eslint --fix {staged_files}
+      stage_fixed: true
+      fail_text: "ESLint found problems in staged client files."
+    prettier:
+      root: "src/BasicFinance.Client/"
+      glob: "src/**/*.{ts,html,css}"
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+      fail_text: "Prettier could not format staged client files."
+
+pre-push:
+  commands:
+    dotnet-unit-tests:
+      glob: "**/*.{cs,csproj,props,slnx}"
+      run: dotnet test tests/BasicFinance.Domain.UnitTests && dotnet test tests/BasicFinance.Infrastructure.UnitTests
+      fail_text: ".NET unit tests failed - fix before pushing."
+    client-unit-tests:
+      root: "src/BasicFinance.Client/"
+      glob: "**"
+      run: npx ng test --watch=false
+      fail_text: "Client unit tests failed - fix before pushing."

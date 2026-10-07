@@ -18,7 +18,6 @@ describe('Transactions', () => {
       filters: signal({}),
       loading: () => false,
       transactionsLoading: () => false,
-      hasTransactionsData: () => false,
       transactionTypes: () => [],
       transactionCategories: () => [],
       error: summaryError ? () => new Error('simulated resource error') : () => undefined,

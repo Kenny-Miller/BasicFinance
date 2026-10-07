@@ -21,7 +21,7 @@ namespace BasicFinance.Api.Features.TransactionTypes
         /// Returns <see cref="Ok{TValue}"/> with a list of <see cref="TransactionTypeDto"/> when successful.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/transaction-types/")]
+        [WolverineGet("api/transaction-types")]
         public static async Task<Ok<List<TransactionTypeDto>>> HandleAsync(
             AppDbContext dbContext,
             CancellationToken cancellationToken)

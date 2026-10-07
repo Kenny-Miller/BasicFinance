@@ -1,127 +1,119 @@
-import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Signal, inject } from '@angular/core';
-import { TimePeriod } from '../../shared/data/time-period';
-import { IPagedQuery, ISortedQuery, ListResult } from './api-interfaces';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, Signal, inject, resource } from '@angular/core';
 
-export interface Account {
-  id: string;
-  name: string;
-  accountTypeCode: string;
-  accountTypeName: string;
-  institutionCode: string;
-  institutionName: string;
-  currency: string;
-  isLiability: boolean;
-  latestBalance: number | null;
-  latestBalanceRecordedDate: string | null;
-}
+import { TimePeriod } from '../../shared/data/time-period';
+import {
+  getApiAccounts,
+  getApiAccountsBalanceSummary,
+  getApiAccountsInstitutionInstitutionIdSummary,
+} from '../api/generated/sdk.gen';
+import type {
+  AccountBalanceDto,
+  AccountDto,
+  AccountTypeBreakdown,
+  GetApiAccountsData,
+  InstitutionSummaryResponse,
+  TotalBalanceBreakdown,
+} from '../api/generated/types.gen';
+import { normalizeListResult } from '../api/list-result';
+import { TIME_PERIOD_PARAM } from '../api/period-params';
+
+export type Account = AccountDto;
+
+export type {
+  AccountBalanceDto,
+  AccountTypeBreakdown,
+  InstitutionSummaryResponse,
+  TotalBalanceBreakdown,
+};
 
 export interface AccountFilters {
   accountTypeCode?: string;
   institution?: string;
 }
 
-interface ListAccountsParams extends IPagedQuery, ISortedQuery {
-  accountTypeCode?: string;
-  institution?: string;
+export interface AccountPagingFilters extends AccountFilters {
+  page: number;
+  pageSize: number;
+  sortField: string;
+  sortDirection: string;
 }
 
-export interface AccountBalanceDto {
-  id: string;
-  accountTypeCode: string;
-  institution: string;
-  accountName: string;
-  balance: number;
-  percentageOfTotalBalance: number;
-  percentageOfAccountTypeBalance: number;
-}
-
-export interface AccountTypeBreakdown {
-  balance: number;
-  percentageOfTotalBalance: number;
-  accounts: AccountBalanceDto[];
-}
-
-export interface TotalBalanceBreakdown {
-  balance: number;
-  accountTypeBreakdowns: Record<string, AccountTypeBreakdown>;
-}
-
-export interface AccountAnalyticsResponse {
-  currentPeriodBreakdown: TotalBalanceBreakdown;
-  previousPeriodBreakdown: TotalBalanceBreakdown;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  previousPeriodStart: string;
-  previousPeriodEnd: string;
-}
-
-export interface InstitutionSummaryResponse {
-  institutionId: number;
-  institutionName: string;
-  accounts: Account[];
-  accountTypeTotals: Record<string, number>;
-  accountTypePreviousTotals: Record<string, number>;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  previousPeriodStart: string;
-  previousPeriodEnd: string;
+function toAccountsQuery(params: AccountPagingFilters): NonNullable<GetApiAccountsData['query']> {
+  return {
+    Page: params.page,
+    PageSize: params.pageSize,
+    SortField: params.sortField,
+    SortDirection: params.sortDirection,
+    AccountTypeCode: params.accountTypeCode,
+    Institution: params.institution,
+  };
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountClient {
-  client = inject(HttpClient);
-
-  getAccount(accountId: string) {
-    return this.client.get<Account>(`api/accounts/${accountId}`);
-  }
-
-  getMyAccounts() {
-    return this.client.get<Account[]>('api/my/accounts');
-  }
+  private readonly httpClient = inject(HttpClient);
 
   listAccounts(
     pageSignal: Signal<number>,
     pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
-    filtersSignal: Signal<AccountFilters>,
+    filtersSignal: Signal<AccountFilters>
   ) {
-    return httpResource<ListResult<Account>>(() => {
-      const params: ListAccountsParams = {
+    return resource({
+      params: () => ({
         page: pageSignal(),
         pageSize: pageSizeSignal(),
         sortField: sortFieldSignal(),
         sortDirection: sortDirectionSignal(),
         ...filtersSignal(),
-      };
-
-      const queryParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined),
-      );
-
-      return {
-        url: 'api/accounts',
-        params: queryParams,
-      };
+      }),
+      loader: async ({ params }) => {
+        const response = await getApiAccounts({
+          httpClient: this.httpClient,
+          query: toAccountsQuery(params),
+          throwOnError: true,
+        });
+        return normalizeListResult(response.data);
+      },
     });
   }
 
   balanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
-    return httpResource<AccountAnalyticsResponse>(
-      () => `api/accounts/balanceSummary?TimePeriod=${timePeriodSignal()}`,
-    );
+    return resource({
+      params: () => ({ TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()] }),
+      loader: async ({ params }) => {
+        const response = await getApiAccountsBalanceSummary({
+          httpClient: this.httpClient,
+          query: params,
+          throwOnError: true,
+        });
+        return response.data;
+      },
+    });
   }
 
   institutionSummaryResource(
     institutionIdSignal: Signal<number>,
-    timePeriodSignal: Signal<TimePeriod>,
+    timePeriodSignal: Signal<TimePeriod>
   ) {
-    return httpResource<InstitutionSummaryResponse>(() => ({
-      url: `api/accounts/institution/${institutionIdSignal()}/summary`,
-      params: { TimePeriod: timePeriodSignal() },
-    }));
+    return resource({
+      params: () => ({
+        institutionId: institutionIdSignal(),
+        TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()],
+      }),
+      loader: async ({ params }) => {
+        const response = await getApiAccountsInstitutionInstitutionIdSummary({
+          httpClient: this.httpClient,
+          path: { institutionId: params.institutionId },
+          query: { TimePeriod: params.TimePeriod },
+          throwOnError: true,
+        });
+        return response.data;
+      },
+    });
   }
 }

@@ -27,7 +27,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedAsync(transaction, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -51,7 +51,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync(transactions, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/?page=1&pageSize=2", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions?page=1&pageSize=2", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -73,7 +73,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([tx1, tx2], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions/?accountId={account1.AccountId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions?accountId={account1.AccountId}", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.TotalCount);
@@ -92,7 +92,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([smallTx, largeTx], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/?minAmount=100", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions?minAmount=100", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.TotalCount);
@@ -112,7 +112,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([coffeeTx, groceryTx], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions/?search={Uri.EscapeDataString("COFFEE SHOP")}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions?search={Uri.EscapeDataString("COFFEE SHOP")}", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -133,7 +133,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([tx1, tx2], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions/?search={Uri.EscapeDataString("  ")}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>($"/api/transactions?search={Uri.EscapeDataString("  ")}", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -147,7 +147,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
     public async Task ListTransactions_UserHasNoTransactions_ReturnsEmptyList()
     {
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions", CancellationToken);
 
         // Assert
         Assert.Equal(1, result.Page);
@@ -175,7 +175,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([oldestTx, newestTx, middleTx], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/?sortField=Date&sortDirection=Asc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions?sortField=Date&sortDirection=Asc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);
@@ -199,7 +199,7 @@ public class ListTransactionsTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([lowAmount, highAmount, midAmount], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions/?sortField=Amount&sortDirection=Desc", CancellationToken);
+        var result = await HttpClient.GetResultAsync<ListResult<TransactionDto>>("/api/transactions?sortField=Amount&sortDirection=Desc", CancellationToken);
 
         // Assert
         Assert.Equal(3, result.TotalCount);

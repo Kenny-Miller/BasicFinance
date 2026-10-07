@@ -1,4 +1,5 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, inject, signal } from '@angular/core';
+
 import '@googleworkspace/drive-picker-element';
 import {
   OAuthErrorEvent,
@@ -17,6 +18,7 @@ import {
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmItemImports } from '@spartan-ng/helm/item';
+
 import { ENVIRONMENT_CONFIG } from '../../../environment-config';
 import { SettingsClient } from '../settings-client';
 
@@ -66,25 +68,31 @@ export class ManageSpreadsheets {
     }
 
     const googleSpreadsheetId = event.detail['docs'][0]['id'];
-    this.settingsClient.addSpreadSheet(googleSpreadsheetId, googleOAuthToken).subscribe({
-      next: () => this.spreadsheetResource.reload(),
-      error: (_e) => {
-        this.isGoogleFilePickerOpen.set(false);
-      },
-      complete: () => {
-        this.isGoogleFilePickerOpen.set(false);
-        this.googleOAuthToken.set(null);
-      },
-    });
+    this.addSpreadSheet(googleSpreadsheetId, googleOAuthToken);
+  }
+
+  private async addSpreadSheet(googleSpreadsheetId: string, googleOAuthToken: string) {
+    try {
+      await this.settingsClient.addSpreadSheet(googleSpreadsheetId, googleOAuthToken);
+      this.spreadsheetResource.reload();
+    } catch {
+      // Contain the failed add; the picker still closes and the token is cleared below.
+    } finally {
+      this.isGoogleFilePickerOpen.set(false);
+      this.googleOAuthToken.set(null);
+    }
   }
 
   public handlePickerCanceled(_event: PickerCanceledEvent): void {
     this.isGoogleFilePickerOpen.set(false);
   }
 
-  public deleteGoogleSpreadsheet(spreadsheetId: string) {
-    this.settingsClient.deleteSpreadSheet(spreadsheetId).subscribe({
-      next: () => this.spreadsheetResource.reload(),
-    });
+  public async deleteGoogleSpreadsheet(spreadsheetId: string): Promise<void> {
+    try {
+      await this.settingsClient.deleteSpreadSheet(spreadsheetId);
+      this.spreadsheetResource.reload();
+    } catch {
+      // Contain the failed delete; the list is simply not reloaded.
+    }
   }
 }

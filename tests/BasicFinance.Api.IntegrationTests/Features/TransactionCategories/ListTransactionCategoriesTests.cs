@@ -55,7 +55,7 @@ public class ListTransactionCategoriesTests : ApiTestFixtureBase
     public async Task ListTransactionCategories_SeededReferenceData_ReturnsAllActiveTransactionCategories()
     {
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories", CancellationToken);
 
         // Assert
         Assert.Equal(SeededTransactionCategoryCodes.Length, result.Count);
@@ -74,7 +74,7 @@ public class ListTransactionCategoriesTests : ApiTestFixtureBase
         await DbContext.SaveChangesAsync(CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories", CancellationToken);
 
         // Assert
         Assert.Equal(SeededTransactionCategoryCodes.Length - 1, result.Count);
@@ -90,7 +90,7 @@ public class ListTransactionCategoriesTests : ApiTestFixtureBase
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsActive, false), CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<TransactionCategoryDto>>("/api/transaction-categories", CancellationToken);
 
         // Assert
         Assert.Empty(result);

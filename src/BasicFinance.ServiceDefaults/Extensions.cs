@@ -13,7 +13,7 @@ namespace BasicFinance.ServiceDefaults;
 // Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "<Pending>")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Aspire ServiceDefaults template keeps optional wiring (service discovery schemes, gRPC, Azure Monitor) commented out as reference documentation for consumers of this project.")]
 public static class Extensions
 {
     private const string HealthEndpointPath = "/health";
