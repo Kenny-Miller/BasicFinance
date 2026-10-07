@@ -1,56 +1,52 @@
-import { httpResource } from '@angular/common/http';
-import { Injectable, Signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, Signal, inject, resource } from '@angular/core';
 
 import { TimePeriod } from '../../shared/data/time-period';
+import {
+  getApiSpendingActivityByPeriod,
+  getApiSpendingOverTimeSummary,
+} from '../api/generated/sdk.gen';
+import { SPENDING_PERIOD_PARAM } from '../api/period-params';
 
-export interface DailySpendingOverTime {
-  x: number;
-  y: number;
-}
-
-export interface SpendingOverTimeSummary {
-  currentMonthActivity: DailySpendingOverTime[];
-  previousMonthActivity: DailySpendingOverTime[];
-  totalMonthlySpend: number;
-  monthlySpendDifference: number;
-}
-
-export interface SpendingActivity {
-  amount: number;
-  percentOfSpend: number;
-}
-
-export interface SpendingByPeriod {
-  periodStartDate: string;
-  periodEndDate: string;
-  totalSpend: number;
-  totalIncome: number;
-  spendingActivityByCategory: Record<string, SpendingActivity>;
-}
+export type {
+  DailySpendingOverTime,
+  SpendingActivity,
+  SpendingByPeriod,
+  SpendingOverTimeSummaryResponse as SpendingOverTimeSummary,
+} from '../api/generated/types.gen';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpendingClient {
+  private readonly httpClient = inject(HttpClient);
+
   spendingOverTimeSummaryResource() {
-    return httpResource<SpendingOverTimeSummary>(() => 'api/spending/over-time-summary');
+    return resource({
+      loader: async () => {
+        const response = await getApiSpendingOverTimeSummary({
+          httpClient: this.httpClient,
+          throwOnError: true,
+        });
+        return response.data;
+      },
+    });
   }
 
   spendingByPeriodResource(periodSignal: Signal<TimePeriod>, startDateSignal: Signal<string>) {
-    return httpResource<SpendingByPeriod>(() => {
-      const params = {
-        startDate: startDateSignal(),
-        spendingPeriod: periodSignal(),
-      };
-
-      const queryParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined)
-      );
-
-      return {
-        url: 'api/spending/activity-by-period',
-        params: queryParams,
-      };
+    return resource({
+      params: () => ({
+        StartDate: startDateSignal(),
+        SpendingPeriod: SPENDING_PERIOD_PARAM[periodSignal()],
+      }),
+      loader: async ({ params }) => {
+        const response = await getApiSpendingActivityByPeriod({
+          httpClient: this.httpClient,
+          query: params,
+          throwOnError: true,
+        });
+        return response.data;
+      },
     });
   }
 }

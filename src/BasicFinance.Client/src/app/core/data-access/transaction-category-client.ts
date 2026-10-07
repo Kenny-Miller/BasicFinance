@@ -1,16 +1,16 @@
-import { httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, resource } from '@angular/core';
 
-export interface TransactionCategory {
-  id: number;
-  code: string;
-  name: string;
-}
+import { getApiTransactionCategories } from '../api/generated/sdk.gen';
+
+export type { TransactionCategoryDto as TransactionCategory } from '../api/generated/types.gen';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TransactionCategoryClient {
+  private readonly httpClient = inject(HttpClient);
+
   /**
    * Provides the global transaction categories resource (active rows only).
    * The calling service stores the returned resource and exposes its
@@ -18,6 +18,14 @@ export class TransactionCategoryClient {
    * `reload()`.
    */
   transactionCategories() {
-    return httpResource<TransactionCategory[]>(() => 'api/transaction-categories');
+    return resource({
+      loader: async () => {
+        const response = await getApiTransactionCategories({
+          httpClient: this.httpClient,
+          throwOnError: true,
+        });
+        return response.data;
+      },
+    });
   }
 }

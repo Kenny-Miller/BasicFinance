@@ -1,27 +1,43 @@
-import { HttpClient, HttpHeaders, httpResource } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ListResult } from '../../core/data-access/api-interfaces';
-import { Spreadsheet } from '../../shared/api/spreadsheets/spreadsheet';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, resource } from '@angular/core';
+
+import {
+  deleteApiSpreadsheetsSpreadsheetId,
+  getApiSpreadsheets,
+  postApiSpreadsheets,
+} from '../../core/api/generated/sdk.gen';
+import { normalizeListResult } from '../../core/api/list-result';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SettingsClient {
-  client = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
 
-  spreadsheetResource = httpResource<ListResult<Spreadsheet>>(() => 'api/spreadsheets');
+  spreadsheetResource = resource({
+    loader: async () => {
+      const response = await getApiSpreadsheets({
+        httpClient: this.httpClient,
+        throwOnError: true,
+      });
+      return normalizeListResult(response.data);
+    },
+  });
 
-  addSpreadSheet(googleSpreadsheetId: string, googleOAuthToken: string): Observable<void> {
-    const request = {
-      googleSpreadsheetId: googleSpreadsheetId,
-    };
-
-    const httpHeader = new HttpHeaders().append('x-google-auth-token', googleOAuthToken);
-    return this.client.post<void>('api/spreadsheets', request, { headers: httpHeader });
+  async addSpreadSheet(googleSpreadsheetId: string, googleOAuthToken: string): Promise<void> {
+    await postApiSpreadsheets({
+      body: { googleSpreadsheetId },
+      headers: { 'x-google-auth-token': googleOAuthToken },
+      httpClient: this.httpClient,
+      throwOnError: true,
+    });
   }
 
-  deleteSpreadSheet(spreadsheetId: string): Observable<void> {
-    return this.client.delete<void>(`api/spreadsheets/${spreadsheetId}`);
+  async deleteSpreadSheet(spreadsheetId: string): Promise<void> {
+    await deleteApiSpreadsheetsSpreadsheetId({
+      httpClient: this.httpClient,
+      path: { spreadsheetId },
+      throwOnError: true,
+    });
   }
 }

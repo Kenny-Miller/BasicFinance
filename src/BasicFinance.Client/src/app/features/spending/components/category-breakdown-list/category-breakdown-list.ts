@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { TransactionCategory } from '../../../../core/data-access/transaction-category-client';
+
 import { SpendingByPeriod } from '../../../../core/data-access/spending-client';
+import { TransactionCategory } from '../../../../core/data-access/transaction-category-client';
 import { SPENDING_CATEGORY_CODES } from '../../data/spending-categories';
 
 export interface CategoryRow {
@@ -23,7 +25,9 @@ export class CategoryBreakdownList {
   readonly categories = input<TransactionCategory[]>([]);
 
   readonly categoryNames = computed<Record<string, string>>(() =>
-    Object.fromEntries(this.categories().map((category) => [category.code, category.name] as [string, string])),
+    Object.fromEntries(
+      this.categories().map(category => [category.code, category.name] as [string, string])
+    )
   );
 
   readonly rows = computed<CategoryRow[]>(() => {
@@ -38,9 +42,9 @@ export class CategoryBreakdownList {
         code,
         name: this.categoryNames()[code] ?? code,
         amount: activity.amount,
-        percentOfSpend: activity.percentOfSpend,
+        percentOfSpend: activity.percentOfSpend ?? 0,
       }))
-      .filter((row) => row.amount > 0)
+      .filter(row => row.amount > 0)
       .sort((a, b) => b.amount - a.amount);
   });
 

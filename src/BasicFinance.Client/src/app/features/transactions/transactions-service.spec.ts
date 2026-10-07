@@ -1,8 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import type { ListResult } from '../../core/api/list-result';
 import { Account, AccountClient } from '../../core/data-access/account-client';
-import { ListResult } from '../../core/data-access/api-interfaces';
 import {
   DailySummaryResponse,
   Transaction,

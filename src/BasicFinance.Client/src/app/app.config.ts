@@ -15,8 +15,6 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideEchartsCore } from 'ngx-echarts';
 
 import { routes } from './app.routes';
-import { client } from './core/api/generated/client.gen';
-import { provideHeyApiClient } from './core/api/generated/client/client.gen';
 import { initializeOAuthFn } from './core/auth/auth.initializer';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { ENVIRONMENT_CONFIG, EnvironmentConfig } from './environment-config';
@@ -36,7 +34,6 @@ export const createAppConfig = (config: EnvironmentConfig): ApplicationConfig =>
       provideBrowserGlobalErrorListeners(),
       provideRouter(routes),
       provideHttpClient(withInterceptors([authInterceptor])),
-      provideHeyApiClient(client),
       provideOAuthClient(),
       provideAppInitializer(initializeOAuthFn),
       provideCharts(withDefaultRegisterables()),

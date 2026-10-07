@@ -101,6 +101,7 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 - UI components live in `libs/ui` (spartan-ng helm layer). Import per module as `@spartan-ng/helm/<module>` (tsconfig paths map to `libs/ui/<module>/src/index.ts`). App code uses the helm layer only; `@spartan-ng/brain` and `@angular/cdk` are internal to `libs/ui` (enforcement tracked in `DevDocuments/Task/spartan-lint-enforcement.md`).
 - Auth guard (`authGuard`) protects all routes. OAuth initialized via `provideAppInitializer`.
 - Feature modules follow `features/<domain>/` structure; shared data-access services live in `core/data-access/` as `*-client.ts` (or generated OpenAPI client wrappers, see `DevDocuments/Task/openapi-heyapi-client.md`). Never hand-edit `core/api/generated/` — regenerate via `npm run gen:api` from `contracts/openapi.json`.
+- `core/api/generated/` imports are confined to `core/`: feature code only imports the data-access facades, which may re-export (and alias) generated types. `openapi-ts.config.ts` is pinned (`responseStyle: 'fields'`, `throwOnError: true`, no extra plugins) so `gen:api` must produce a clean no-diff against committed output.
 - Tests use Vitest (`@angular/build:unit-test`). Spec files colocated as `*.spec.ts`; run headless with `npm run test:unit`.
 - All component CSS files are intentionally left empty. Styling is applied via Tailwind CSS v4 utility classes inline in templates.
 

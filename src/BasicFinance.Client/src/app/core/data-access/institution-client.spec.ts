@@ -1,5 +1,7 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
+import { settleSdkBridge } from '../testing/testbed-utils';
 import { InstitutionClient } from './institution-client';
 
 describe('InstitutionClient', () => {
@@ -15,41 +17,34 @@ describe('InstitutionClient', () => {
   });
 
   it("should fetch the user's institutions when the resource is created", async () => {
-    // httpResource asserts an injection context, so the provider call is wrapped the way
+    // resource asserts an injection context, so the provider call is wrapped the way
     // PageService's field initializer runs it.
     const myInstitutions = TestBed.runInInjectionContext(() => client.myInstitutions());
+    await settleSdkBridge();
 
-    // The httpResource effect that starts the request is scheduled when the
-    // resource is created; flush effects so the request is issued before it
-    // can be expected.
-    TestBed.flushEffects();
-
-    const request = controller.expectOne('api/my/institutions');
+    const request = controller.expectOne('/api/my/institutions');
 
     expect(request.request.method).toBe('GET');
 
     request.flush([]);
-    // The resource applies the response in an async continuation; let it settle first.
-    await Promise.resolve();
+    await settleSdkBridge();
     expect(myInstitutions.value()).toEqual([]);
   });
 
   it("should issue a new request when the user's institutions resource is reloaded", async () => {
     const myInstitutions = TestBed.runInInjectionContext(() => client.myInstitutions());
-    TestBed.flushEffects();
+    await settleSdkBridge();
 
-    const firstRequest = controller.expectOne('api/my/institutions');
+    const firstRequest = controller.expectOne('/api/my/institutions');
     firstRequest.flush([]);
-    // reload() is a no-op until the resource has settled to a resolved state, which
-    // happens in an async continuation after the response is flushed.
-    await Promise.resolve();
+    await settleSdkBridge();
 
     myInstitutions.reload();
-    TestBed.flushEffects();
+    await settleSdkBridge();
 
-    const secondRequest = controller.expectOne('api/my/institutions');
+    const secondRequest = controller.expectOne('/api/my/institutions');
     secondRequest.flush([]);
-    await Promise.resolve();
+    await settleSdkBridge();
     expect(myInstitutions.hasValue()).toBeTruthy();
   });
 });

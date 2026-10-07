@@ -1,17 +1,16 @@
-import { httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, resource } from '@angular/core';
 
-export interface Institution {
-  id: number;
-  code: string;
-  name: string;
-  logoUrl: string | null;
-}
+import { getApiMyInstitutions } from '../api/generated/sdk.gen';
+
+export type { InstitutionDto as Institution } from '../api/generated/types.gen';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InstitutionClient {
+  private readonly httpClient = inject(HttpClient);
+
   /**
    * Provides the user's active institutions resource (post-authentication).
    * The calling service stores the returned resource and exposes its
@@ -19,6 +18,14 @@ export class InstitutionClient {
    * `reload()`.
    */
   myInstitutions() {
-    return httpResource<Institution[]>(() => 'api/my/institutions');
+    return resource({
+      loader: async () => {
+        const response = await getApiMyInstitutions({
+          httpClient: this.httpClient,
+          throwOnError: true,
+        });
+        return response.data;
+      },
+    });
   }
 }
