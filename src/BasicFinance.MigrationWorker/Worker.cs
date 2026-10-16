@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using BasicFinance.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BasicFinance.MigrationWorker
 {
@@ -11,10 +12,12 @@ namespace BasicFinance.MigrationWorker
     /// <param name="serviceProvider"></param>
     /// <param name="hostApplicationLifetime"></param>
     /// <param name="logger"></param>
+    /// <param name="configuration"></param>
     public partial class Worker(
         IServiceProvider serviceProvider,
         IHostApplicationLifetime hostApplicationLifetime,
-        ILogger<Worker> logger) : BackgroundService
+        ILogger<Worker> logger,
+        IConfiguration configuration) : BackgroundService
     {
         public const string ActivitySourceName = "Migrations";
         private static readonly ActivitySource _activitySource = new(ActivitySourceName);
@@ -44,6 +47,13 @@ namespace BasicFinance.MigrationWorker
                 await SeedAccountTypesAsync(dbContext, logger, stoppingToken);
                 await SeedTransactionCategoriesAsync(dbContext, logger, stoppingToken);
                 await SeedTransactionTypesAsync(dbContext, logger, stoppingToken);
+
+                var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+                if (environment.IsDevelopment())
+                {
+                    var reseed = configuration.GetValue<bool>("MockData:Reseed");
+                    await MockDataSeeder.SeedAsync(dbContext, logger, reseed, stoppingToken);
+                }
 
                 LogMigrationCompleted(logger);
             }
