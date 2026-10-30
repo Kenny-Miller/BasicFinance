@@ -1,9 +1,9 @@
-<section hlmCard class="gap-2 rounded-sm h-full">
+<section hlmCard class="h-full gap-2 rounded-sm">
   <div hlmCardHeader>
     <h3 hlmCardTitle class="text-xs">Net Worth by Account</h3>
   </div>
   <div hlmCardContent>
-    <div class="font-semibold text-2xl">{{ data().balance | currency }}</div>
+    <div class="text-2xl font-semibold">{{ data().balance | currency }}</div>
     <hlm-item-group>
       @for (entry of breakdownEntries(); track entry.code) {
         @let code = entry.code;

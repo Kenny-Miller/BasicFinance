@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { OAuthService } from 'angular-oauth2-oidc';
+
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';

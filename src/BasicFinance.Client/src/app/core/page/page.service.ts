@@ -1,7 +1,11 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
+
 import { AccountType, AccountTypeClient } from '../data-access/account-type-client';
 import { Institution, InstitutionClient } from '../data-access/institution-client';
-import { TransactionCategory, TransactionCategoryClient } from '../data-access/transaction-category-client';
+import {
+  TransactionCategory,
+  TransactionCategoryClient,
+} from '../data-access/transaction-category-client';
 import { TransactionType, TransactionTypeClient } from '../data-access/transaction-type-client';
 
 @Injectable({
@@ -18,7 +22,8 @@ export class PageService {
   private readonly institutionsResource = this._institutionClient.myInstitutions();
   private readonly accountTypesResource = this._accountTypeClient.accountTypes();
   private readonly transactionTypesResource = this._transactionTypeClient.transactionTypes();
-  private readonly transactionCategoriesResource = this._transactionCategoryClient.transactionCategories();
+  private readonly transactionCategoriesResource =
+    this._transactionCategoryClient.transactionCategories();
 
   readonly pageTitle = this._pageTitle.asReadonly();
   readonly pageSubtitle = this._pageSubtitle.asReadonly();
@@ -31,14 +36,10 @@ export class PageService {
    * loading/error contract: a page stays in its loading skeleton until all of
    * them have settled, and any failure puts the page into its error state.
    */
-  readonly data = computed<Institution[] | null>(
-    () => this.institutionsResource.value() ?? null,
-  );
+  readonly data = computed<Institution[] | null>(() => this.institutionsResource.value() ?? null);
 
   /** The global account types (active rows only). */
-  readonly accountTypes = computed<AccountType[]>(
-    () => this.accountTypesResource.value() ?? [],
-  );
+  readonly accountTypes = computed<AccountType[]>(() => this.accountTypesResource.value() ?? []);
 
   /** The global transaction types (active rows only). */
   readonly transactionTypes = computed<TransactionType[]>(
@@ -67,8 +68,7 @@ export class PageService {
         this.accountTypesResource.hasValue() &&
         this.transactionTypesResource.hasValue() &&
         this.transactionCategoriesResource.hasValue()
-      ) &&
-      this.error() === null,
+      ) && this.error() === null,
   );
 
   /**

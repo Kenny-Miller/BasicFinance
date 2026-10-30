@@ -5,24 +5,24 @@
   <div hlmCardContent>
     <div class="space-y-1">
       @for (row of rows(); track row.code) {
-        <div class="flex items-center gap-4 py-2 px-3 rounded hover:bg-muted/50">
-          <span class="flex-1 font-medium truncate">{{ row.name }}</span>
-          <span class="font-mono text-sm w-28 text-right">{{ row.amount | currency }}</span>
-          <span class="text-muted-foreground text-sm w-16 text-right"
+        <div class="flex items-center gap-4 rounded px-3 py-2 hover:bg-muted/50">
+          <span class="flex-1 truncate font-medium">{{ row.name }}</span>
+          <span class="w-28 text-right font-mono text-sm">{{ row.amount | currency }}</span>
+          <span class="w-16 text-right text-sm text-muted-foreground"
             >{{ row.percentOfSpend | number: '1.1-1' }}%</span
           >
-          <div class="w-32 h-2 bg-muted rounded-full overflow-hidden">
-            <div class="h-full bg-primary rounded-full" [style.width.%]="row.percentOfSpend"></div>
+          <div class="h-2 w-32 overflow-hidden rounded-full bg-muted">
+            <div class="h-full rounded-full bg-primary" [style.width.%]="row.percentOfSpend"></div>
           </div>
         </div>
       }
     </div>
-    <div class="flex items-center gap-4 py-3 px-3 border-t mt-2">
+    <div class="mt-2 flex items-center gap-4 border-t px-3 py-3">
       <span class="flex-1 font-semibold">Total Spend</span>
-      <span class="font-mono text-sm w-28 text-right font-semibold">{{
+      <span class="w-28 text-right font-mono text-sm font-semibold">{{
         totalSpend() | currency
       }}</span>
-      <span class="text-sm w-16 text-right font-semibold">100%</span>
+      <span class="w-16 text-right text-sm font-semibold">100%</span>
       <div class="w-32"></div>
     </div>
   </div>

@@ -68,7 +68,7 @@ export class ManageSpreadsheets {
     }
 
     const googleSpreadsheetId = event.detail['docs'][0]['id'];
-    this.addSpreadSheet(googleSpreadsheetId, googleOAuthToken);
+    void this.addSpreadSheet(googleSpreadsheetId, googleOAuthToken);
   }
 
   private async addSpreadSheet(googleSpreadsheetId: string, googleOAuthToken: string) {

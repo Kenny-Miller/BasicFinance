@@ -1,6 +1,8 @@
 import { Component, input } from '@angular/core';
+
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
+
 import { Transaction } from '../../../../core/data-access/transaction-client';
 import { TransactionItem } from '../transaction-item/transaction-item';
 

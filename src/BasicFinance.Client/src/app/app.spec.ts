@@ -1,14 +1,16 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection, WritableSignal, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+
+import { vi } from 'vite-plus/test';
+
+import { App } from './app';
 import { AccountTypeClient } from './core/data-access/account-type-client';
 import { Institution, InstitutionClient } from './core/data-access/institution-client';
 import { TransactionCategoryClient } from './core/data-access/transaction-category-client';
 import { TransactionTypeClient } from './core/data-access/transaction-type-client';
-import { App } from './app';
 
 describe('App', () => {
   let institutions: WritableSignal<Institution[] | null>;

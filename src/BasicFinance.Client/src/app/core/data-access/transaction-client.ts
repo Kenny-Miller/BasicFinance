@@ -77,7 +77,7 @@ export class TransactionClient {
     pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
-    filtersSignal: Signal<TransactionFilters>
+    filtersSignal: Signal<TransactionFilters>,
   ) {
     return resource({
       params: () => ({
@@ -100,7 +100,7 @@ export class TransactionClient {
 
   transactionSummaryResource(
     recordedDateSignal: Signal<Date | null>,
-    timePeriodSignal: Signal<TimePeriod>
+    timePeriodSignal: Signal<TimePeriod>,
   ) {
     return resource({
       params: () => ({
@@ -120,7 +120,7 @@ export class TransactionClient {
 
   dailyTransactionSummaryResource(
     recordedDateSignal: Signal<Date | null>,
-    timePeriodSignal: Signal<TimePeriod>
+    timePeriodSignal: Signal<TimePeriod>,
   ) {
     return resource({
       params: () => ({

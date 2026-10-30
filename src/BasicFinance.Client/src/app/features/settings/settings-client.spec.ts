@@ -56,7 +56,7 @@ describe('SettingsClient', () => {
     // The eagerly created spreadsheetResource may also have dispatched its initial
     // list request for the same URL, so match against the POST specifically.
     const request = controller.expectOne(
-      req => req.method === 'POST' && req.url === '/api/spreadsheets'
+      req => req.method === 'POST' && req.url === '/api/spreadsheets',
     );
 
     expect(request.request.method).toBe('POST');

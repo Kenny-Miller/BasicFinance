@@ -1,5 +1,6 @@
 import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
 import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';

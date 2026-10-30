@@ -1,12 +1,13 @@
 <form
   id="transactions-filter-form"
+  [formRoot]="filterForm"
   (submit)="applyFilters($event)"
-  class="bg-card border-border rounded-lg border p-4 gap-4 flex flex-col"
+  class="flex flex-col gap-4 rounded-lg border border-border bg-card p-4"
 >
   <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
     <hlm-field>
       <label hlmFieldLabel for="from-date">From</label>
-      <hlm-date-picker [field]="filterForm.startDate">
+      <hlm-date-picker [formField]="filterForm.startDate">
         <hlm-date-picker-trigger class="w-full" buttonId="from-date">
           Any date
         </hlm-date-picker-trigger>
@@ -16,7 +17,7 @@
     <hlm-field>
       <label hlmFieldLabel for="to-date">To</label>
       <hlm-field-content>
-        <hlm-date-picker [field]="filterForm.endDate" [min]="minDate">
+        <hlm-date-picker [formField]="filterForm.endDate" [min]="minDate">
           <hlm-date-picker-trigger class="w-full" buttonId="to-date">
             Any date
           </hlm-date-picker-trigger>
@@ -31,7 +32,7 @@
         type="number"
         step="1.00"
         hlmInput
-        [field]="filterForm.minAmount"
+        [formField]="filterForm.minAmount"
         placeholder="$0.00"
       />
     </hlm-field>
@@ -43,7 +44,7 @@
         type="number"
         step="0.01"
         hlmInput
-        [field]="filterForm.maxAmount"
+        [formField]="filterForm.maxAmount"
         placeholder="Any"
       />
     </hlm-field>
@@ -52,7 +53,7 @@
       <label hlmFieldLabel for="transactionTypeCode"> Transaction Type </label>
       <hlm-select
         size="sm"
-        [field]="filterForm.transactionTypeCode"
+        [formField]="filterForm.transactionTypeCode"
         [itemToString]="typeItemToString"
       >
         <hlm-select-trigger buttonId="transactionTypeCode" class="w-full">
@@ -70,7 +71,7 @@
       <label hlmFieldLabel for="transactionCategoryCode"> Transaction Category </label>
       <hlm-select
         size="sm"
-        [field]="filterForm.transactionCategoryCode"
+        [formField]="filterForm.transactionCategoryCode"
         [itemToString]="categoryItemToString"
       >
         <hlm-select-trigger buttonId="transactionCategoryCode" class="w-full">
@@ -86,7 +87,7 @@
 
     <hlm-field>
       <label hlmFieldLabel for="accountId">Account</label>
-      <hlm-select size="sm" [field]="filterForm.accountId" [itemToString]="accountItemToString">
+      <hlm-select size="sm" [formField]="filterForm.accountId" [itemToString]="accountItemToString">
         <hlm-select-trigger buttonId="accountId" class="w-full">
           <hlm-select-value placeholder="Filter by account" />
         </hlm-select-trigger>
@@ -103,7 +104,7 @@
       <input
         id="search"
         hlmInput
-        [field]="filterForm.search"
+        [formField]="filterForm.search"
         type="search"
         placeholder="Search descriptions…"
       />

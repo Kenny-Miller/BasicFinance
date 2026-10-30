@@ -1,6 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+
+import { vi } from 'vite-plus/test';
+
 import { AccountType, AccountTypeClient } from '../data-access/account-type-client';
 import { Institution, InstitutionClient } from '../data-access/institution-client';
 import {
@@ -186,7 +188,9 @@ describe('PageService', () => {
       { id: 1, code: 'CR', name: 'Credit' },
       { id: 2, code: 'DR', name: 'Debit' },
     ]);
-    expect(service.transactionCategories()).toEqual([{ id: 1, code: 'UNC', name: 'Uncategorized' }]);
+    expect(service.transactionCategories()).toEqual([
+      { id: 1, code: 'UNC', name: 'Uncategorized' },
+    ]);
   });
 
   it('should refetch all four shared resources when refetchAll is called', () => {

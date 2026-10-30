@@ -1,6 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+
+import { vi } from 'vite-plus/test';
+
 import { TimePeriod } from '../../data/time-period';
 import { PeriodSelector } from './period-selector';
 

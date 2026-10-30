@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CategoryBreakdownList } from './category-breakdown-list';
 import { SpendingByPeriod } from '../../../../core/data-access/spending-client';
+import { CategoryBreakdownList } from './category-breakdown-list';
 
 describe('CategoryBreakdownList', () => {
   let component: CategoryBreakdownList;
@@ -61,7 +61,7 @@ describe('CategoryBreakdownList', () => {
 
     const rows = component.rows();
 
-    expect(rows.map((row) => row.name)).toEqual(['Dining', 'Uncategorized']);
+    expect(rows.map(row => row.name)).toEqual(['Dining', 'Uncategorized']);
   });
 
   it('should fall back to the code when a category has no name', () => {
@@ -93,9 +93,11 @@ describe('CategoryBreakdownList', () => {
       },
     };
 
-    fixture.componentRef.setInput('categories', [{ id: 1, code: 'AUTO', name: 'Auto and Transport' }]);
+    fixture.componentRef.setInput('categories', [
+      { id: 1, code: 'AUTO', name: 'Auto and Transport' },
+    ]);
     fixture.componentRef.setInput('data', data);
 
-    expect(component.rows().map((row) => row.code)).toEqual(['AUTO']);
+    expect(component.rows().map(row => row.code)).toEqual(['AUTO']);
   });
 });

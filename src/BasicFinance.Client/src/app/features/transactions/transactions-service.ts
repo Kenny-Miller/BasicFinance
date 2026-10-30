@@ -81,7 +81,7 @@ export class TransactionsService {
     signal(100),
     signal('name'),
     signal('asc'),
-    signal({})
+    signal({}),
   );
 
   private readonly listTransactions = this.transactionsClient.listTransactions(
@@ -89,16 +89,16 @@ export class TransactionsService {
     this.pageSize,
     this.sortField,
     this.sortDirection,
-    this.filters
+    this.filters,
   );
   private readonly transactionSummary = this.transactionsClient.transactionSummaryResource(
     signal<Date | null>(null),
-    this.period
+    this.period,
   );
 
   private readonly dailySummary = this.transactionsClient.dailyTransactionSummaryResource(
     signal<Date | null>(null),
-    this.period
+    this.period,
   );
 
   readonly loading = computed(
@@ -107,7 +107,7 @@ export class TransactionsService {
       (!this.listAccounts.hasValue() &&
         !this.listTransactions.hasValue() &&
         !this.dailySummary.hasValue() &&
-        !this.transactionSummary.hasValue())
+        !this.transactionSummary.hasValue()),
   );
 
   /** The global transaction types, shared via page-level state. */
@@ -124,7 +124,7 @@ export class TransactionsService {
       this.listAccounts.error() ||
       this.listTransactions.error() ||
       this.dailySummary.error() ||
-      this.transactionSummary.error()
+      this.transactionSummary.error(),
   );
 
   readonly data = computed<TransactionsData>(() => {

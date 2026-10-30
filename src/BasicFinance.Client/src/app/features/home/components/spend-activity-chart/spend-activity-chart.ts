@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
+
 import { SpendingOverTimeSummary } from '../../../../core/data-access/spending-client';
 
 interface TooltipParam {
@@ -46,8 +48,8 @@ export class SpendActivityChart {
     const primaryColor = colors.primary;
     const previousMonthColor = colors.previous;
 
-    const currentData = spendingData?.currentMonthActivity.map((item) => item.y) ?? [];
-    const previousData = spendingData?.previousMonthActivity.map((item) => item.y) ?? [];
+    const currentData = spendingData?.currentMonthActivity.map(item => item.y) ?? [];
+    const previousData = spendingData?.previousMonthActivity.map(item => item.y) ?? [];
 
     return {
       tooltip: {
@@ -115,8 +117,8 @@ export class SpendActivityChart {
   });
 
   private formatTooltip(params: TooltipParam[]) {
-    const current = params.find((p) => p.seriesIndex === 1);
-    const previous = params.find((p) => p.seriesIndex === 0);
+    const current = params.find(p => p.seriesIndex === 1);
+    const previous = params.find(p => p.seriesIndex === 0);
     if (!current && !previous) {
       return '';
     }

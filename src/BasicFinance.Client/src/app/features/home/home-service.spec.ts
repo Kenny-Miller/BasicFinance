@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import { AccountClient } from '../../core/data-access/account-client';
 import { SpendingClient } from '../../core/data-access/spending-client';
 import { TransactionClient } from '../../core/data-access/transaction-client';

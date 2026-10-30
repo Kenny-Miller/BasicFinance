@@ -1,6 +1,7 @@
+import environmentConfigData from '../environment-config-data';
+
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import environmentConfigData from '../environment-config-data';
 
 const distPath = path.join(
   process.cwd(),

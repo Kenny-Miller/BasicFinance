@@ -26,7 +26,7 @@ describe('TransactionCategoryClient', () => {
     // resource asserts an injection context, so the provider call is wrapped the way
     // PageService's field initializer runs it.
     const transactionCategories = TestBed.runInInjectionContext(() =>
-      client.transactionCategories()
+      client.transactionCategories(),
     );
     await settleSdkBridge();
 
@@ -41,7 +41,7 @@ describe('TransactionCategoryClient', () => {
 
   it('should issue a new request when the resource is reloaded', async () => {
     const transactionCategories = TestBed.runInInjectionContext(() =>
-      client.transactionCategories()
+      client.transactionCategories(),
     );
     await settleSdkBridge();
 

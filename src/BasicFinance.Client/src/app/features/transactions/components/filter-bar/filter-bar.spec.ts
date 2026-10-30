@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { TransactionFilters } from '../../../../core/data-access/transaction-client';
 import { FilterBar } from './filter-bar';
 
@@ -17,7 +18,7 @@ describe('FilterBar', () => {
     fixture = TestBed.createComponent(FilterBar);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('filters', {});
-    component.filterChange.subscribe((filters) => emitted.push(filters));
+    component.filterChange.subscribe(filters => emitted.push(filters));
     fixture.detectChanges();
   });
 
@@ -29,7 +30,7 @@ describe('FilterBar', () => {
   };
 
   it('should prevent the native form submit and emit the current filters', () => {
-    component.filterModel.update((draft) => ({ ...draft, search: 'coffee' }));
+    component.filterModel.update(draft => ({ ...draft, search: 'coffee' }));
     const event = submitForm();
 
     expect(event.defaultPrevented).toBe(true);
@@ -37,7 +38,7 @@ describe('FilterBar', () => {
   });
 
   it('should keep the form in place when the Apply button is clicked', () => {
-    component.filterModel.update((draft) => ({ ...draft, search: 'espresso' }));
+    component.filterModel.update(draft => ({ ...draft, search: 'espresso' }));
     const button = fixture.nativeElement.querySelector(
       'button[type="submit"]',
     ) as HTMLButtonElement;
@@ -48,7 +49,7 @@ describe('FilterBar', () => {
   });
 
   it('should not emit and should mark fields as touched when the form is invalid', () => {
-    component.filterModel.update((draft) => ({ ...draft, minAmount: -5 }));
+    component.filterModel.update(draft => ({ ...draft, minAmount: -5 }));
 
     submitForm();
 
@@ -58,7 +59,7 @@ describe('FilterBar', () => {
   });
 
   it('should not emit when only the draft changes', () => {
-    component.filterModel.update((draft) => ({ ...draft, search: 'latte' }));
+    component.filterModel.update(draft => ({ ...draft, search: 'latte' }));
 
     expect(emitted).toEqual([]);
   });
@@ -72,7 +73,7 @@ describe('FilterBar', () => {
   });
 
   it('should emit numeric amounts from the draft', () => {
-    component.filterModel.update((draft) => ({ ...draft, minAmount: 10, maxAmount: 99.99 }));
+    component.filterModel.update(draft => ({ ...draft, minAmount: 10, maxAmount: 99.99 }));
 
     submitForm();
 
@@ -80,7 +81,11 @@ describe('FilterBar', () => {
   });
 
   it('should omit amount filters when the draft amounts are empty', () => {
-    component.filterModel.update((draft) => ({ ...draft, minAmount: Number.NaN, maxAmount: Number.NaN }));
+    component.filterModel.update(draft => ({
+      ...draft,
+      minAmount: Number.NaN,
+      maxAmount: Number.NaN,
+    }));
 
     submitForm();
 
@@ -132,7 +137,9 @@ describe('FilterBar', () => {
 
   it('should resolve type and category codes to labels, falling back to the code', () => {
     fixture.componentRef.setInput('transactionTypes', [{ id: 1, code: 'CR', name: 'Credit' }]);
-    fixture.componentRef.setInput('transactionCategories', [{ id: 1, code: 'TAXES', name: 'Taxes' }]);
+    fixture.componentRef.setInput('transactionCategories', [
+      { id: 1, code: 'TAXES', name: 'Taxes' },
+    ]);
 
     expect(component.typeItemToString('CR')).toBe('Credit');
     expect(component.typeItemToString('')).toBe('All Types');
@@ -143,7 +150,7 @@ describe('FilterBar', () => {
   });
 
   it('should clear the form and emit empty filters on reset', () => {
-    component.filterModel.update((draft) => ({
+    component.filterModel.update(draft => ({
       ...draft,
       search: 'coffee',
       accountId: 'account-1',

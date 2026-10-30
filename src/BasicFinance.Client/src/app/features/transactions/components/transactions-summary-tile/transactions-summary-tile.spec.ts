@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+
 import { TransactionsSummaryTile } from './transactions-summary-tile';
 
 interface TileOverrides {

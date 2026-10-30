@@ -1,14 +1,16 @@
 import { Component, computed, effect, input, output, signal } from '@angular/core';
-import { Field, form, min, submit } from '@angular/forms/signals';
+import { form, FormField, FormRoot, min, submit } from '@angular/forms/signals';
+
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+
 import { Account } from '../../../../core/data-access/account-client';
 import { TransactionCategory } from '../../../../core/data-access/transaction-category-client';
-import { TransactionType } from '../../../../core/data-access/transaction-type-client';
 import { TransactionFilters } from '../../../../core/data-access/transaction-client';
+import { TransactionType } from '../../../../core/data-access/transaction-type-client';
 
 interface SelectOption {
   value: string;
@@ -31,12 +33,13 @@ interface FilterDraft {
 @Component({
   selector: 'app-filter-bar',
   imports: [
-    Field,
     HlmDatePickerImports,
     HlmButtonImports,
     HlmInputImports,
     HlmSelectImports,
     HlmFieldImports,
+    FormField,
+    FormRoot,
   ],
   templateUrl: './filter-bar.html',
   styleUrl: './filter-bar.css',
@@ -50,28 +53,28 @@ export class FilterBar {
   readonly filterChange = output<TransactionFilters>();
 
   readonly filterModel = signal<FilterDraft>(this._draftFrom({}));
-  readonly filterForm = form(this.filterModel, (draft) => {
+  readonly filterForm = form(this.filterModel, draft => {
     min(draft.minAmount, 0);
     min(draft.maxAmount, 0);
   });
 
   readonly typeOptions = computed<SelectOption[]>(() => [
     { value: '', label: 'All Types' },
-    ...this.transactionTypes().map((type) => ({
+    ...this.transactionTypes().map(type => ({
       value: type.code,
       label: type.name,
     })),
   ]);
   readonly categoryOptions = computed<SelectOption[]>(() => [
     { value: '', label: 'All Categories' },
-    ...this.transactionCategories().map((category) => ({
+    ...this.transactionCategories().map(category => ({
       value: category.code,
       label: category.name,
     })),
   ]);
   readonly accountOptions = computed<SelectOption[]>(() => [
     { value: '', label: 'All Accounts' },
-    ...this.accounts().map((account) => ({
+    ...this.accounts().map(account => ({
       value: account.id,
       label: account.name,
     })),
@@ -151,7 +154,7 @@ export class FilterBar {
   }
 
   private _labelFor(options: SelectOption[], code: string): string {
-    return options.find((option) => option.value === code)?.label ?? code;
+    return options.find(option => option.value === code)?.label ?? code;
   }
 
   private _parseDate(value: string | undefined): Date | null {

@@ -1,4 +1,5 @@
 import { Component, computed, input } from '@angular/core';
+
 import { TransactionItemSkeleton } from '../transaction-item-skeleton/transaction-item-skeleton';
 
 @Component({

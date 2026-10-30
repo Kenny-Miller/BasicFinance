@@ -26,8 +26,8 @@ export class CategoryBreakdownList {
 
   readonly categoryNames = computed<Record<string, string>>(() =>
     Object.fromEntries(
-      this.categories().map(category => [category.code, category.name] as [string, string])
-    )
+      this.categories().map(category => [category.code, category.name] as [string, string]),
+    ),
   );
 
   readonly rows = computed<CategoryRow[]>(() => {

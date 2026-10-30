@@ -61,7 +61,7 @@ export class AccountClient {
     pageSizeSignal: Signal<number>,
     sortFieldSignal: Signal<string>,
     sortDirectionSignal: Signal<string>,
-    filtersSignal: Signal<AccountFilters>
+    filtersSignal: Signal<AccountFilters>,
   ) {
     return resource({
       params: () => ({
@@ -98,7 +98,7 @@ export class AccountClient {
 
   institutionSummaryResource(
     institutionIdSignal: Signal<number>,
-    timePeriodSignal: Signal<TimePeriod>
+    timePeriodSignal: Signal<TimePeriod>,
   ) {
     return resource({
       params: () => ({

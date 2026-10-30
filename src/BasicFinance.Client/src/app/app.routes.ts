@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+
 import { authGuard } from './core/auth/auth.guard';
 import { Account } from './features/account/account';
 import { Home } from './features/home/home';
@@ -18,7 +19,7 @@ export const routes: Routes = [
     path: 'Settings',
     component: Settings,
     canActivate: [authGuard],
-    loadChildren: () => import('./features/settings/settings.routes').then((m) => m.settingsRoutes),
+    loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes),
     title: 'Settings',
   },
   {

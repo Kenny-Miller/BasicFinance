@@ -1,8 +1,10 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import * as echarts from 'echarts/core';
 import { provideEchartsCore } from 'ngx-echarts';
 import { of } from 'rxjs';
+
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { SpendActivityChart } from './spend-activity-chart';
 

@@ -2,13 +2,15 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+
 import { Subject } from 'rxjs';
+
 import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
 import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
 import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
-import { TimePeriod } from '../../shared/data/time-period';
 import { PageService } from '../../core/page/page.service';
+import { TimePeriod } from '../../shared/data/time-period';
 import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
 import { Account } from './account';
 import { AccountPageData, AccountPageService } from './account-page-service';

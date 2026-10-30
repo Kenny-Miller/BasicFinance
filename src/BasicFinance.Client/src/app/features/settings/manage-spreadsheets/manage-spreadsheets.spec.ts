@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+
 import { ENVIRONMENT_CONFIG } from '../../../environment-config';
 import { SettingsClient } from '../settings-client';
 import { ManageSpreadsheets } from './manage-spreadsheets';

@@ -1,12 +1,14 @@
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
-import { AccountType } from '../../../../core/data-access/account-type-client';
+
 import { TotalBalanceBreakdown } from '../../../../core/data-access/account-client';
+import { AccountType } from '../../../../core/data-access/account-type-client';
 import { AbsPipe } from '../../../../shared/pipes/abs-pipe';
 
 @Component({
@@ -35,6 +37,6 @@ export class AccountNetWorthBreakdown {
   );
 
   protected readonly accountTypeLabels = computed<Record<string, string>>(() =>
-    Object.fromEntries(this.accountTypes().map((type) => [type.code, type.name] as [string, string])),
+    Object.fromEntries(this.accountTypes().map(type => [type.code, type.name] as [string, string])),
   );
 }
