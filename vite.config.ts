@@ -63,10 +63,10 @@ export default defineConfig({
       {
         files: ['**/*.jsonc'],
         options: {
-          trailingComma: 'none'
-        }
+          trailingComma: 'none',
+        },
       },
-    ]
+    ],
   },
   lint: {
     plugins: ['oxc', 'typescript', 'unicorn'],
