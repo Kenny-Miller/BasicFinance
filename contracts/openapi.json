@@ -7,9 +7,7 @@
   "paths": {
     "/api/transaction-types": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.TransactionTypes.ListTransactionTypes"
-        ],
+        "tags": ["BasicFinance.Api.Features.TransactionTypes.ListTransactionTypes"],
         "summary": "Retrieves the active TransactionTypes.",
         "description": "GET_api_transaction_types",
         "operationId": "GET_api_transaction_types",
@@ -42,9 +40,7 @@
     },
     "/api/transactions/daily-summary": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Transactions.GetDailyTransactionSummary"
-        ],
+        "tags": ["BasicFinance.Api.Features.Transactions.GetDailyTransactionSummary"],
         "summary": "Retrieves per-calendar-day spend points for the user\u0027s active accounts for the current and\r\nprevious period. The period is resolved from \u0060timePeriod\u0060 plus \u0060recordedDate\u0060.\r\nDays without activity are zero-filled.",
         "description": "GET_api_transactions_daily_summary",
         "operationId": "GET_api_transactions_daily_summary",
@@ -107,9 +103,7 @@
     },
     "/api/transactions/{transactionId}": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Transactions.GetTransactionById"
-        ],
+        "tags": ["BasicFinance.Api.Features.Transactions.GetTransactionById"],
         "summary": "Gets a Transactions associated with the authenticated user and the specified Id.",
         "description": "GET_api_transactions_transactionId",
         "operationId": "GET_api_transactions_transactionId",
@@ -151,9 +145,7 @@
     },
     "/api/transactions/summary": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Transactions.GetTransactionSummary"
-        ],
+        "tags": ["BasicFinance.Api.Features.Transactions.GetTransactionSummary"],
         "summary": "Retrieves headline transaction aggregates (count, spend, income, net flow) for the user\u0027s\r\nactive accounts for the current and previous period. The period is resolved from\r\n\u0060timePeriod\u0060 plus \u0060recordedDate\u0060.",
         "description": "GET_api_transactions_summary",
         "operationId": "GET_api_transactions_summary",
@@ -216,9 +208,7 @@
     },
     "/api/transactions": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Transactions.ListTransactions"
-        ],
+        "tags": ["BasicFinance.Api.Features.Transactions.ListTransactions"],
         "summary": "Retrieves Transactions associated with the authenticated user\r\nbased on the provided search criteria.",
         "description": "GET_api_transactions",
         "operationId": "GET_api_transactions",
@@ -341,9 +331,7 @@
     },
     "/api/transaction-categories": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.TransactionCategories.ListTransactionCategories"
-        ],
+        "tags": ["BasicFinance.Api.Features.TransactionCategories.ListTransactionCategories"],
         "summary": "Retrieves the active TransactionCategorys.",
         "description": "GET_api_transaction_categories",
         "operationId": "GET_api_transaction_categories",
@@ -376,9 +364,7 @@
     },
     "/api/spreadsheets": {
       "post": {
-        "tags": [
-          "BasicFinance.Api.Features.Spreadsheets.CreateUserGoogleSpreadsheet"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spreadsheets.CreateUserGoogleSpreadsheet"],
         "summary": "Creates a new UserGoogleSpreadsheet for the authenticated user and the specified Google Spreadsheet.",
         "description": "POST_api_spreadsheets",
         "operationId": "POST_api_spreadsheets",
@@ -446,9 +432,7 @@
         }
       },
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Spreadsheets.ListUserGoogleSpreadsheets"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spreadsheets.ListUserGoogleSpreadsheets"],
         "summary": "Lists UserGoogleSpreadsheets associated with the authenticated user.",
         "description": "GET_api_spreadsheets",
         "operationId": "GET_api_spreadsheets",
@@ -478,9 +462,7 @@
     },
     "/api/spreadsheets/{spreadsheetId}": {
       "delete": {
-        "tags": [
-          "BasicFinance.Api.Features.Spreadsheets.DeleteUserGoogleSpreadsheet"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spreadsheets.DeleteUserGoogleSpreadsheet"],
         "summary": "Soft-deletes (deactivates) a user google spreadsheet owned by the authenticated user.",
         "description": "DELETE_api_spreadsheets_spreadsheetId",
         "operationId": "DELETE_api_spreadsheets_spreadsheetId",
@@ -525,9 +507,7 @@
     },
     "/api/spreadsheets/{userGoogleSpreadsheetId}": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Spreadsheets.GetUserGoogleSpreadsheet"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spreadsheets.GetUserGoogleSpreadsheet"],
         "summary": "Gets a UserGoogleSpreadsheet for the authenticated user and the specified Google Spreadsheet.",
         "description": "GET_api_spreadsheets_userGoogleSpreadsheetId",
         "operationId": "GET_api_spreadsheets_userGoogleSpreadsheetId",
@@ -579,9 +559,7 @@
     },
     "/api/spending/activity-by-period": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Spending.GetSpendingActivityByPeriod"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spending.GetSpendingActivityByPeriod"],
         "summary": "Retrieves spending activity for the authenticated user for a given period.",
         "description": "GET_api_spending_activity_by_period",
         "operationId": "GET_api_spending_activity_by_period",
@@ -628,9 +606,7 @@
     },
     "/api/spending/over-time-summary": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Spending.GetSpendingOverTimeSummary"
-        ],
+        "tags": ["BasicFinance.Api.Features.Spending.GetSpendingOverTimeSummary"],
         "summary": "Retrieves spending over time summary for the authenticated user.",
         "description": "GET_api_spending_over_time_summary",
         "operationId": "GET_api_spending_over_time_summary",
@@ -660,9 +636,7 @@
     },
     "/api/institutions/{institutionId}": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Institutions.GetInstitutionById"
-        ],
+        "tags": ["BasicFinance.Api.Features.Institutions.GetInstitutionById"],
         "summary": "Gets an Institution with the specified Id.",
         "description": "GET_api_institutions_institutionId",
         "operationId": "GET_api_institutions_institutionId",
@@ -704,9 +678,7 @@
     },
     "/api/my/institutions": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Institutions.GetMyInstitutions"
-        ],
+        "tags": ["BasicFinance.Api.Features.Institutions.GetMyInstitutions"],
         "summary": "Retrieves distinct institutions for the authenticated user.\r\nOnly includes institutions that have at least one active account belonging to the user.",
         "description": "GET_api_my_institutions",
         "operationId": "GET_api_my_institutions",
@@ -739,9 +711,7 @@
     },
     "/api/institutions": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Institutions.ListInstitutions"
-        ],
+        "tags": ["BasicFinance.Api.Features.Institutions.ListInstitutions"],
         "summary": "Retrieves active Institutions based on the provided search criteria.",
         "description": "GET_api_institutions",
         "operationId": "GET_api_institutions",
@@ -803,9 +773,7 @@
     },
     "/api/account-types": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.AccountTypes.ListAccountTypes"
-        ],
+        "tags": ["BasicFinance.Api.Features.AccountTypes.ListAccountTypes"],
         "summary": "Retrieves the active AccountTypes.",
         "description": "GET_api_account_types",
         "operationId": "GET_api_account_types",
@@ -838,9 +806,7 @@
     },
     "/api/accounts/balance-summary": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Accounts.GetAccountBalanceSummary"
-        ],
+        "tags": ["BasicFinance.Api.Features.Accounts.GetAccountBalanceSummary"],
         "summary": "Retrieves the total balance breakdown for the user\u0027s active accounts for the current and\r\nprevious period.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward).\r\nAccounts without a ledger entry that far back appear in that period\u0027s\r\nbreakdown with a zero balance.",
         "description": "GET_api_accounts_balance_summary",
         "operationId": "GET_api_accounts_balance_summary",
@@ -887,9 +853,7 @@
     },
     "/api/accounts/{accountId}": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Accounts.GetAccountById"
-        ],
+        "tags": ["BasicFinance.Api.Features.Accounts.GetAccountById"],
         "summary": "Gets the Account associated with the authenticated user that has the specified Id.",
         "description": "GET_api_accounts_accountId",
         "operationId": "GET_api_accounts_accountId",
@@ -934,9 +898,7 @@
     },
     "/api/accounts/institution/{institutionId}/summary": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Accounts.GetInstitutionSummary"
-        ],
+        "tags": ["BasicFinance.Api.Features.Accounts.GetInstitutionSummary"],
         "summary": "Retrieves account-level summary for a specific institution.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward;\r\naccounts without a ledger entry that far back carry a zero balance).\r\nThe per-account-type totals are zero-filled for every active account type.\r\nIf the institution is deactivated no accounts are returned, but the\r\ninstitution name and zero-filled totals are.",
         "description": "GET_api_accounts_institution_institutionId_summary",
         "operationId": "GET_api_accounts_institution_institutionId_summary",
@@ -993,9 +955,7 @@
     },
     "/api/my/accounts": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Accounts.GetMyAccounts"
-        ],
+        "tags": ["BasicFinance.Api.Features.Accounts.GetMyAccounts"],
         "summary": "Retrieves the active Accounts for the authenticated user.",
         "description": "GET_api_my_accounts",
         "operationId": "GET_api_my_accounts",
@@ -1028,9 +988,7 @@
     },
     "/api/accounts": {
       "get": {
-        "tags": [
-          "BasicFinance.Api.Features.Accounts.ListAccounts"
-        ],
+        "tags": ["BasicFinance.Api.Features.Accounts.ListAccounts"],
         "summary": "Retrieves Accounts associated with the authenticated user\r\nbased on the provided search criteria.",
         "description": "GET_api_accounts",
         "operationId": "GET_api_accounts",
@@ -1106,9 +1064,7 @@
     },
     "/users/me": {
       "get": {
-        "tags": [
-          "BasicFinance.Api"
-        ],
+        "tags": ["BasicFinance.Api"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1280,11 +1236,7 @@
         "description": "Dto containing Account data."
       },
       "AccountTypeBreakdown": {
-        "required": [
-          "balance",
-          "percentageOfTotalBalance",
-          "accounts"
-        ],
+        "required": ["balance", "percentageOfTotalBalance", "accounts"],
         "type": "object",
         "properties": {
           "balance": {
@@ -1308,12 +1260,7 @@
         "description": "Balance and breakdown for a single account type within a period."
       },
       "AccountTypeDto": {
-        "required": [
-          "id",
-          "code",
-          "name",
-          "isLiability"
-        ],
+        "required": ["id", "code", "name", "isLiability"],
         "type": "object",
         "properties": {
           "id": {
@@ -1337,10 +1284,7 @@
         "description": "Dto containing AccountType data."
       },
       "DailySpendingOverTime": {
-        "required": [
-          "x",
-          "y"
-        ],
+        "required": ["x", "y"],
         "type": "object",
         "properties": {
           "x": {
@@ -1405,11 +1349,7 @@
         "description": "Response Dto for the GetDailyTransactionSummary endpoint."
       },
       "DailyTransactionSummary": {
-        "required": [
-          "date",
-          "totalSpend",
-          "transactionCount"
-        ],
+        "required": ["date", "totalSpend", "transactionCount"],
         "type": "object",
         "properties": {
           "date": {
@@ -1434,35 +1374,20 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "status": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": ["null", "integer"],
             "format": "int32"
           },
           "detail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "errors": {
             "type": "object",
@@ -1476,12 +1401,7 @@
         }
       },
       "InstitutionDto": {
-        "required": [
-          "id",
-          "code",
-          "name",
-          "logoUrl"
-        ],
+        "required": ["id", "code", "name", "logoUrl"],
         "type": "object",
         "properties": {
           "id": {
@@ -1495,10 +1415,7 @@
             "type": "string"
           },
           "logoUrl": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         },
         "description": "Dto containing Institution data."
@@ -1684,42 +1601,25 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "status": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": ["null", "integer"],
             "format": "int32"
           },
           "detail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
       "Request": {
-        "required": [
-          "googleSpreadsheetId"
-        ],
+        "required": ["googleSpreadsheetId"],
         "type": "object",
         "properties": {
           "googleSpreadsheetId": {
@@ -1730,9 +1630,7 @@
         "description": "Request Dto for the CreateUserGoogleSpreadsheet endpoint."
       },
       "SpendingActivity": {
-        "required": [
-          "amount"
-        ],
+        "required": ["amount"],
         "type": "object",
         "properties": {
           "amount": {
@@ -1826,10 +1724,7 @@
         "type": "integer"
       },
       "TotalBalanceBreakdown": {
-        "required": [
-          "balance",
-          "accountTypeBreakdowns"
-        ],
+        "required": ["balance", "accountTypeBreakdowns"],
         "type": "object",
         "properties": {
           "balance": {
@@ -1848,11 +1743,7 @@
         "description": "Total balance and breakdown by account type for a period."
       },
       "TransactionCategoryDto": {
-        "required": [
-          "id",
-          "code",
-          "name"
-        ],
+        "required": ["id", "code", "name"],
         "type": "object",
         "properties": {
           "id": {
@@ -1911,11 +1802,7 @@
         "description": "Dto containing Transaction data."
       },
       "TransactionPeriodSummary": {
-        "required": [
-          "totalCount",
-          "totalSpend",
-          "totalIncome"
-        ],
+        "required": ["totalCount", "totalSpend", "totalIncome"],
         "type": "object",
         "properties": {
           "totalCount": {
@@ -1984,11 +1871,7 @@
         "description": "Response Dto for the GetTransactionSummary endpoint."
       },
       "TransactionTypeDto": {
-        "required": [
-          "id",
-          "code",
-          "name"
-        ],
+        "required": ["id", "code", "name"],
         "type": "object",
         "properties": {
           "id": {
@@ -2008,12 +1891,7 @@
         "description": "Dto containing TransactionType data."
       },
       "UserGoogleSpreadSheetDto": {
-        "required": [
-          "id",
-          "googleSheetId",
-          "googleSheetName",
-          "createdDate"
-        ],
+        "required": ["id", "googleSheetId", "googleSheetName", "createdDate"],
         "type": "object",
         "properties": {
           "id": {

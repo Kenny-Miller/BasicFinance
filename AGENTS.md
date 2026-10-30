@@ -33,6 +33,16 @@ dotnet build
 dotnet build --no-incremental    # clean rebuild
 ```
 
+### Root tooling (Vite+)
+
+Lint, format, and type checks are owned by Vite+ at the repo root. Git hooks: `pre-commit` runs `vp staged`; `pre-push` runs .NET unit tests and client unit tests when the changed paths touch those areas.
+
+```powershell
+vp install                       # install dependencies across all workspaces
+vp check                         # format check + lint + type check
+vp fmt                           # write formatting
+```
+
 ### Angular client (standalone)
 
 ```powershell
@@ -42,8 +52,6 @@ npm run start-standalone         # dev server on :4200
 npm run build                    # production build
 npm run test                     # watch mode (ng test)
 npm run test:unit                # headless unit tests with coverage
-npm run lint                     # ESLint (TS + HTML templates)
-npm run format                   # Prettier write
 ```
 
 ## Testing
@@ -87,7 +95,7 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 
 ## Conventions
 
-### C #
+### C#
 
 - `.editorconfig` enforces code style at build (`EnforceCodeStyleInBuild=true`). File-scoped namespaces, `var` preferred, expression-bodied properties, braces required.
 - NuGet versions centralized in `Directory.Packages.props` (CPM enabled, transitive pinning on).
@@ -110,7 +118,35 @@ Test the full pipeline: endpoint → middleware → DbContext → PostgreSQL. Us
 Project documentation lives in `DevDocuments/` organized in three tiers:
 
 | Folder    | Purpose                                                                                |
-| --- | --- |
+| --------- | -------------------------------------------------------------------------------------- |
 | `Design/` | Loose, exploratory ideas. Hazy or unclear concepts that need refinement.               |
 | `Spec/`   | Refined specifications produced by research, analysis, and review of design documents. |
 | `Task/`   | Concrete, actionable implementation steps derived from specifications.                 |
+
+<!--VITE PLUS START-->
+
+# Using Vite+, the Unified Toolchain for the Web
+
+This project is using Vite+, a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Vite+ wraps runtime management, package management, and frontend tooling in a single global CLI called `vp`. Vite+ is distinct from Vite, and it invokes Vite through `vp dev` and `vp build`. Run `vp help` to print a list of commands and `vp <command> --help` for information about a specific command.
+
+Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.dev/guide/.
+
+## Built-in Commands vs Scripts
+
+`vp <name>` runs a built-in command. `vp run <name>` runs a `package.json` script or a `vite.config.ts` task. Scripts cannot overwrite built-ins, so `vp dev` and `vp run dev` may do different things. Check `package.json` and `vite.config.ts` first, and run `vp run <name>` when the project defines a script or task with that name.
+
+## Tool Versions
+
+Run `vp toolchain` to show versions and relationships in the active Vite+
+release. Add a tool name to select part of the graph. For example, run
+`vp toolchain vite`. Use `--global` to ignore the local `vite-plus` package. Use
+`vp why <package>` to show the package-manager dependency graph.
+
+## Review Checklist
+
+- [ ] Run `vp install` after pulling remote changes and before getting started.
+- [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
+- [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
+- [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
+
+<!--VITE PLUS END-->

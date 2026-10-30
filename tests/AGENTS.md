@@ -2,14 +2,15 @@
 
 ## Framework & Tools
 
-| Tool | Purpose |
-|---|---|
-| **xUnit** | Test framework. All test projects use `xunit` + `xunit.runner.visualstudio`. |
-| **Nsubstitute** | Mocking library. Used for stubs and verifying interactions. |
-| **Microsoft.NET.Test.Sdk** | Test runner / discovery. |
-| **Testcontainers** | Real infrastructure (PostgreSQL, RabbitMQ) for integration tests. |
+| Tool                       | Purpose                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| **xUnit**                  | Test framework. All test projects use `xunit` + `xunit.runner.visualstudio`. |
+| **Nsubstitute**            | Mocking library. Used for stubs and verifying interactions.                  |
+| **Microsoft.NET.Test.Sdk** | Test runner / discovery.                                                     |
+| **Testcontainers**         | Real infrastructure (PostgreSQL, RabbitMQ) for integration tests.            |
 
 Run tests from the solution root:
+
 ```powershell
 dotnet test tests/BasicFinance.Domain.UnitTests
 dotnet test tests/BasicFinance.Infrastructure.UnitTests
@@ -26,13 +27,16 @@ dotnet test  # runs all test projects
 ## Naming Conventions
 
 ### Test project names
+
 - Unit test projects: `<SourceProject>.UnitTests`
 - Integration test projects: `<SourceProject>.IntegrationTests`
 
 ### Test class names
+
 `<ClassName>Tests` — e.g. `DateTimeRangeTests`, `QueryableExtensionsTests`.
 
 ### Test method names
+
 Three-part convention: `<MethodName>_<Scenario>_<ExpectedBehavior>`
 
 ```csharp
@@ -44,6 +48,7 @@ public void Constructor_StartAfterEnd_ThrowsArgumentException() { }
 ```
 
 ### Test helper names
+
 - Shared test doubles / fakes: `Fake<InterfaceName>.cs` (e.g. `FakeTimeProvider.cs`)
 - Factory helpers: `<EntityName>Factory.cs` (e.g. `TransactionFactory.cs`)
 - General helpers: `<Name>Helper.cs`
@@ -72,10 +77,10 @@ public void Add_EmptyString_ReturnsZero()
 
 ## xUnit Patterns
 
-| Attribute | Use when |
-|---|---|
-| `[Fact]` | Tests an invariant — always true, single execution path. |
-| `[Theory]` + `[InlineData]` | Same test logic, different input data. |
+| Attribute                   | Use when                                                 |
+| --------------------------- | -------------------------------------------------------- |
+| `[Fact]`                    | Tests an invariant — always true, single execution path. |
+| `[Theory]` + `[InlineData]` | Same test logic, different input data.                   |
 
 ```csharp
 [Theory]
@@ -92,12 +97,14 @@ public void IsPrime_ValuesLessThan2_ReturnsFalse(int value)
 ## Mocking with Moq
 
 ### Stubs — provide data, not asserted against
+
 ```csharp
 var mockRepo = new Mock<IRepository>();
 mockRepo.Setup(r => r.GetById(1)).Returns(new Entity { Id = 1 });
 ```
 
 ### Mocks — asserted against to verify interactions
+
 ```csharp
 var mockLogger = new Mock<ILogger>();
 sut.Process(data);
@@ -105,6 +112,7 @@ mockLogger.Verify(l => l.LogWarning(It.IsAny<string>()), Times.Once);
 ```
 
 ### Helper methods over constructor setup
+
 Prefer private helper methods to initialize shared state rather than constructor fields:
 
 ```csharp
@@ -135,17 +143,20 @@ BasicFinance.Domain.UnitTests/
 ```
 
 ### What goes in `Helpers/`
+
 - **Test doubles** — fake implementations of interfaces (`Fake*`)
 - **Test data factories** — methods that create populated domain objects (`*Factory`)
 - **Test entity models** — simple POCOs used as in-memory test data (`Test*`)
 - **Mock builders** — reusable Moq setup helpers
 
 ### What stays in test files
+
 - Test methods (`[Fact]`, `[Theory]`)
 - Test-specific inline assertions
 - Per-test local variables
 
 ### Helper conventions
+
 - Helpers are `internal` (no need for `InternalsVisibleTo` since they're in the same assembly).
 - Use `static` helper methods for factories when stateless.
 - Use `static readonly` for constant test data.
@@ -160,27 +171,29 @@ BasicFinance.Domain.UnitTests/
 
 ## What to Avoid
 
-| Anti-pattern | Why |
-|---|---|
-| Infrastructure dependencies (DB, network, file system) | Makes tests slow and brittle — reserve for integration tests. |
-| Multiple Act phases in one test | Obscures which action caused the failure. |
-| Logic (`if`, loops) in test body | Introduces bugs in the test suite itself. Use `[Theory]` instead. |
-| `Setup` / `Teardown` attributes | xUnit discourages these. Use helper methods. |
-| Testing private methods directly | They're implementation details. Test via public API. |
-| Overly complex Arrange | Keep input minimal — only what's needed to exercise the behavior. |
-| Magic strings / unexplained values | Use named constants for clarity. |
+| Anti-pattern                                           | Why                                                               |
+| ------------------------------------------------------ | ----------------------------------------------------------------- |
+| Infrastructure dependencies (DB, network, file system) | Makes tests slow and brittle — reserve for integration tests.     |
+| Multiple Act phases in one test                        | Obscures which action caused the failure.                         |
+| Logic (`if`, loops) in test body                       | Introduces bugs in the test suite itself. Use `[Theory]` instead. |
+| `Setup` / `Teardown` attributes                        | xUnit discourages these. Use helper methods.                      |
+| Testing private methods directly                       | They're implementation details. Test via public API.              |
+| Overly complex Arrange                                 | Keep input minimal — only what's needed to exercise the behavior. |
+| Magic strings / unexplained values                     | Use named constants for clarity.                                  |
 
 ## Integration Tests
 
 Integration tests verify the full pipeline: endpoint → middleware → DbContext → PostgreSQL. They use TestContainers for real infrastructure (PostgreSQL, RabbitMQ) but mock external services (Google SDK) and authentication.
 
 ### When to write an integration test
+
 - Testing a vertical slice endpoint (e.g., `GET /api/accounts`)
 - Testing EF Core queries against a real PostgreSQL database
 - Testing Wolverine message handlers with real RabbitMQ
 - Testing middleware interactions (auth, validation, error handling)
 
 ### When to write a unit test
+
 - Testing domain model behavior
 - Testing query extensions on in-memory data
 - Testing business logic that doesn't require infrastructure
@@ -201,6 +214,7 @@ The auth scheme name remains `"keycloak"` (`ServiceDiscoveryNames.Keycloak`) to 
 ### WebApplicationFactory
 
 `ApiClassFixture` creates a `WebApplicationFactory<Program>` that:
+
 - Overrides connection strings to point to test containers
 - Replaces JWT authentication with `TestAuthenticationHandler`
 - Mocks `IGoogleServiceAccountClient` via NSubstitute
@@ -247,25 +261,25 @@ public class ListAccountsTests : ApiTestFixtureBase
 
 The `Helpers/` directory provides extension methods to reduce boilerplate:
 
-| Helper | Purpose |
-|--------|---------|
-| `DbContext.SeedAsync(entity)` | Add entity and call `SaveChangesAsync` in one call |
-| `DbContext.SeedRangeAsync(entities)` | Add multiple entities and call `SaveChangesAsync` |
-| `HttpClient.GetResultAsync<T>(uri)` | GET request, ensure success, deserialize JSON |
-| `AccountFactory.CreateBatch(count, ...)` | Create multiple accounts without loops in tests |
+| Helper                                       | Purpose                                             |
+| -------------------------------------------- | --------------------------------------------------- |
+| `DbContext.SeedAsync(entity)`                | Add entity and call `SaveChangesAsync` in one call  |
+| `DbContext.SeedRangeAsync(entities)`         | Add multiple entities and call `SaveChangesAsync`   |
+| `HttpClient.GetResultAsync<T>(uri)`          | GET request, ensure success, deserialize JSON       |
+| `AccountFactory.CreateBatch(count, ...)`     | Create multiple accounts without loops in tests     |
 | `TransactionFactory.CreateBatch(count, ...)` | Create multiple transactions without loops in tests |
 
 ### Test constants
 
 Shared test values live in `Helpers/TestConstants`:
 
-| Constant | Value | Purpose |
-|----------|-------|---------|
-| `TestUserGoogleSpreadsheetId` | Fixed GUID | Used by factories and seed helper |
-| `WellsFargoInstitutionId` | `1` | Seed data institution ID |
-| `ChaseInstitutionId` | `2` | Seed data institution ID |
-| `ZeroGuid` | `"0000...0000"` | Non-existent entity ID for error tests |
-| `NonExistentInstitutionId` | `99999` | Non-existent institution for error tests |
+| Constant                      | Value           | Purpose                                  |
+| ----------------------------- | --------------- | ---------------------------------------- |
+| `TestUserGoogleSpreadsheetId` | Fixed GUID      | Used by factories and seed helper        |
+| `WellsFargoInstitutionId`     | `1`             | Seed data institution ID                 |
+| `ChaseInstitutionId`          | `2`             | Seed data institution ID                 |
+| `ZeroGuid`                    | `"0000...0000"` | Non-existent entity ID for error tests   |
+| `NonExistentInstitutionId`    | `99999`         | Non-existent institution for error tests |
 
 ### Assertions
 
@@ -277,12 +291,14 @@ Shared test values live in `Helpers/TestConstants`:
 - Seed data variables should be declared before being passed to `DbContext.SeedAsync()` for clarity and reusability within the test.
 
 ### What to assert in integration tests
+
 - HTTP status codes
 - Response JSON shape and content
 - Database state changes (read back via DbContext)
 - Message queue behavior (for Wolverine handler tests)
 
 ### What NOT to do in integration tests
+
 - Test framework behavior (assume ASP.NET Core, EF Core, xUnit work correctly)
 - Connect to real Google APIs (mock `IGoogleServiceAccountClient`)
 - Use in-memory database or SQLite (use real PostgreSQL via TestContainers)
@@ -290,4 +306,3 @@ Shared test values live in `Helpers/TestConstants`:
 ## Code Style
 
 Follow the same `.editorconfig` rules as the source projects: file-scoped namespaces, `var` preferred, expression-bodied members where concise, braces required on control flow.
-

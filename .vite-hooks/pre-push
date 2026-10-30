@@ -1,0 +1,39 @@
+#!/bin/sh
+# Vite+ pre-push gate (manual replacement for the old lefthook pre-push):
+# - .NET files in the pushed commits -> Domain + Infrastructure unit tests
+# - Angular client files in the pushed commits -> client unit tests
+
+dotnet_changed=no
+client_changed=no
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_sha" in
+    *[!0]*)
+      changed=$(git diff --name-only "$remote_sha" "$local_sha")
+      ;;
+    *)
+      empty=$(git hash-object -t tree /dev/null)
+      changed=$(git diff --name-only "$empty" "$local_sha")
+      ;;
+  esac
+
+  if [ -n "$changed" ]; then
+    if printf '%s\n' "$changed" | grep -qE '\.(cs|csproj|props|slnx)$'; then
+      dotnet_changed=yes
+    fi
+    case "$changed" in
+      *src/BasicFinance.Client/*) client_changed=yes ;;
+    esac
+  fi
+done
+
+if [ "$dotnet_changed" = "yes" ]; then
+  echo "VITE+ pre-push: .NET changes detected, running .NET unit tests"
+  dotnet test tests/BasicFinance.Domain.UnitTests
+  dotnet test tests/BasicFinance.Infrastructure.UnitTests
+fi
+
+if [ "$client_changed" = "yes" ]; then
+  echo "VITE+ pre-push: Angular client changes detected, running client unit tests"
+  (cd src/BasicFinance.Client && npm run test:unit)
+fi

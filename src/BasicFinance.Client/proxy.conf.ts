@@ -1,5 +1,6 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import environmentConfigData from './environment-config-data.ts';
+
+import { IncomingMessage, ServerResponse } from 'http';
 
 export default {
   '/api/**': {
@@ -11,7 +12,7 @@ export default {
     target: process.env['services__api__https__0'] || process.env['services__api__http__0'],
     secure: false,
     logLevel: 'debug',
-    bypass: (req: IncomingMessage, res: ServerResponse, proxyOptions: any) => {
+    bypass: (req: IncomingMessage, res: ServerResponse, _proxyOptions: unknown) => {
       /**
        * Intercept request for config file as when running in serve mode, we won't be able to run the
        * post-build script. When deploying @link file://./scripts/generate-environment-config.ts

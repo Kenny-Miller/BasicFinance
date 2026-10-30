@@ -10,7 +10,6 @@
 
 # Node modules and dependency files
 /node_modules/
-/package-lock.json
 /yarn.lock
 
 # Environment files
@@ -499,3 +498,4 @@ opencode.json
 
 # Recaptured OpenAPI document (local diff artifact; only openapi.json is committed)
 contracts/openapi.actual.json
+.vitest/

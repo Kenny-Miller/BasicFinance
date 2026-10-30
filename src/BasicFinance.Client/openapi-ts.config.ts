@@ -1,4 +1,4 @@
-import { defineConfig } from '@hey-api/openapi-ts';
+import { defineConfig, type UserConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
   input: '../../contracts/openapi.json',
@@ -6,4 +6,4 @@ export default defineConfig({
   responseStyle: 'fields',
   throwOnError: true,
   plugins: ['@hey-api/client-angular', '@hey-api/typescript', '@hey-api/sdk'],
-});
+} as UserConfig);
