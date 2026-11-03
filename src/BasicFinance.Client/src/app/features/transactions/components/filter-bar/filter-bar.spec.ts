@@ -83,8 +83,8 @@ describe('FilterBar', () => {
   it('should omit amount filters when the draft amounts are empty', () => {
     component.filterModel.update(draft => ({
       ...draft,
-      minAmount: Number.NaN,
-      maxAmount: Number.NaN,
+      minAmount: null,
+      maxAmount: null,
     }));
 
     submitForm();
@@ -105,7 +105,7 @@ describe('FilterBar', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     fixture.detectChanges();
 
-    expect(Number.isNaN(component.filterModel().minAmount)).toBe(true);
+    expect(component.filterModel().minAmount).toBeNull();
   });
 
   it('should show only the placeholder options until the reference lists are provided', () => {
@@ -161,7 +161,7 @@ describe('FilterBar', () => {
     expect(emitted).toEqual([{}]);
     expect(component.filterModel().search).toBe('');
     expect(component.filterModel().accountId).toBe('');
-    expect(Number.isNaN(component.filterModel().minAmount)).toBe(true);
+    expect(component.filterModel().minAmount).toBeNull();
     expect(component.filterForm().dirty()).toBe(false);
   });
 });
