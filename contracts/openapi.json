@@ -28,7 +28,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -41,7 +41,7 @@
     "/api/transactions/daily-summary": {
       "get": {
         "tags": ["BasicFinance.Api.Features.Transactions.GetDailyTransactionSummary"],
-        "summary": "Retrieves per-calendar-day spend points for the user's active accounts for the current and\r\nprevious period. The period is resolved from `timePeriod` plus `recordedDate`.\r\nDays without activity are zero-filled.",
+        "summary": "Retrieves per-calendar-day spend points for the user\u0027s active accounts for the current and\r\nprevious period. The period is resolved from \u0060timePeriod\u0060 plus \u0060recordedDate\u0060.\r\nDays without activity are zero-filled.",
         "description": "GET_api_transactions_daily_summary",
         "operationId": "GET_api_transactions_daily_summary",
         "parameters": [
@@ -91,7 +91,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -146,7 +146,7 @@
     "/api/transactions/summary": {
       "get": {
         "tags": ["BasicFinance.Api.Features.Transactions.GetTransactionSummary"],
-        "summary": "Retrieves headline transaction aggregates (count, spend, income, net flow) for the user's\r\nactive accounts for the current and previous period. The period is resolved from\r\n`timePeriod` plus `recordedDate`.",
+        "summary": "Retrieves headline transaction aggregates (count, spend, income, net flow) for the user\u0027s\r\nactive accounts for the current and previous period. The period is resolved from\r\n\u0060timePeriod\u0060 plus \u0060recordedDate\u0060.",
         "description": "GET_api_transactions_summary",
         "operationId": "GET_api_transactions_summary",
         "parameters": [
@@ -196,7 +196,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -319,7 +319,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -352,7 +352,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -399,16 +399,6 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -425,6 +415,16 @@
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -450,7 +450,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -482,22 +482,22 @@
           "204": {
             "description": "No Content"
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -534,22 +534,22 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -594,7 +594,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -699,7 +699,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -761,7 +761,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -794,7 +794,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -807,7 +807,7 @@
     "/api/accounts/balance-summary": {
       "get": {
         "tags": ["BasicFinance.Api.Features.Accounts.GetAccountBalanceSummary"],
-        "summary": "Retrieves the total balance breakdown for the user's active accounts for the current and\r\nprevious period.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period's end (last known balances are carried forward).\r\nAccounts without a ledger entry that far back appear in that period's\r\nbreakdown with a zero balance.",
+        "summary": "Retrieves the total balance breakdown for the user\u0027s active accounts for the current and\r\nprevious period.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward).\r\nAccounts without a ledger entry that far back appear in that period\u0027s\r\nbreakdown with a zero balance.",
         "description": "GET_api_accounts_balance_summary",
         "operationId": "GET_api_accounts_balance_summary",
         "parameters": [
@@ -841,7 +841,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -880,18 +880,18 @@
               }
             }
           },
+          "404": {
+            "description": "Not Found"
+          },
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }
@@ -899,7 +899,7 @@
     "/api/accounts/institution/{institutionId}/summary": {
       "get": {
         "tags": ["BasicFinance.Api.Features.Accounts.GetInstitutionSummary"],
-        "summary": "Retrieves account-level summary for a specific institution.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period's end (last known balances are carried forward;\r\naccounts without a ledger entry that far back carry a zero balance).\r\nThe per-account-type totals are zero-filled for every active account type.\r\nIf the institution is deactivated no accounts are returned, but the\r\ninstitution name and zero-filled totals are.",
+        "summary": "Retrieves account-level summary for a specific institution.\r\nPeriod totals are sourced from the most recent balance ledger entry\r\non or before each period\u0027s end (last known balances are carried forward;\r\naccounts without a ledger entry that far back carry a zero balance).\r\nThe per-account-type totals are zero-filled for every active account type.\r\nIf the institution is deactivated no accounts are returned, but the\r\ninstitution name and zero-filled totals are.",
         "description": "GET_api_accounts_institution_institutionId_summary",
         "operationId": "GET_api_accounts_institution_institutionId_summary",
         "parameters": [
@@ -976,7 +976,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1052,7 +1052,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "application/problem+json": {
+              "application/problem\u002Bjson": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1121,12 +1121,12 @@
           },
           "percentageOfTotalBalance": {
             "type": "number",
-            "description": "This account's balance as a percentage of the total balance for the period.",
+            "description": "This account\u0027s balance as a percentage of the total balance for the period.",
             "format": "double"
           },
           "percentageOfAccountTypeBalance": {
             "type": "number",
-            "description": "This account's balance as a percentage of the total balance for its account type.",
+            "description": "This account\u0027s balance as a percentage of the total balance for its account type.",
             "format": "double"
           }
         },
@@ -1224,7 +1224,7 @@
           },
           "latestBalance": {
             "type": "number",
-            "description": "The latest ledger balance on or before the reference date, or `0` when the account has no ledger entry that far back.",
+            "description": "The latest ledger balance on or before the reference date, or \u00600\u0060 when the account has no ledger entry that far back.",
             "format": "double"
           },
           "latestBalanceRecordedDate": {
@@ -1246,7 +1246,7 @@
           },
           "percentageOfTotalBalance": {
             "type": "number",
-            "description": "This type's balance as a percentage of the total balance for the period.",
+            "description": "This type\u0027s balance as a percentage of the total balance for the period.",
             "format": "double"
           },
           "accounts": {
@@ -1254,7 +1254,7 @@
             "items": {
               "$ref": "#/components/schemas/AccountBalanceDto"
             },
-            "description": "Breakdown of the type's balance by individual account."
+            "description": "Breakdown of the type\u0027s balance by individual account."
           }
         },
         "description": "Balance and breakdown for a single account type within a period."
@@ -1448,7 +1448,7 @@
             "items": {
               "$ref": "#/components/schemas/AccountDto"
             },
-            "description": "The user's active accounts at the institution, with their latest balance on or before the current period end."
+            "description": "The user\u0027s active accounts at the institution, with their latest balance on or before the current period end."
           },
           "accountTypeTotals": {
             "type": "object",
