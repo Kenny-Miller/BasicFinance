@@ -74,7 +74,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -127,7 +127,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -183,7 +183,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -239,7 +239,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
 
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -316,7 +316,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -386,7 +386,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -457,7 +457,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -527,7 +527,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -600,7 +600,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -650,7 +650,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);

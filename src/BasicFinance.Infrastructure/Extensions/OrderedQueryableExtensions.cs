@@ -27,32 +27,6 @@ namespace BasicFinance.Infrastructure.Extensions
             }
 
             /// <summary>
-            /// Sorts the elements of the queryable according to the specified key selector and query sort direction.
-            /// </summary>
-            /// <param name="keySelector"></param>
-            /// <param name="query"></param>
-            /// <returns></returns>
-            public IOrderedQueryable<T> OrderBy(Expression<Func<T, object>> keySelector, ISortedQuery query)
-            {
-                ArgumentNullException.ThrowIfNull(query);
-
-                return queryable.OrderBy(keySelector, query.TypedSortDirection);
-            }
-
-            /// <summary>
-            /// Sorts the elements of the queryable according to the specified key selector and sort direction.
-            /// </summary>
-            /// <param name="keySelector"></param>
-            /// <param name="sortDirection"></param>
-            /// <returns></returns>
-            public IOrderedQueryable<T> OrderBy(Expression<Func<T, object>> keySelector, SortDirection sortDirection)
-            {
-                return sortDirection == SortDirection.Ascending
-                     ? queryable.ThenBy(keySelector)
-                     : queryable.ThenBy(keySelector);
-            }
-
-            /// <summary>
             /// Performs a subsequent ordering of the elements in the queryable according to the specified key selector and query sort direction.
             /// </summary>
             /// <param name="keySelector"></param>
