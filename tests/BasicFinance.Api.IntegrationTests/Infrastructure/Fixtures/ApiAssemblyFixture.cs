@@ -6,7 +6,7 @@ using Xunit;
 [assembly: AssemblyFixture(typeof(ApiAssemblyFixture))]
 namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
-public sealed class ApiAssemblyFixture : IAsyncLifetime, IAsyncDisposable
+public sealed class ApiAssemblyFixture : IAsyncLifetime
 {
     /// <summary>
     /// Gets the connection string used to connect to the <see cref="PostgreSqlContainer"/> instance

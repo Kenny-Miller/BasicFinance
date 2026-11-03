@@ -48,8 +48,8 @@ namespace BasicFinance.Infrastructure.Extensions
             public IOrderedQueryable<T> OrderBy(Expression<Func<T, object>> keySelector, SortDirection sortDirection)
             {
                 return sortDirection == SortDirection.Ascending
-                     ? queryable.OrderBy(keySelector)
-                     : queryable.OrderByDescending(keySelector);
+                     ? queryable.ThenBy(keySelector)
+                     : queryable.ThenBy(keySelector);
             }
 
             /// <summary>

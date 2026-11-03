@@ -15,7 +15,7 @@ using Xunit;
 
 namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
-public sealed class ApiClassFixture : IAsyncLifetime, IAsyncDisposable
+public sealed class ApiClassFixture : IAsyncLifetime
 {
     /// <summary>
     /// Gets the unique identifier for the class test fixture instance.

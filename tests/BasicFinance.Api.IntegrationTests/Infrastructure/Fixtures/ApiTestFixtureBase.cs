@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
 
-public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyncLifetime, IAsyncDisposable
+public abstract class ApiTestFixtureBase : IClassFixture<ApiClassFixture>, IAsyncLifetime
 {
     protected HttpClient HttpClient { get; private set; } = default!;
 

@@ -25,7 +25,7 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
                 currency,
                 notes ?? string.Empty,
                 institutionId,
-                financialAccountId == default ? Guid.NewGuid() : financialAccountId,
+                financialAccountId == Guid.Empty ? Guid.NewGuid() : financialAccountId,
                 balance,
                 balanceRecordedDate ?? DateTimeOffset.UtcNow);
         }

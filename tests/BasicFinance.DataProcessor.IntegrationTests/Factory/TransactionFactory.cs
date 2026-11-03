@@ -18,7 +18,7 @@ namespace BasicFinance.DataProcessor.IntegrationTests.Factory
         {
             return new Transaction(
                 userId,
-                accountId == default ? Guid.NewGuid() : accountId,
+                accountId == Guid.Empty ? Guid.NewGuid() : accountId,
                 financialTransactionId == 0 ? 1234567890L : financialTransactionId,
                 transactionType,
                 transactionCategory,
