@@ -59,7 +59,7 @@ jobs:
         run: npm run test:unit
 
       - name: Run Build
-        run: npm run build --configuration=production
+        run: npm run build -- --configuration=production
 
   dotnet:
     name: Build .NET
