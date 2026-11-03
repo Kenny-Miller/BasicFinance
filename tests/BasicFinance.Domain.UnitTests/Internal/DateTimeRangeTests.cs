@@ -9,8 +9,8 @@ public class DateTimeRangeTests
     public void Constructor_ValidRange_CreatesSuccessfully()
     {
         // Arrange
-        var start = new DateTime(2026, 1, 1);
-        var end = new DateTime(2026, 12, 31);
+        var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var end = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var range = new DateTimeRange(start, end);
@@ -24,7 +24,7 @@ public class DateTimeRangeTests
     public void Constructor_EqualDates_CreatesSuccessfully()
     {
         // Arrange
-        var same = new DateTime(2026, 6, 15);
+        var same = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var range = new DateTimeRange(same, same);
@@ -38,8 +38,8 @@ public class DateTimeRangeTests
     public void Constructor_StartAfterEnd_ThrowsArgumentException()
     {
         // Arrange
-        var start = new DateTime(2026, 12, 31);
-        var end = new DateTime(2026, 1, 1);
+        var start = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc);
+        var end = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new DateTimeRange(start, end));
@@ -49,7 +49,9 @@ public class DateTimeRangeTests
     public void Constructor_StartAfterEnd_MessageIndicatesConstraint()
     {
         // Act
-        var ex = Assert.Throws<ArgumentException>(() => new DateTimeRange(new DateTime(2026, 12, 31), new DateTime(2026, 1, 1)));
+        var ex = Assert.Throws<ArgumentException>(() => new DateTimeRange(
+            new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
 
         // Assert
         Assert.Contains("RangeStartDate", ex.Message);
