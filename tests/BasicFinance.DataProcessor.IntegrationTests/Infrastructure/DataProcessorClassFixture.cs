@@ -13,7 +13,7 @@ using Xunit;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
-public sealed class DataProcessorClassFixture : IAsyncLifetime, IAsyncDisposable
+public sealed class DataProcessorClassFixture : IAsyncLifetime
 {
     /// <summary>
     /// Gets a unique identifier for the class fixture instance.

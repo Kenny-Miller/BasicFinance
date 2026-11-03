@@ -8,7 +8,7 @@ using Xunit;
 
 namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
-public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessorClassFixture>, IAsyncLifetime, IAsyncDisposable
+public abstract class DataProcessorTestFixtureBase : IClassFixture<DataProcessorClassFixture>, IAsyncLifetime
 {
     protected IHost Host { get; private set; } = default!;
     protected AppDbContext DbContext { get; private set; } = default!;
