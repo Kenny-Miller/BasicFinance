@@ -25,6 +25,9 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             src/BasicFinance.Client/package-lock.json
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-manager: false
 
       - name: Install Root Dependencies
         working-directory: .
