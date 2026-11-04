@@ -1,6 +1,7 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+
+import type { ListResult } from '../../core/api/list-result';
 import { Account, AccountClient } from '../../core/data-access/account-client';
-import { ListResult } from '../../core/data-access/api-interfaces';
 import {
   DailySummaryResponse,
   Transaction,
@@ -116,15 +117,6 @@ export class TransactionsService {
   readonly transactionCategories = this.pageService.transactionCategories;
 
   readonly transactionsLoading = computed(() => !this.listTransactions.hasValue());
-
-  private readonly hasSeenTransactions = signal(false);
-
-  hasTransactionsData(): boolean {
-    if (this.listTransactions.hasValue() && !this.hasSeenTransactions()) {
-      this.hasSeenTransactions.set(true);
-    }
-    return this.hasSeenTransactions();
-  }
 
   readonly error = computed(
     () =>

@@ -22,7 +22,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// <param name="GoogleSpreadsheetId"></param>
         /// <param name="GoogleSpreadsheetName"></param>
         /// <param name="CreatedDate"></param>
-        public record Response(Guid UserGoogleSpreadsheetId, string UserId, string GoogleSpreadsheetId, string GoogleSpreadsheetName, DateTimeOffset CreatedDate);
+        public record UserGoogleSpreadSheetResponse(Guid UserGoogleSpreadsheetId, string UserId, string GoogleSpreadsheetId, string GoogleSpreadsheetName, DateTimeOffset CreatedDate);
 
         /// <summary>
         /// Gets a <see cref="UserGoogleSpreadsheet"/> for the authenticated user and the specified Google Spreadsheet.
@@ -37,7 +37,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// </returns>
         [Authorize]
         [WolverineGet("api/spreadsheets/{userGoogleSpreadsheetId:guid}")]
-        public static async Task<Results<Ok<Response>, NotFound<string>>> HandleAsync(
+        public static async Task<Results<Ok<UserGoogleSpreadSheetResponse>, NotFound<string>>> HandleAsync(
             Guid userGoogleSpreadsheetId,
             AuthenticatedUser user,
             AppDbContext dbContext,
@@ -56,7 +56,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
                 return TypedResults.NotFound("The specified spreadsheet does not exist or is not accessible.");
             }
 
-            var response = new Response(
+            var response = new UserGoogleSpreadSheetResponse(
                 userGoogleSpreadsheet.UserGoogleSpreadsheetId,
                 userGoogleSpreadsheet.UserId,
                 userGoogleSpreadsheet.GoogleSheetId,

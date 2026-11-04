@@ -47,7 +47,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// <param name="GoogleSpreadsheetId"></param>
         /// <param name="GoogleSpreadsheetName"></param>
         /// <param name="CreatedDate"></param>
-        public record Response(Guid UserGoogleSpreadsheetId, string UserId, string GoogleSpreadsheetId, string GoogleSpreadsheetName, DateTimeOffset CreatedDate);
+        public record UserGoogleSpreadSheetResponse(Guid UserGoogleSpreadsheetId, string UserId, string GoogleSpreadsheetId, string GoogleSpreadsheetName, DateTimeOffset CreatedDate);
 
         /// <summary>
         /// Creates a new <see cref="UserGoogleSpreadsheet"/> for the authenticated user and the specified Google Spreadsheet.
@@ -66,7 +66,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
         /// </returns>
         [Authorize]
         [WolverinePost("api/spreadsheets")]
-        public static async Task<Results<Created<Response>, NotFound<string>, Conflict<string>>> HandleAsync(
+        public static async Task<Results<Created<UserGoogleSpreadSheetResponse>, NotFound<string>, Conflict<string>>> HandleAsync(
             [FromHeader(Name = "x-google-auth-token")] string googleApiToken,
             Request request,
             AuthenticatedUser user,
@@ -100,7 +100,7 @@ namespace BasicFinance.Api.Features.Spreadsheets
             await dbContext.SaveChangesAsync(cancellationToken);
             await bus.PublishAsync(new SyncFinancialData(userGoogleSpreadsheet.UserGoogleSpreadsheetId));
 
-            var response = new Response(
+            var response = new UserGoogleSpreadSheetResponse(
                 userGoogleSpreadsheet.UserGoogleSpreadsheetId,
                 userGoogleSpreadsheet.UserId,
                 userGoogleSpreadsheet.GoogleSheetId,

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+
 import { SummaryCardSkeleton } from '../../../../shared/ui/cards/summary-card-skeleton/summary-card-skeleton';
 import { AccountNetWorthBreakdownSkeleton } from '../account-net-worth-breakdown-skeleton/account-net-worth-breakdown-skeleton';
 import { RecentTransactionsSkeleton } from '../recent-transactions-skeleton/recent-transactions-skeleton';

@@ -83,7 +83,7 @@ namespace BasicFinance.Api.Features.Spending
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/Spending/SpendingActivityByPeriod")]
+        [WolverineGet("api/spending/activity-by-period")]
         public static async Task<Ok<SpendingByPeriod>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,

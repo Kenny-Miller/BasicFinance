@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+
 import { SummaryCard } from './summary-card';
 
 interface CardOverrides {

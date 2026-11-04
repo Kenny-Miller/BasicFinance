@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChartLine,
@@ -15,6 +16,7 @@ import {
 } from '@ng-icons/lucide';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
+
 import { PageService } from './core/page/page.service';
 import { NavMenuItem } from './shared/models/nav-menu-item';
 import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/institution-avatar';
@@ -64,7 +66,7 @@ export class App {
 
   readonly accountNavigationItems = computed<NavMenuItem[]>(
     () =>
-      this._pageService.data()?.map((institution) => ({
+      this._pageService.data()?.map(institution => ({
         label: institution.name,
         icon: 'lucideLandmark',
         routerLink: `Accounts/${institution.id}`,

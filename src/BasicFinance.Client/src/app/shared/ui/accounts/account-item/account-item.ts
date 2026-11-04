@@ -1,8 +1,10 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, input } from '@angular/core';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideReceiptText } from '@ng-icons/lucide';
 import { HlmItemImports } from '@spartan-ng/helm/item';
+
 import { AccountBalanceDto } from '../../../../core/data-access/account-client';
 import { TruncatePipe } from '../../../pipes/truncate-pipe';
 

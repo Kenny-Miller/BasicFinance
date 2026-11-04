@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
+
 import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';
 import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';

@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDownCircle, lucideArrowUpCircle } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { EChartsCoreOption } from 'echarts/types/dist/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
+
 import { DailySummaryResponse } from '../../../../core/data-access/transaction-client';
 
 interface TooltipParam {
@@ -69,7 +71,7 @@ export class DailySpendChart {
         formatter: (params: TooltipParam[]) => {
           const rows = params
             .filter((param): param is TooltipParamWithValue => param.value != null)
-            .map((param) => {
+            .map(param => {
               const value = currency.format(param.value);
               const previousPoint =
                 param.seriesName === 'Previous period' ? previous[param.dataIndex] : undefined;
@@ -83,7 +85,7 @@ export class DailySpendChart {
       grid: { top: 24, right: 16, bottom: 24, left: 16, containLabel: true },
       xAxis: {
         type: 'category',
-        data: current.map((item) => this._shortDate(item.date)),
+        data: current.map(item => this._shortDate(item.date)),
         axisLine: { show: false },
         axisTick: { show: false },
       },
@@ -100,7 +102,7 @@ export class DailySpendChart {
               {
                 name: 'Previous period',
                 type: 'line' as const,
-                data: previous.map((item) => item.totalSpend),
+                data: previous.map(item => item.totalSpend),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
@@ -128,7 +130,7 @@ export class DailySpendChart {
         {
           name: 'This period',
           type: 'line' as const,
-          data: current.map((item) => item.totalSpend),
+          data: current.map(item => item.totalSpend),
           smooth: true,
           symbol: 'none',
           lineStyle: {

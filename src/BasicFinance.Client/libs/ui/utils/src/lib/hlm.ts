@@ -170,7 +170,7 @@ function restoreTransitionSuppression(manager: ElementClassManager): void {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
+// oxlint-disable-next-line @typescript-eslint/no-wrapper-object-types
 function setupGlobalObserver(platformId: Object): void {
 	if (isPlatformBrowser(platformId) && !globalObserver) {
 		// Create single global observer that watches the entire document

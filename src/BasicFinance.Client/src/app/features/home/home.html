@@ -7,7 +7,7 @@
       <button variant="outline" hlmBtn class="mt-2" (click)="refetchAll()">Retry</button>
     </div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
       <app-summary-card
         title="Net Worth"
         [currentPeriodValue]="data().currentPeriodTotalBalance"

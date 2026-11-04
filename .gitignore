@@ -10,7 +10,6 @@
 
 # Node modules and dependency files
 /node_modules/
-/package-lock.json
 /yarn.lock
 
 # Environment files
@@ -160,9 +159,6 @@ artifacts/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
-
-# StyleCop
-StyleCopReport.xml
 
 # Files built by Visual Studio
 *_i.c
@@ -499,3 +495,7 @@ FodyWeavers.xsd
 *.msp
 **/test-results/*
 opencode.json
+
+# Recaptured OpenAPI document (local diff artifact; only openapi.json is committed)
+contracts/openapi.actual.json
+.vitest/

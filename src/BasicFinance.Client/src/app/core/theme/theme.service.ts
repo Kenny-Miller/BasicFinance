@@ -1,6 +1,7 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { computed, DOCUMENT, inject, Injectable, linkedSignal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+
 import { distinctUntilChanged, map } from 'rxjs';
 
 type ColorTheme = 'light' | 'dark';
@@ -17,7 +18,7 @@ export class ThemeService {
 
   private readonly userSystemTheme = toSignal(
     this.breakpointObserver.observe(this.breakpointColorSchemePreference).pipe(
-      map((x) => (x.matches ? 'dark' : 'light')),
+      map(x => (x.matches ? 'dark' : 'light')),
       distinctUntilChanged(),
     ),
     { initialValue: 'light' as ColorTheme },
@@ -30,7 +31,7 @@ export class ThemeService {
     ColorTheme
   >({
     source: () => ({ systemTheme: this.userSystemTheme(), localTheme: this.localStorageTheme() }),
-    computation: (themes) => (themes.localTheme !== null ? themes.localTheme : themes.systemTheme),
+    computation: themes => (themes.localTheme !== null ? themes.localTheme : themes.systemTheme),
   });
 
   readonly appTheme = computed(() => this.currentTheme());

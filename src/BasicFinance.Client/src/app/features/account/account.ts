@@ -1,7 +1,9 @@
 import { Component, effect, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
+
 import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';
 import { AccountItem } from '../../shared/ui/accounts/account-item/account-item';
@@ -41,7 +43,7 @@ export class Account {
   readonly refetchAll = (): void => this.accountPageService.refetchAll();
 
   constructor() {
-    this.route.params.subscribe((params) => {
+    this.route.params.subscribe(params => {
       const parsed = Number.parseInt(params['institutionId'] ?? '0', 10);
       this.accountPageService.setInstitutionId(Number.isNaN(parsed) ? 0 : parsed);
     });

@@ -1,6 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+
+import { vi } from 'vite-plus/test';
+
 import { Paginator } from './paginator';
 
 @Component({
@@ -105,7 +107,7 @@ describe('Paginator', () => {
       const buttons = Array.from(
         fixture.nativeElement.querySelectorAll('button'),
       ) as HTMLButtonElement[];
-      const pageButton = buttons.find((button) => button.textContent?.trim() === '2');
+      const pageButton = buttons.find(button => button.textContent?.trim() === '2');
 
       pageButton?.click();
 

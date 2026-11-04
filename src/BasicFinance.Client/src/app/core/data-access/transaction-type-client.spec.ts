@@ -1,5 +1,7 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
+import { settleSdkBridge } from '../testing/testbed-utils';
 import { TransactionTypeClient } from './transaction-type-client';
 
 const TRANSACTION_TYPES = [
@@ -20,41 +22,34 @@ describe('TransactionTypeClient', () => {
   });
 
   it('should fetch the active transaction types when the resource is created', async () => {
-    // httpResource asserts an injection context, so the provider call is wrapped the way
+    // resource asserts an injection context, so the provider call is wrapped the way
     // PageService's field initializer runs it.
     const transactionTypes = TestBed.runInInjectionContext(() => client.transactionTypes());
+    await settleSdkBridge();
 
-    // The httpResource effect that starts the request is scheduled when the
-    // resource is created; flush effects so the request is issued before it
-    // can be expected.
-    TestBed.flushEffects();
-
-    const request = controller.expectOne('api/transaction-types/');
+    const request = controller.expectOne('/api/transaction-types');
 
     expect(request.request.method).toBe('GET');
 
     request.flush(TRANSACTION_TYPES);
-    // The resource applies the response in an async continuation; let it settle first.
-    await Promise.resolve();
+    await settleSdkBridge();
     expect(transactionTypes.value()).toEqual(TRANSACTION_TYPES);
   });
 
   it('should issue a new request when the resource is reloaded', async () => {
     const transactionTypes = TestBed.runInInjectionContext(() => client.transactionTypes());
-    TestBed.flushEffects();
+    await settleSdkBridge();
 
-    const firstRequest = controller.expectOne('api/transaction-types/');
+    const firstRequest = controller.expectOne('/api/transaction-types');
     firstRequest.flush([]);
-    // reload() is a no-op until the resource has settled to a resolved state, which
-    // happens in an async continuation after the response is flushed.
-    await Promise.resolve();
+    await settleSdkBridge();
 
     transactionTypes.reload();
-    TestBed.flushEffects();
+    await settleSdkBridge();
 
-    const secondRequest = controller.expectOne('api/transaction-types/');
+    const secondRequest = controller.expectOne('/api/transaction-types');
     secondRequest.flush(TRANSACTION_TYPES);
-    await Promise.resolve();
+    await settleSdkBridge();
     expect(transactionTypes.hasValue()).toBeTruthy();
     expect(transactionTypes.value()).toEqual(TRANSACTION_TYPES);
   });

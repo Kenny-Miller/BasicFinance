@@ -36,7 +36,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([currentCheckingLedger, previousCheckingLedger, currentSavingsLedger, previousSavingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(4000m, result.CurrentPeriodBreakdown.Balance);
@@ -110,7 +110,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([checkingLedger, savingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(1000m, result.CurrentPeriodBreakdown.Balance);
@@ -153,7 +153,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([checkingLedger, nextPeriodLedger, savingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(4000m, result.CurrentPeriodBreakdown.Balance);
@@ -173,7 +173,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         const string parameters = MonthlyQuery;
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{parameters}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{parameters}", CancellationToken);
 
         // Assert
         Assert.Equal(0m, result.CurrentPeriodBreakdown.Balance);
@@ -215,7 +215,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([activeCheckingLedger, activeSavingsLedger, inactiveSavingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(4000m, result.CurrentPeriodBreakdown.Balance);
@@ -239,7 +239,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([ownLedger, otherLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(100m, result.CurrentPeriodBreakdown.Balance);
@@ -267,7 +267,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(0m, result.CurrentPeriodBreakdown.Balance);
@@ -301,7 +301,7 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balanceSummary?{parameters}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<AccountBalanceSummaryResponseDto>($"/api/accounts/balance-summary?{parameters}", CancellationToken);
 
         // Assert
         Assert.Equal(1000m, result.CurrentPeriodBreakdown.Balance);

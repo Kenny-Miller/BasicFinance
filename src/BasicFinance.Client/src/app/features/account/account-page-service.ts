@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+
 import {
   AccountBalanceDto,
   AccountClient,
@@ -70,17 +71,17 @@ export class AccountPageService {
     const totalBalance = summarizePeriodTotals(summary.accountTypeTotals);
     const previousTotalBalance = summarizePeriodTotals(summary.accountTypePreviousTotals);
 
-    const presentCodes = new Set(summary.accounts.map((account) => account.accountTypeCode));
-    const typeCards: AccountTypeCard[] = TYPE_ORDER.filter((code) => presentCodes.has(code)).map(
-      (code) => ({
+    const presentCodes = new Set(summary.accounts.map(account => account.accountTypeCode));
+    const typeCards: AccountTypeCard[] = TYPE_ORDER.filter(code => presentCodes.has(code)).map(
+      code => ({
         code,
-        label: this.pageService.accountTypes().find((type) => type.code === code)?.name ?? code,
+        label: this.pageService.accountTypes().find(type => type.code === code)?.name ?? code,
         balance: summary.accountTypeTotals[code] ?? 0,
         previousBalance: summary.accountTypePreviousTotals[code] ?? 0,
       }),
     );
 
-    const accounts: AccountBalanceDto[] = summary.accounts.map((account) => {
+    const accounts: AccountBalanceDto[] = summary.accounts.map(account => {
       const balance = account.latestBalance ?? 0;
 
       return {

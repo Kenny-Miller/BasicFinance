@@ -3,17 +3,17 @@
     <h3 hlmCardTitle>Spending Summary</h3>
   </div>
   <div hlmCardContent class="flex flex-col gap-4">
-    <div class="flex justify-between items-center">
+    <div class="flex items-center justify-between">
       <span class="text-muted-foreground">Income</span>
-      <span class="font-semibold text-lg">{{ totalIncome() | currency }}</span>
+      <span class="text-lg font-semibold">{{ totalIncome() | currency }}</span>
     </div>
-    <div class="flex justify-between items-center">
+    <div class="flex items-center justify-between">
       <span class="text-muted-foreground">Total Spend</span>
-      <span class="font-semibold text-lg">{{ totalSpend() | currency }}</span>
+      <span class="text-lg font-semibold">{{ totalSpend() | currency }}</span>
     </div>
-    <div class="flex justify-between items-center pt-2 border-t">
+    <div class="flex items-center justify-between border-t pt-2">
       <span class="font-medium">Net Income</span>
-      <span class="font-semibold text-lg">{{ netIncome() | currency }}</span>
+      <span class="text-lg font-semibold">{{ netIncome() | currency }}</span>
     </div>
   </div>
 </section>

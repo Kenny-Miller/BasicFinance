@@ -5,7 +5,7 @@ using Xunit;
 [assembly: AssemblyFixture(typeof(BasicFinance.DataProcessor.IntegrationTests.Infrastructure.DataProcessorAssemblyFixture))]
 namespace BasicFinance.DataProcessor.IntegrationTests.Infrastructure;
 
-public sealed class DataProcessorAssemblyFixture : IAsyncLifetime, IAsyncDisposable
+public sealed class DataProcessorAssemblyFixture : IAsyncLifetime
 {
     /// <summary>
     /// Gets the connection string for the assembly wide PostgreSQL container used in the integration tests.

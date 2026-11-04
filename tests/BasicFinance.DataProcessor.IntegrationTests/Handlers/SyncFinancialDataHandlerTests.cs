@@ -74,7 +74,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -93,10 +93,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         Assert.Equal((int)AccountType.Checking, account.AccountTypeId);
 
         var ledgerEntry = await DbContext.AccountLedgers
-            .FirstOrDefaultAsync(l => l.AccountId == account!.AccountId, TestContext.Current.CancellationToken);
+            .FirstOrDefaultAsync(l => l.AccountId == account.AccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(ledgerEntry);
-        Assert.Equal(1000m, ledgerEntry!.Balance);
+        Assert.Equal(1000m, ledgerEntry.Balance);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -141,10 +141,10 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         Assert.Equal((int)AccountType.CreditCard, account.AccountTypeId);
 
         var ledgerEntry = await DbContext.AccountLedgers
-            .FirstOrDefaultAsync(l => l.AccountId == account!.AccountId, TestContext.Current.CancellationToken);
+            .FirstOrDefaultAsync(l => l.AccountId == account.AccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(ledgerEntry);
-        Assert.Equal(-800m, ledgerEntry!.Balance);
+        Assert.Equal(-800m, ledgerEntry.Balance);
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -239,7 +239,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
 
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -255,7 +255,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(account);
-        Assert.False(account!.IsActive);
+        Assert.False(account.IsActive);
         Assert.NotNull(account.SystemModifiedDate);
 
         var ledgerEntry = await DbContext.AccountLedgers
@@ -263,7 +263,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .FirstOrDefaultAsync(l => l.AccountId == account.AccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(ledgerEntry);
-        Assert.Equal(500m, ledgerEntry!.Balance);
+        Assert.Equal(500m, ledgerEntry.Balance);
     }
 
     [Fact]
@@ -316,7 +316,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -386,7 +386,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -457,7 +457,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -527,7 +527,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -600,7 +600,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);
@@ -616,7 +616,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
             .FirstOrDefaultAsync(a => a.FinancialAccountId == financialAccountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(account);
-        Assert.True(account!.IsActive);
+        Assert.True(account.IsActive);
 
         var entry = Assert.Single(await DbContext.AccountLedgers
             .AsNoTracking()
@@ -650,7 +650,7 @@ public class SyncFinancialDataHandlerTests : DataProcessorTestFixtureBase
         var command = new SyncFinancialData(TestConstants.TestUserGoogleSpreadsheetId);
 
         // Act
-        var result = await Host
+        var _ = await Host
             .TrackActivity()
             .IncludeExternalTransports()
             .SendMessageAndWaitAsync(command);

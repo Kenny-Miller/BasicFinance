@@ -26,7 +26,7 @@ public class ListAccountTypesTests : ApiTestFixtureBase
     public async Task ListAccountTypes_SeededReferenceData_ReturnsAllActiveAccountTypes()
     {
         // Act
-        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types", CancellationToken);
 
         // Assert
         Assert.Equal(SeededAccountTypeCodes.Length, result.Count);
@@ -48,7 +48,7 @@ public class ListAccountTypesTests : ApiTestFixtureBase
         await DbContext.SaveChangesAsync(CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types", CancellationToken);
 
         // Assert
         Assert.Equal(SeededAccountTypeCodes.Length - 1, result.Count);
@@ -64,7 +64,7 @@ public class ListAccountTypesTests : ApiTestFixtureBase
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsActive, false), CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types/", CancellationToken);
+        var result = await HttpClient.GetResultAsync<List<AccountTypeDto>>("/api/account-types", CancellationToken);
 
         // Assert
         Assert.Empty(result);

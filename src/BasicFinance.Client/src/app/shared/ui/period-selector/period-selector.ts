@@ -1,10 +1,12 @@
 import { Component, OnChanges, input, output } from '@angular/core';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
+
 import {
   DEFAULT_TIME_PERIOD,
   TimePeriod,

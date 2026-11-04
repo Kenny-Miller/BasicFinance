@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+
 import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
 import { PageService } from '../../core/page/page.service';
 import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';

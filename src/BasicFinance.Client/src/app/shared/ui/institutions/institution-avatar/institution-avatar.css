@@ -4,10 +4,10 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  background: #0b0b0b;
-  color: #ffffff;
   font-size: 11px;
   font-weight: 600;
+  color: #fff;
   letter-spacing: 0.02em;
+  background: #0b0b0b;
+  border-radius: 6px;
 }

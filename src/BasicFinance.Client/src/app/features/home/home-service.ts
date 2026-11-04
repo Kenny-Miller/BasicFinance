@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+
 import { AccountClient, TotalBalanceBreakdown } from '../../core/data-access/account-client';
 import { SpendingClient, SpendingOverTimeSummary } from '../../core/data-access/spending-client';
 import { Transaction, TransactionClient } from '../../core/data-access/transaction-client';

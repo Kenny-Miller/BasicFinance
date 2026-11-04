@@ -60,7 +60,7 @@ namespace BasicFinance.Api.Features.Transactions
         /// or <see cref="BadRequest"/> on failure.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/transactions/")]
+        [WolverineGet("api/transactions")]
         public static async Task<Ok<ListResult<TransactionDto>>> HandleAsync(
             [FromQuery] Request request,
             AuthenticatedUser user,

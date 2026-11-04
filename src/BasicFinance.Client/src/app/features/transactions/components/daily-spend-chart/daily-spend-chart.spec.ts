@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { provideEchartsCore } from 'ngx-echarts';
+
 import {
   DailySummaryResponse,
   DailyTransactionPoint,
@@ -88,7 +90,7 @@ describe('DailySpendChart', () => {
 
   const view = (): ChartView => component.options() as unknown as ChartView;
   const seriesNamed = (name: string): ChartSeries => {
-    const series = view().series.find((item) => item.name === name);
+    const series = view().series.find(item => item.name === name);
     expect(series).toBeTruthy();
     return series as ChartSeries;
   };
@@ -105,7 +107,7 @@ describe('DailySpendChart', () => {
 
     expect(options.xAxis.data).toEqual(['8/1', '8/2', '8/3']);
     expect(options.yAxis.type).toBe('value');
-    expect(options.series.map((series) => series.name)).toEqual(['Previous period', 'This period']);
+    expect(options.series.map(series => series.name)).toEqual(['Previous period', 'This period']);
     expect(seriesNamed('This period').data).toEqual([10, 20, 30]);
     expect(seriesNamed('Previous period').data).toEqual([100, 200, 300]);
   });
@@ -122,7 +124,7 @@ describe('DailySpendChart', () => {
     fixture.componentRef.setInput('data', makeData([], current));
 
     expect(view().xAxis.data).toEqual(['8/1', '8/2', '8/3']);
-    expect(view().series.map((series) => series.name)).toEqual(['This period']);
+    expect(view().series.map(series => series.name)).toEqual(['This period']);
     expect(seriesNamed('This period').data).toEqual([10, 20, 30]);
   });
 

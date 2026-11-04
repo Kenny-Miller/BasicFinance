@@ -1,5 +1,6 @@
-import { signal, Signal } from '@angular/core';
+import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import {
   Account,
   AccountClient,
@@ -19,7 +20,7 @@ function makeAccount(id: string, code: string, name: string, balance: number | n
     institutionName: 'Wells Fargo',
     currency: 'USD',
     isLiability: code === 'CC',
-    latestBalance: balance,
+    latestBalance: balance ?? 0,
     latestBalanceRecordedDate: '2026-09-01T00:00:00Z',
   };
 }

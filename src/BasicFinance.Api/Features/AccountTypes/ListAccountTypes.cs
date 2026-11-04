@@ -21,7 +21,7 @@ namespace BasicFinance.Api.Features.AccountTypes
         /// Returns <see cref="Ok{TValue}"/> with a list of <see cref="AccountTypeDto"/> when successful.
         /// </returns>
         [Authorize]
-        [WolverineGet("api/account-types/")]
+        [WolverineGet("api/account-types")]
         public static async Task<Ok<List<AccountTypeDto>>> HandleAsync(
             AppDbContext dbContext,
             CancellationToken cancellationToken)

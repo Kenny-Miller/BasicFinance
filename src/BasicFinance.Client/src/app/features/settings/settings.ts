@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronRight,
@@ -11,7 +12,7 @@ import {
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmItemImports } from '@spartan-ng/helm/item';
-import { HlmNavigationMenuImports } from '@spartan-ng/helm/navigation-menu';
+
 import { PageService } from '../../core/page/page.service';
 import { NavMenuItem } from '../../shared/models/nav-menu-item';
 
@@ -34,7 +35,6 @@ import { NavMenuItem } from '../../shared/models/nav-menu-item';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    HlmNavigationMenuImports,
   ],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
