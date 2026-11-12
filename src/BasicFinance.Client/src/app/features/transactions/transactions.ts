@@ -69,6 +69,5 @@ export class Transactions implements OnInit {
 
   ngOnInit(): void {
     this.pageService.setPageTitle('Transactions');
-    this.pageService.setPageSubtitle('View your transactions');
   }
 }

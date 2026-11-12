@@ -55,6 +55,7 @@ const sidebarMenuButtonVariants = cva(
 		'data-sidebar': 'menu-button',
 		'[attr.data-size]': 'size()',
 		'[attr.data-active]': 'isActive()',
+		'[attr.aria-current]': '_ariaCurrent()',
 		'(click)': 'onClick()',
 	},
 })
@@ -74,6 +75,8 @@ export class HlmSidebarMenuButton {
 	protected readonly _isTooltipHidden = computed(
 		() => this._sidebarService.state() !== 'collapsed' || this._sidebarService.isMobile(),
 	);
+
+	protected readonly _ariaCurrent = computed(() => (this.isActive() ? 'page' : null));
 
 	constructor() {
 		classes(() => sidebarMenuButtonVariants({ variant: this.variant(), size: this.size() }));

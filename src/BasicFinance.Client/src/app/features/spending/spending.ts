@@ -30,6 +30,5 @@ export class Spending implements OnInit {
 
   ngOnInit(): void {
     this.pageService.setPageTitle('Spending');
-    this.pageService.setPageSubtitle('View your spending summary and breakdown by category.');
   }
 }

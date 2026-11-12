@@ -9,9 +9,9 @@
             >
               <ng-icon name="lucideChartLine" class="text-base" />
             </div>
-            <div class="grid flex-1 text-left leading-tight">
-              <span class="truncate font-medium">Basic Finance</span>
-              <span class="truncate text-xs">Finance that matter to you</span>
+            <div>
+              <div class="truncate font-medium">Basic Finance</div>
+              <div class="truncate text-xs">Finance that matter to you</div>
             </div>
           </a>
         </li>
@@ -20,7 +20,6 @@
     <hlm-separator />
     <hlm-sidebar-content>
       <hlm-sidebar-group>
-        <div hlmSidebarGroupLabel>Overview</div>
         <div hlmSidebarGroupContent>
           <ul hlmSidebarMenu>
             @for (item of navigationItems; track item.label) {
@@ -44,7 +43,7 @@
 
       @if (institutionsLoading()) {
         <hlm-sidebar-group>
-          <div hlmSidebarGroupLabel>Accounts</div>
+          <div hlmSidebarGroupLabel>Institutions</div>
           <div hlmSidebarGroupContent>
             <ul hlmSidebarMenu>
               @for (i of [0, 1, 2]; track i) {
@@ -55,7 +54,7 @@
         </hlm-sidebar-group>
       } @else if (accountNavigationItems().length > 0) {
         <hlm-sidebar-group>
-          <div hlmSidebarGroupLabel>Accounts</div>
+          <div hlmSidebarGroupLabel>Institutions</div>
           <div hlmSidebarGroupContent>
             <ul hlmSidebarMenu>
               @for (item of accountNavigationItems(); track item.label) {
@@ -69,10 +68,31 @@
                     [routerLinkActiveOptions]="{ exact: true }"
                   >
                     <app-institution-avatar [name]="item.label"></app-institution-avatar>
-                    <span>{{ item.label }}</span>
+                    <div>
+                      <div class="truncate">{{ item.label }}</div>
+                      <div class="text-xs text-muted-foreground">
+                        {{ item.activeAccounts }} accounts
+                      </div>
+                    </div>
+                    <div hlmSidebarMenuBadge class="text-xs">
+                      {{ item.totalBalance | currency }}
+                    </div>
                   </a>
                 </li>
               }
+              <li hlmSidebarMenuItem>
+                <a
+                  hlmSidebarMenuButton
+                  [routerLink]=""
+                  routerLinkActive
+                  #rla="routerLinkActive"
+                  [isActive]="rla.isActive"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                >
+                  <ng-icon name="lucidePlus" />
+                  <span>Add institution</span>
+                </a>
+              </li>
             </ul>
           </div>
         </hlm-sidebar-group>
@@ -110,12 +130,18 @@
             </button>
           }
         </li>
+        <li hlmSidebarMenuItem>
+          <button hlmSidebarMenuButton (click)="toggleTheme()">
+            <ng-icon [name]="theme() === 'dark' ? 'lucideSun' : 'lucideMoon'" />
+            <span>{{ theme() === 'dark' ? 'Light mode' : 'Dark mode' }}</span>
+          </button>
+        </li>
       </ul>
     </hlm-sidebar-footer>
   </hlm-sidebar>
   <main hlmSidebarInset variant="inset">
-    <header [class]="(!isMobile() ? 'h-16 ' : '') + 'flex shrink-0 items-center gap-2 py-5'">
-      <div class="flex items-center gap-2 px-5">
+    <header [class]="(!isMobile() ? 'h-16 ' : '') + 'flex shrink-0 items-center gap-2 py-4'">
+      <div class="flex items-center gap-2">
         @if (isMobile()) {
           <button hlmSidebarTrigger>
             <span class="sr-only">Toggle Sidebar</span>
@@ -126,10 +152,6 @@
     </header>
     <hlm-separator />
     <div class="flex min-h-0 flex-1 flex-col p-5">
-      <div class="mb-4">
-        <p class="text-muted-foreground">{{ pageSubtitle() }}</p>
-      </div>
-
       <router-outlet />
     </div>
   </main>

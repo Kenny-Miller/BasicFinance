@@ -1,7 +1,8 @@
-import { computed, Injectable, inject, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 
+import { GetMyInstitutionsResponse } from '../api/generated';
 import { AccountType, AccountTypeClient } from '../data-access/account-type-client';
-import { Institution, InstitutionClient } from '../data-access/institution-client';
+import { InstitutionClient } from '../data-access/institution-client';
 import {
   TransactionCategory,
   TransactionCategoryClient,
@@ -17,7 +18,6 @@ export class PageService {
   private readonly _transactionTypeClient = inject(TransactionTypeClient);
   private readonly _transactionCategoryClient = inject(TransactionCategoryClient);
   private readonly _pageTitle = signal<string>('');
-  private readonly _pageSubtitle = signal<string>('');
 
   private readonly institutionsResource = this._institutionClient.myInstitutions();
   private readonly accountTypesResource = this._accountTypeClient.accountTypes();
@@ -26,7 +26,6 @@ export class PageService {
     this._transactionCategoryClient.transactionCategories();
 
   readonly pageTitle = this._pageTitle.asReadonly();
-  readonly pageSubtitle = this._pageSubtitle.asReadonly();
 
   /**
    * Page-level ("global") state shared across features. Holds the user's
@@ -36,7 +35,9 @@ export class PageService {
    * loading/error contract: a page stays in its loading skeleton until all of
    * them have settled, and any failure puts the page into its error state.
    */
-  readonly data = computed<Institution[] | null>(() => this.institutionsResource.value() ?? null);
+  readonly data = computed<GetMyInstitutionsResponse[] | null>(
+    () => this.institutionsResource.value() ?? null,
+  );
 
   /** The global account types (active rows only). */
   readonly accountTypes = computed<AccountType[]>(() => this.accountTypesResource.value() ?? []);
@@ -84,9 +85,5 @@ export class PageService {
 
   setPageTitle(title: string) {
     this._pageTitle.set(title);
-  }
-
-  setPageSubtitle(subtitle: string) {
-    this._pageSubtitle.set(subtitle);
   }
 }

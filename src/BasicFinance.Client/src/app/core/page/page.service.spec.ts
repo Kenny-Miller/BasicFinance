@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 
 import { vi } from 'vite-plus/test';
 
+import { GetMyInstitutionsResponse } from '../api/generated';
 import { AccountType, AccountTypeClient } from '../data-access/account-type-client';
-import { Institution, InstitutionClient } from '../data-access/institution-client';
+import { InstitutionClient } from '../data-access/institution-client';
 import {
   TransactionCategory,
   TransactionCategoryClient,
@@ -15,7 +16,7 @@ import { PageService } from './page.service';
 describe('PageService', () => {
   let service: PageService;
 
-  let institutionsValue = signal<Institution[] | null>(null);
+  let institutionsValue = signal<GetMyInstitutionsResponse[] | null>(null);
   let institutionsHasValue = signal(false);
   let institutionsError = signal<null | Error>(null);
   let institutionsReload = vi.fn();
@@ -35,7 +36,7 @@ describe('PageService', () => {
   let transactionCategoriesError = signal<null | Error>(null);
   let transactionCategoriesReload = vi.fn();
 
-  function settleInstitutions(institutions: Institution[]) {
+  function settleInstitutions(institutions: GetMyInstitutionsResponse[]) {
     institutionsValue.set(institutions);
     institutionsHasValue.set(true);
   }
@@ -139,7 +140,16 @@ describe('PageService', () => {
   });
 
   it('should keep loading while a reference list is still pending after the institutions settled', () => {
-    settleInstitutions([{ id: 1, code: 'WF', name: 'Wells Fargo', logoUrl: null }]);
+    settleInstitutions([
+      {
+        institutionId: 1,
+        institutionCode: 'WF',
+        name: 'Wells Fargo',
+        logoUrl: null,
+        activeAccounts: 2,
+        totalBalance: 1200.5,
+      },
+    ]);
     accountTypesHasValue.set(true);
     transactionTypesHasValue.set(true);
 
@@ -151,7 +161,16 @@ describe('PageService', () => {
   });
 
   it('should expose the institutions value and stop loading once all resources have loaded', () => {
-    const institutions: Institution[] = [{ id: 1, code: 'WF', name: 'Wells Fargo', logoUrl: null }];
+    const institutions: GetMyInstitutionsResponse[] = [
+      {
+        institutionId: 1,
+        institutionCode: 'WF',
+        name: 'Wells Fargo',
+        logoUrl: null,
+        activeAccounts: 2,
+        totalBalance: 1200.5,
+      },
+    ];
     settleInstitutions(institutions);
     settleReferences();
 
@@ -203,7 +222,16 @@ describe('PageService', () => {
   });
 
   it('should keep the current institutions value while a refetch is requested', () => {
-    const institutions: Institution[] = [{ id: 1, code: 'WF', name: 'Wells Fargo', logoUrl: null }];
+    const institutions: GetMyInstitutionsResponse[] = [
+      {
+        institutionId: 1,
+        institutionCode: 'WF',
+        name: 'Wells Fargo',
+        logoUrl: null,
+        activeAccounts: 2,
+        totalBalance: 1200.5,
+      },
+    ];
     settleInstitutions(institutions);
     settleReferences();
 
@@ -213,11 +241,9 @@ describe('PageService', () => {
     expect(institutionsReload).toHaveBeenCalledTimes(1);
   });
 
-  it('should update the page title and subtitle', () => {
+  it('should update the page title', () => {
     service.setPageTitle('Home');
-    service.setPageSubtitle('Your dashboard');
 
     expect(service.pageTitle()).toBe('Home');
-    expect(service.pageSubtitle()).toBe('Your dashboard');
   });
 });
