@@ -8,6 +8,14 @@ public record InstitutionDto(
     string Name,
     string? LogoUrl);
 
+public record MyInstitutionResponseDto(
+    int InstitutionId,
+    string InstitutionCode,
+    string Name,
+    string? LogoUrl,
+    int ActiveAccounts,
+    decimal TotalBalance);
+
 public record AccountTypeDto(
     int Id,
     string Code,
