@@ -7,16 +7,17 @@ import { provideRouter } from '@angular/router';
 import { vi } from 'vite-plus/test';
 
 import { App } from './app';
+import { GetMyInstitutionsResponse } from './core/api/generated';
 import { AccountTypeClient } from './core/data-access/account-type-client';
-import { Institution, InstitutionClient } from './core/data-access/institution-client';
+import { InstitutionClient } from './core/data-access/institution-client';
 import { TransactionCategoryClient } from './core/data-access/transaction-category-client';
 import { TransactionTypeClient } from './core/data-access/transaction-type-client';
 
 describe('App', () => {
-  let institutions: WritableSignal<Institution[] | null>;
+  let institutions: WritableSignal<GetMyInstitutionsResponse[] | null>;
 
   beforeEach(async () => {
-    institutions = signal<Institution[] | null>(null);
+    institutions = signal<GetMyInstitutionsResponse[] | null>(null);
 
     await TestBed.configureTestingModule({
       imports: [App],
@@ -88,13 +89,39 @@ describe('App', () => {
     const app = TestBed.createComponent(App).componentInstance;
 
     institutions.set([
-      { id: 1, code: 'WF', name: 'Wells Fargo', logoUrl: null },
-      { id: 2, code: 'CHAS', name: 'Chase', logoUrl: 'https://example.com/chase.png' },
+      {
+        institutionId: 1,
+        institutionCode: 'WF',
+        name: 'Wells Fargo',
+        logoUrl: null,
+        activeAccounts: 2,
+        totalBalance: 1200.5,
+      },
+      {
+        institutionId: 2,
+        institutionCode: 'CHAS',
+        name: 'Chase',
+        logoUrl: 'https://example.com/chase.png',
+        activeAccounts: 1,
+        totalBalance: 400,
+      },
     ]);
 
     expect(app.accountNavigationItems()).toEqual([
-      { label: 'Wells Fargo', icon: 'lucideLandmark', routerLink: 'Accounts/1' },
-      { label: 'Chase', icon: 'lucideLandmark', routerLink: 'Accounts/2' },
+      {
+        label: 'Wells Fargo',
+        icon: 'lucideLandmark',
+        routerLink: 'Accounts/1',
+        activeAccounts: 2,
+        totalBalance: 1200.5,
+      },
+      {
+        label: 'Chase',
+        icon: 'lucideLandmark',
+        routerLink: 'Accounts/2',
+        activeAccounts: 1,
+        totalBalance: 400,
+      },
     ]);
   });
 
@@ -105,7 +132,7 @@ describe('App', () => {
       const fixture = TestBed.createComponent(App);
       fixture.detectChanges();
 
-      expect(fixture.nativeElement.textContent).toContain('Accounts');
+      expect(fixture.nativeElement.textContent).toContain('Institutions');
       const skeletons = fixture.debugElement.queryAll(
         By.css('[data-slot="sidebar-menu-skeleton"]'),
       );
@@ -121,11 +148,20 @@ describe('App', () => {
     try {
       const fixture = TestBed.createComponent(App);
 
-      institutions.set([{ id: 7, code: 'DISC', name: 'Discover', logoUrl: null }]);
+      institutions.set([
+        {
+          institutionId: 7,
+          institutionCode: 'DISC',
+          name: 'Discover',
+          logoUrl: null,
+          activeAccounts: 1,
+          totalBalance: 750.25,
+        },
+      ]);
       fixture.detectChanges();
 
       const text = fixture.nativeElement.textContent;
-      expect(text).toContain('Accounts');
+      expect(text).toContain('Institutions');
       expect(text).toContain('Discover');
 
       const accountLink = fixture.debugElement.query(By.css('a[href*="Accounts/7"]'));
@@ -147,6 +183,8 @@ function forceDesktopSidebarLayout() {
   // content is rendered inline in the DOM.
   return vi.spyOn(window, 'matchMedia').mockReturnValue({
     matches: false,
+    addListener: () => undefined,
+    removeListener: () => undefined,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
   } as unknown as MediaQueryList);

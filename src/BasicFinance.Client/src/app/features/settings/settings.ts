@@ -49,6 +49,5 @@ export class Settings implements OnInit {
 
   ngOnInit(): void {
     this.pageService.setPageTitle('Settings');
-    this.pageService.setPageSubtitle('Manage application and account settings.');
   }
 }

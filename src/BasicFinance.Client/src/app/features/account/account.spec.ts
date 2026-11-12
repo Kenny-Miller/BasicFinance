@@ -234,7 +234,6 @@ describe('Account', () => {
 
     const pageService = TestBed.inject(PageService);
     expect(pageService.pageTitle()).toBe('Wells Fargo');
-    expect(pageService.pageSubtitle()).toBe('View your account summary and balances.');
   });
 
   it('should fall back to a default page title when the institution name is empty', () => {

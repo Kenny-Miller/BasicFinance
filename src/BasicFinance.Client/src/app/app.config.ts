@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
+import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { BarChart, LineChart } from 'echarts/charts';
 import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
@@ -38,6 +39,7 @@ export const createAppConfig = (config: EnvironmentConfig): ApplicationConfig =>
       provideAppInitializer(initializeOAuthFn),
       provideCharts(withDefaultRegisterables()),
       provideEchartsCore({ echarts }),
+      provideHlmSidebarConfig({ sidebarWidth: '15.75rem' }),
       { provide: ENVIRONMENT_CONFIG, useValue: config },
     ],
   };

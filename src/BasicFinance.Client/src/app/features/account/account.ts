@@ -51,7 +51,6 @@ export class Account {
     effect(() => {
       const name = this.accountPageService.institutionName();
       this.pageService.setPageTitle(name || 'Accounts');
-      this.pageService.setPageSubtitle('View your account summary and balances.');
     });
   }
 }

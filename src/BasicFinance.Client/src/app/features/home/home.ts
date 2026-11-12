@@ -44,7 +44,6 @@ export class Home implements OnInit {
 
   async ngOnInit() {
     this.pageService.setPageTitle('Home');
-    this.pageService.setPageSubtitle('View your financial overview');
     const response = (await this.oauthService.loadUserProfile()) as AuthUserProfileResponse;
     this.user.set(response.info);
   }

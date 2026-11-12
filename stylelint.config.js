@@ -1,5 +1,9 @@
 export default {
-  extends: ['stylelint-config-standard', 'stylelint-config-recess-order'],
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-config-recess-order',
+    '@dreamsicle.io/stylelint-config-tailwindcss',
+  ],
   rules: {
     'no-empty-source': null,
     'at-rule-prelude-no-invalid': null,

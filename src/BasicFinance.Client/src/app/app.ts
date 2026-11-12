@@ -5,19 +5,21 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChartLine,
+  lucideChartPie,
   lucideChevronLeft,
   lucideChevronRight,
-  lucideLandmark,
-  lucideLayoutDashboard,
+  lucideHouse,
+  lucideMoon,
+  lucidePlus,
   lucideReceiptText,
-  lucideRepeat,
   lucideSettings,
-  lucideWallet,
+  lucideSun,
 } from '@ng-icons/lucide';
-import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
+import { HlmSeparator, HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 
 import { PageService } from './core/page/page.service';
+import { ThemeService } from './core/theme/theme.service';
 import { NavMenuItem } from './shared/models/nav-menu-item';
 import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/institution-avatar';
 
@@ -28,22 +30,24 @@ import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/i
     CommonModule,
     HlmSidebarImports,
     NgIcon,
-    HlmSeparatorImports,
     RouterLink,
     RouterLinkActive,
     InstitutionAvatar,
+    HlmSeparatorImports,
+    HlmSeparator,
   ],
   providers: [
     provideIcons({
-      lucideLayoutDashboard,
-      lucideWallet,
-      lucideRepeat,
+      lucideHouse,
+      lucideChartPie,
       lucideReceiptText,
-      lucideLandmark,
       lucideChartLine,
       lucideSettings,
       lucideChevronLeft,
       lucideChevronRight,
+      lucideMoon,
+      lucideSun,
+      lucidePlus,
     }),
   ],
   templateUrl: './app.html',
@@ -52,24 +56,27 @@ import { InstitutionAvatar } from './shared/ui/institutions/institution-avatar/i
 export class App {
   private readonly _pageService = inject(PageService);
   private readonly _sidebarService = inject(HlmSidebarService);
+  private readonly _themeService = inject(ThemeService);
 
   readonly pageTitle = this._pageService.pageTitle;
-  readonly pageSubtitle = this._pageService.pageSubtitle;
+  readonly theme = this._themeService.appTheme;
   readonly isDesktopSidebarOpen = this._sidebarService.open;
   readonly isMobile = this._sidebarService.isMobile;
 
   readonly navigationItems: NavMenuItem[] = [
-    { label: 'Home', icon: 'lucideLayoutDashboard', routerLink: '' },
+    { label: 'Home', icon: 'lucideHouse', routerLink: '' },
     { label: 'Transactions', icon: 'lucideReceiptText', routerLink: 'Transactions' },
-    { label: 'Spending', icon: 'lucideWallet', routerLink: 'Spending' },
+    { label: 'Spending', icon: 'lucideChartPie', routerLink: 'Spending' },
   ];
 
-  readonly accountNavigationItems = computed<NavMenuItem[]>(
+  readonly accountNavigationItems = computed(
     () =>
       this._pageService.data()?.map(institution => ({
         label: institution.name,
         icon: 'lucideLandmark',
-        routerLink: `Accounts/${institution.id}`,
+        routerLink: `Accounts/${institution.institutionId}`,
+        activeAccounts: institution.activeAccounts,
+        totalBalance: institution.totalBalance,
       })) ?? [],
   );
 
@@ -77,5 +84,9 @@ export class App {
 
   public toggleSidebarOpen(): void {
     this._sidebarService.setOpen(!this.isDesktopSidebarOpen());
+  }
+
+  public toggleTheme(): void {
+    this._themeService.setAppTheme(this.theme() === 'dark' ? 'light' : 'dark');
   }
 }

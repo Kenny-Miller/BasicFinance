@@ -216,6 +216,36 @@ export type DailyTransactionSummary = {
     transactionCount: number;
 };
 
+/**
+ * Response for the GetMyInstitutions endpoint.
+ */
+export type GetMyInstitutionsResponse = {
+    /**
+     * The institution identifier.
+     */
+    institutionId: number;
+    /**
+     * The institution code.
+     */
+    institutionCode: string;
+    /**
+     * The institution name.
+     */
+    name: string;
+    /**
+     * The URL of the institution's logo.
+     */
+    logoUrl: null | string;
+    /**
+     * The number of active accounts.
+     */
+    activeAccounts: number;
+    /**
+     * The total balance across the accounts.
+     */
+    totalBalance: number;
+};
+
 export type HttpValidationProblemDetails = {
     type?: null | string;
     title?: null | string;
@@ -934,7 +964,7 @@ export type GetApiMyInstitutionsResponses = {
     /**
      * OK
      */
-    200: Array<InstitutionDto>;
+    200: Array<GetMyInstitutionsResponse>;
 };
 
 export type GetApiMyInstitutionsResponse = GetApiMyInstitutionsResponses[keyof GetApiMyInstitutionsResponses];

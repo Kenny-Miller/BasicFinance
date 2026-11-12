@@ -1,5 +1,13 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { computed, DOCUMENT, inject, Injectable, linkedSignal, signal } from '@angular/core';
+import {
+  computed,
+  DOCUMENT,
+  effect,
+  inject,
+  Injectable,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { distinctUntilChanged, map } from 'rxjs';
@@ -36,13 +44,24 @@ export class ThemeService {
 
   readonly appTheme = computed(() => this.currentTheme());
 
+  constructor() {
+    // Keep the `.dark` class in sync with the resolved theme (persisted
+    // choice, or the system preference while none is stored).
+    effect(() => this._applyThemeClass(this.currentTheme()));
+  }
+
   setAppTheme(colorTheme: ColorTheme): void {
     localStorage.setItem(this.themeStorageKey, colorTheme);
     this.localStorageTheme.set(colorTheme);
+    this._applyThemeClass(colorTheme);
   }
 
   getAppColor(color: string): string {
     return window.getComputedStyle(this.document.documentElement).getPropertyValue(color).trim();
+  }
+
+  private _applyThemeClass(colorTheme: ColorTheme): void {
+    this.document.documentElement.classList.toggle('dark', colorTheme === 'dark');
   }
 
   private getLocalStorageTheme(): ColorTheme | null {
