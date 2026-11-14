@@ -241,7 +241,7 @@ export type GetMyInstitutionsResponse = {
      */
     activeAccounts: number;
     /**
-     * The total balance across the accounts.
+     * The total current balance across the active accounts.
      */
     totalBalance: number;
 };
@@ -406,12 +406,7 @@ export type SpendingOverTimeSummaryResponse = {
     monthlySpendDifference: number;
 };
 
-/**
- * Defines time periods to group spending activity by.
- */
-export type SpendingPeriod = number;
-
-export type TimePeriod = number;
+export type TimePeriod = 'Weekly' | 'Monthly' | 'Quarterly' | 'Yearly';
 
 /**
  * Total balance and breakdown by account type for a period.
@@ -866,7 +861,7 @@ export type GetApiSpendingActivityByPeriodData = {
     path?: never;
     query?: {
         StartDate?: string;
-        SpendingPeriod?: SpendingPeriod;
+        TimePeriod?: TimePeriod;
     };
     url: '/api/spending/activity-by-period';
 };
