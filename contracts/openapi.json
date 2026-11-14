@@ -399,16 +399,6 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -425,6 +415,16 @@
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -482,22 +482,22 @@
           "204": {
             "description": "No Content"
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -534,22 +534,22 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -573,10 +573,10 @@
             }
           },
           {
-            "name": "SpendingPeriod",
+            "name": "TimePeriod",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/SpendingPeriod"
+              "$ref": "#/components/schemas/TimePeriod"
             }
           }
         ],
@@ -880,6 +880,9 @@
               }
             }
           },
+          "404": {
+            "description": "Not Found"
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -889,9 +892,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }
@@ -1405,7 +1405,7 @@
           },
           "totalBalance": {
             "type": "number",
-            "description": "The total balance across the accounts.",
+            "description": "The total current balance across the active accounts.",
             "format": "double"
           }
         },
@@ -1757,12 +1757,8 @@
         },
         "description": "Represents the aggregated spending summary for current and previous months."
       },
-      "SpendingPeriod": {
-        "type": "integer",
-        "description": "Defines time periods to group spending activity by."
-      },
       "TimePeriod": {
-        "type": "integer"
+        "enum": ["Weekly", "Monthly", "Quarterly", "Yearly", null]
       },
       "TotalBalanceBreakdown": {
         "required": ["balance", "accountTypeBreakdowns"],

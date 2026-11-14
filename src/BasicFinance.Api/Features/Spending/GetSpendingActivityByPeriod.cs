@@ -1,4 +1,5 @@
 ﻿using BasicFinance.Api.Common.Authentication;
+using BasicFinance.Domain.Enums;
 using BasicFinance.Domain.Extensions;
 using BasicFinance.Infrastructure;
 using BasicFinance.Infrastructure.Enums;
@@ -19,34 +20,8 @@ namespace BasicFinance.Api.Features.Spending
         /// Represents the query parameters used by the <see cref="GetSpendingActivityByPeriod"/> endpoint.
         /// </summary>
         /// <param name="StartDate"></param>
-        /// <param name="SpendingPeriod"></param>
-        public record Request(DateTime StartDate, SpendingPeriod SpendingPeriod = SpendingPeriod.Monthly);
-
-        /// <summary>
-        /// Defines time periods to group spending activity by.
-        /// </summary>
-        public enum SpendingPeriod
-        {
-            /// <summary>
-            /// Represents a weekly spending period.
-            /// </summary>
-            Weekly,
-
-            /// <summary>
-            /// Represents a monthly spending period.
-            /// </summary>
-            Monthly,
-
-            /// <summary>
-            /// Represents a quarterly spending period.
-            /// </summary>
-            Quarterly,
-
-            /// <summary>
-            /// Represents a yearly spending period.
-            /// </summary>
-            Yearly
-        }
+        /// <param name="TimePeriod"></param>
+        public record Request(DateTime StartDate, TimePeriod TimePeriod = TimePeriod.Monthly);
 
         /// <summary>
         /// Represents the aggregated spending activity for a given time period.
@@ -93,7 +68,7 @@ namespace BasicFinance.Api.Features.Spending
         {
             var startDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified);
             var now = timeProvider.GetUtcNow().Date;
-            var (periodStart, periodEnd) = GetPeriodBoundaries(startDate, request.SpendingPeriod, now.Date);
+            var (periodStart, periodEnd) = GetPeriodBoundaries(startDate, request.TimePeriod, now.Date);
 
             var userTransactions = dbContext.Transactions
                 .AsNoTracking()
@@ -146,24 +121,24 @@ namespace BasicFinance.Api.Features.Spending
         /// <param name="period">The period type.</param>
         /// <param name="now">The current UTC date.</param>
         /// <returns>A tuple of (periodStart, periodEnd).</returns>
-        private static (DateTime Start, DateTime End) GetPeriodBoundaries(DateTime startDate, SpendingPeriod period, DateTime now)
+        private static (DateTime Start, DateTime End) GetPeriodBoundaries(DateTime startDate, TimePeriod period, DateTime now)
         {
             var start = period switch
             {
-                SpendingPeriod.Weekly => startDate.StartOfWeek,
-                SpendingPeriod.Monthly => new DateTime(startDate.Year, startDate.Month, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                SpendingPeriod.Quarterly => new DateTime(startDate.Year, (startDate.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                SpendingPeriod.Yearly => new DateTime(startDate.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                _ => throw new ArgumentException("Invalid spending period", nameof(period))
+                TimePeriod.Weekly => startDate.StartOfWeek,
+                TimePeriod.Monthly => new DateTime(startDate.Year, startDate.Month, 1, 0, 0, 0, DateTimeKind.Unspecified),
+                TimePeriod.Quarterly => new DateTime(startDate.Year, (startDate.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
+                TimePeriod.Yearly => new DateTime(startDate.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
+                _ => throw new ArgumentException("Invalid time period", nameof(period))
             };
 
             var end = period switch
             {
-                SpendingPeriod.Weekly => start.AddDays(7),
-                SpendingPeriod.Monthly => start.AddMonths(1),
-                SpendingPeriod.Quarterly => start.AddMonths(3),
-                SpendingPeriod.Yearly => start.AddYears(1),
-                _ => throw new ArgumentException("Invalid spending period", nameof(period))
+                TimePeriod.Weekly => start.AddDays(7),
+                TimePeriod.Monthly => start.AddMonths(1),
+                TimePeriod.Quarterly => start.AddMonths(3),
+                TimePeriod.Yearly => start.AddYears(1),
+                _ => throw new ArgumentException("Invalid time period", nameof(period))
             };
 
             if (end > now)
