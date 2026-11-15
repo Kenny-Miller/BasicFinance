@@ -33,8 +33,8 @@ public class GetSpendingActivityByPeriodTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<SpendingByPeriodDto>($"{Endpoint}?StartDate=2026-08-05&TimePeriod=Quarterly", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2026, 7, 1), result.PeriodStartDate);
-        Assert.Equal(new DateTime(2026, 10, 1), result.PeriodEndDate);
+        Assert.Equal(new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PeriodStartDate);
+        Assert.Equal(new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PeriodEndDate);
         Assert.Equal(100.00m, result.TotalSpend);
     }
 
@@ -45,8 +45,8 @@ public class GetSpendingActivityByPeriodTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<SpendingByPeriodDto>($"{Endpoint}?StartDate=2026-08-05&TimePeriod=Weekly", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2026, 8, 3), result.PeriodStartDate);
-        Assert.Equal(new DateTime(2026, 8, 10), result.PeriodEndDate);
+        Assert.Equal(new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Unspecified), result.PeriodStartDate);
+        Assert.Equal(new DateTime(2026, 8, 10, 0, 0, 0, DateTimeKind.Unspecified), result.PeriodEndDate);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class GetSpendingActivityByPeriodTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<SpendingByPeriodDto>($"{Endpoint}?StartDate={today:yyyy-MM-dd}&TimePeriod=Yearly", CancellationToken);
 
         // Assert: the end is exclusive, so it is capped at tomorrow and today's spend is counted.
-        Assert.Equal(new DateTime(today.Year, 1, 1), result.PeriodStartDate);
+        Assert.Equal(new DateTime(today.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PeriodStartDate);
         Assert.Equal(today.AddDays(1), result.PeriodEndDate);
         Assert.Equal(25.00m, result.TotalSpend);
     }
