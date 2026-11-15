@@ -67,8 +67,13 @@ namespace BasicFinance.Api.Features.Spending
             CancellationToken cancellationToken)
         {
             var startDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified);
-            var now = timeProvider.GetUtcNow().Date;
-            var (periodStart, periodEnd) = GetPeriodBoundaries(startDate, request.TimePeriod, now.Date);
+
+            // The end is exclusive: the start of the next period, capped at tomorrow so the
+            // current period includes today's transactions.
+            var tomorrow = timeProvider.GetUtcNow().Date.AddDays(1);
+            var periodStart = startDate.ToStartOfPeriod(request.TimePeriod);
+            var nextPeriodStart = startDate.ToStartOfPeriod(request.TimePeriod, 1);
+            var periodEnd = nextPeriodStart < tomorrow ? nextPeriodStart : tomorrow;
 
             var userTransactions = dbContext.Transactions
                 .AsNoTracking()
@@ -112,41 +117,6 @@ namespace BasicFinance.Api.Features.Spending
             }
 
             return TypedResults.Ok(new SpendingByPeriod(periodStart, periodEnd, totalSpend, totalIncome, spendingActivityByCategory));
-        }
-
-        /// <summary>
-        /// Calculates the start and end boundaries for a given spending period.
-        /// </summary>
-        /// <param name="startDate">The date anchoring the period.</param>
-        /// <param name="period">The period type.</param>
-        /// <param name="now">The current UTC date.</param>
-        /// <returns>A tuple of (periodStart, periodEnd).</returns>
-        private static (DateTime Start, DateTime End) GetPeriodBoundaries(DateTime startDate, TimePeriod period, DateTime now)
-        {
-            var start = period switch
-            {
-                TimePeriod.Weekly => startDate.StartOfWeek,
-                TimePeriod.Monthly => new DateTime(startDate.Year, startDate.Month, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                TimePeriod.Quarterly => new DateTime(startDate.Year, (startDate.Month - 1) / 3 * 3 + 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                TimePeriod.Yearly => new DateTime(startDate.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                _ => throw new ArgumentException("Invalid time period", nameof(period))
-            };
-
-            var end = period switch
-            {
-                TimePeriod.Weekly => start.AddDays(7),
-                TimePeriod.Monthly => start.AddMonths(1),
-                TimePeriod.Quarterly => start.AddMonths(3),
-                TimePeriod.Yearly => start.AddYears(1),
-                _ => throw new ArgumentException("Invalid time period", nameof(period))
-            };
-
-            if (end > now)
-            {
-                end = now;
-            }
-
-            return (start, end);
         }
     }
 }
