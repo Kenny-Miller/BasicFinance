@@ -9,19 +9,19 @@ import type { Day } from 'date-fns';
 
 import { TodayService } from '../../../core/time/today.service';
 import {
-  DEFAULT_WEEK_STARTS_ON,
-  PeriodDirection,
-  isCurrentPeriod,
-  periodLabel,
-  stepSelectedDate,
-} from '../../data/period';
-import {
   TIME_PERIOD_CONFIG,
   TIME_PERIODS,
   TimePeriod,
   isValidTimePeriod,
 } from '../../data/time-period';
-import { PeriodPicker } from '../period-picker/period-picker';
+import {
+  DEFAULT_WEEK_STARTS_ON,
+  PeriodDirection,
+  isCurrentPeriod,
+  periodLabel,
+  stepSelectedDate,
+} from '../../data/time-period-range';
+import { TimePeriodPicker } from '../time-period-picker/time-period-picker';
 
 const TIME_PERIOD_OPTIONS: readonly { value: TimePeriod; label: string }[] = TIME_PERIODS.map(
   value => ({
@@ -31,13 +31,13 @@ const TIME_PERIOD_OPTIONS: readonly { value: TimePeriod; label: string }[] = TIM
 );
 
 @Component({
-  selector: 'app-period-stepper',
-  imports: [NgIcon, HlmToggleGroupImports, HlmButtonImports, HlmPopoverImports, PeriodPicker],
+  selector: 'app-time-period-selector',
+  imports: [NgIcon, HlmToggleGroupImports, HlmButtonImports, HlmPopoverImports, TimePeriodPicker],
   providers: [provideIcons({ lucideChevronDown, lucideChevronLeft, lucideChevronRight })],
-  templateUrl: './period-stepper.html',
-  styleUrl: './period-stepper.css',
+  templateUrl: './time-period-selector.html',
+  styleUrl: './time-period-selector.css',
 })
-export class PeriodStepper {
+export class TimePeriodSelector {
   private readonly todayService = inject(TodayService);
 
   readonly selectedTimePeriod = model.required<TimePeriod>();

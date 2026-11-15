@@ -1,4 +1,4 @@
-import { isCurrentPeriod, periodLabel, periodRange, stepSelectedDate } from './period';
+import { isCurrentPeriod, periodLabel, periodRange, stepSelectedDate } from './time-period-range';
 
 const date = (year: number, month: number, day: number): Date => new Date(year, month - 1, day);
 

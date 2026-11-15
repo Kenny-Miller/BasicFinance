@@ -8,7 +8,7 @@ import { AccountItem } from '../../shared/ui/accounts/account-item/account-item'
 import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
 import { SummaryCard } from '../../shared/ui/cards/summary-card/summary-card';
 import { InstitutionAvatar } from '../../shared/ui/institutions/institution-avatar/institution-avatar';
-import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
+import { TimePeriodSelector } from '../../shared/ui/time-period-selector/time-period-selector';
 import { AccountPageService } from './account-page-service';
 import { AccountSkeleton } from './components/account-skeleton/account-skeleton';
 
@@ -16,7 +16,7 @@ import { AccountSkeleton } from './components/account-skeleton/account-skeleton'
   selector: 'app-account',
   imports: [
     AppPageHeader,
-    PeriodStepper,
+    TimePeriodSelector,
     InstitutionAvatar,
     SummaryCard,
     AccountItem,

@@ -7,7 +7,7 @@ import { ThemeService } from '../../core/theme/theme.service';
 import { TIME_PERIOD_CONFIG } from '../../shared/data/time-period';
 import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
 import { Paginator } from '../../shared/ui/paginator/paginator';
-import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
+import { TimePeriodSelector } from '../../shared/ui/time-period-selector/time-period-selector';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions/transactions-list-skeleton/transactions-list-skeleton';
 import { TransactionsList } from '../../shared/ui/transactions/transactions-list/transactions-list';
 import { DailySpendChart } from './components/daily-spend-chart/daily-spend-chart';
@@ -20,7 +20,7 @@ import { TransactionsService } from './transactions-service';
   selector: 'app-transactions',
   imports: [
     HlmButtonImports,
-    PeriodStepper,
+    TimePeriodSelector,
     TransactionsSummaryTile,
     DailySpendChart,
     TransactionsList,

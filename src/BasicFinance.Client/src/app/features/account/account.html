@@ -1,5 +1,8 @@
 <app-page-header [pageTitle]="institutionName() || 'Accounts'">
-  <app-period-stepper [(selectedTimePeriod)]="selectedTimePeriod" [(selectedDate)]="selectedDate" />
+  <app-time-period-selector
+    [(selectedTimePeriod)]="selectedTimePeriod"
+    [(selectedDate)]="selectedDate"
+  />
 </app-page-header>
 
 <main class="flex flex-col gap-4 p-4">

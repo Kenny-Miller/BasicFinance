@@ -327,7 +327,7 @@ Borderless block in the hairline grid. Head: a section-label on the left, with a
 - **No shadows.**
 - **Focus:** `focus-visible:outline-2 outline-offset-2 outline-ring`.
 
-### SegmentedControl & PeriodStepper (`shared/ui/period-selector`)
+### SegmentedControl & TimePeriodSelector (`shared/ui/time-period-selector`)
 
 - **Segments:**
   - plain text, 13/500, `text-muted-foreground`;

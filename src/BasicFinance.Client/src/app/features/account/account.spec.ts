@@ -11,7 +11,7 @@ import { TransactionCategoryClient } from '../../core/data-access/transaction-ca
 import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
 import { TimePeriod } from '../../shared/data/time-period';
 import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
-import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
+import { TimePeriodSelector } from '../../shared/ui/time-period-selector/time-period-selector';
 import { Account } from './account';
 import { AccountPageData, AccountPageService } from './account-page-service';
 
@@ -199,7 +199,7 @@ describe('Account', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Wells Fargo');
-    expect(fixture.debugElement.query(By.css('app-period-stepper'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-time-period-selector'))).toBeTruthy();
 
     // Total card + one card per account type
     expect(fixture.debugElement.queryAll(By.css('app-summary-card')).length).toBe(4);
@@ -245,7 +245,7 @@ describe('Account', () => {
   it('should forward period changes to the service', () => {
     fixture.detectChanges();
 
-    const stepper = fixture.debugElement.query(By.directive(PeriodStepper));
+    const stepper = fixture.debugElement.query(By.directive(TimePeriodSelector));
     const date = new Date(2025, 1, 10);
     stepper.triggerEventHandler('selectedTimePeriodChange', 'Quarterly');
     stepper.triggerEventHandler('selectedDateChange', date);

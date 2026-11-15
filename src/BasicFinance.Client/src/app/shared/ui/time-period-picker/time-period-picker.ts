@@ -6,8 +6,8 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCalendarImports } from '@spartan-ng/helm/calendar';
 import { type Day, getQuarter, getYear, min } from 'date-fns';
 
-import { DEFAULT_WEEK_STARTS_ON } from '../../data/period';
 import { TimePeriod } from '../../data/time-period';
+import { DEFAULT_WEEK_STARTS_ON } from '../../data/time-period-range';
 
 const YEARS_PER_PAGE = 12;
 
@@ -16,13 +16,13 @@ const YEARS_PER_PAGE = 12;
  * a day calendar for weeks, a month grid, a quarter grid, or a year grid.
  */
 @Component({
-  selector: 'app-period-picker',
+  selector: 'app-time-period-picker',
   imports: [NgIcon, HlmButtonImports, HlmCalendarImports],
   providers: [provideIcons({ lucideChevronLeft, lucideChevronRight })],
-  templateUrl: './period-picker.html',
-  styleUrl: './period-picker.css',
+  templateUrl: './time-period-picker.html',
+  styleUrl: './time-period-picker.css',
 })
-export class PeriodPicker {
+export class TimePeriodPicker {
   readonly timePeriod = input.required<TimePeriod>();
   readonly selectedDate = input.required<Date>();
   readonly today = input.required<Date>();

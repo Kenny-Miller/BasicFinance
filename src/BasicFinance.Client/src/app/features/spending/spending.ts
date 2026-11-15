@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 
 import { PageService } from '../../core/page/page.service';
 import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
-import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
+import { TimePeriodSelector } from '../../shared/ui/time-period-selector/time-period-selector';
 import { CategoryBreakdownList } from './components/category-breakdown-list/category-breakdown-list';
 import { SpendingSkeleton } from './components/spending-skeleton/spending-skeleton';
 import { SpendingSummaryTile } from './components/spending-summary-tile/spending-summary-tile';
@@ -11,7 +11,7 @@ import { SpendingService } from './spending-service';
 @Component({
   selector: 'app-spending',
   imports: [
-    PeriodStepper,
+    TimePeriodSelector,
     SpendingSummaryTile,
     CategoryBreakdownList,
     SpendingSkeleton,

@@ -2,19 +2,19 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TimePeriod } from '../../data/time-period';
-import { PeriodPicker } from './period-picker';
+import { TimePeriodPicker } from './time-period-picker';
 
 const TODAY = new Date(2026, 10, 14);
 
 @Component({
   selector: 'app-test-host',
-  template: `<app-period-picker
+  template: `<app-time-period-picker
     [timePeriod]="timePeriod()"
     [selectedDate]="selectedDate()"
     [today]="today"
     (picked)="picked.push($event)"
   />`,
-  imports: [PeriodPicker],
+  imports: [TimePeriodPicker],
 })
 class TestHost {
   readonly today = TODAY;
@@ -23,7 +23,7 @@ class TestHost {
   readonly picked: Date[] = [];
 }
 
-describe('PeriodPicker', () => {
+describe('TimePeriodPicker', () => {
   let fixture: ComponentFixture<TestHost>;
   let host: TestHost;
 

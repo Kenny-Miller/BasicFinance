@@ -2,18 +2,18 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TimePeriod } from '../../data/time-period';
-import { PeriodStepper } from './period-stepper';
+import { TimePeriodSelector } from './time-period-selector';
 
 const TODAY = new Date(2026, 10, 14);
 
 @Component({
   selector: 'app-test-host',
-  template: `<app-period-stepper
+  template: `<app-time-period-selector
     [(selectedTimePeriod)]="selectedTimePeriod"
     [(selectedDate)]="selectedDate"
     [today]="today"
   />`,
-  imports: [PeriodStepper],
+  imports: [TimePeriodSelector],
 })
 class TestHost {
   readonly today = TODAY;
@@ -21,7 +21,7 @@ class TestHost {
   readonly selectedDate = signal(TODAY);
 }
 
-describe('PeriodStepper', () => {
+describe('TimePeriodSelector', () => {
   let fixture: ComponentFixture<TestHost>;
   let host: TestHost;
 
