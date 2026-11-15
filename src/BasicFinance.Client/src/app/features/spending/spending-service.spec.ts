@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { SpendingByPeriod, SpendingClient } from '../../core/data-access/spending-client';
 import { PageService } from '../../core/page/page.service';
-import { TimePeriod } from '../../shared/data/time-period';
+import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 import { SpendingService } from './spending-service';
 
 describe('SpendingService', () => {
@@ -18,7 +18,7 @@ describe('SpendingService', () => {
   let institutionsReloadCount = 0;
 
   let capturedPeriodSignal: Signal<TimePeriod> | undefined;
-  let capturedStartDateSignal: Signal<string> | undefined;
+  let capturedStartDateSignal: Signal<Date> | undefined;
   let reloadCount = 0;
 
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('SpendingService', () => {
           useValue: {
             spendingByPeriodResource: (
               periodSignal: Signal<TimePeriod>,
-              startDateSignal: Signal<string>,
+              startDateSignal: Signal<Date>,
             ) => {
               capturedPeriodSignal = periodSignal;
               capturedStartDateSignal = startDateSignal;
@@ -71,10 +71,10 @@ describe('SpendingService', () => {
     service = TestBed.inject(SpendingService);
   });
 
-  it('should default to the monthly period with a start date of today', () => {
-    expect(service.selectedPeriod()).toBe('Monthly');
-    expect(capturedPeriodSignal?.()).toBe('Monthly');
-    expect(capturedStartDateSignal).toBeTruthy();
+  it('should default to the default period with a start date of today', () => {
+    expect(service.selectedTimePeriod()).toBe(DEFAULT_TIME_PERIOD);
+    expect(capturedPeriodSignal?.()).toBe(DEFAULT_TIME_PERIOD);
+    expect(capturedStartDateSignal?.().toDateString()).toBe(new Date().toDateString());
   });
 
   it('should report loading until the resource has a value', () => {
@@ -144,10 +144,17 @@ describe('SpendingService', () => {
   });
 
   it('should pass period changes through to the resource signal', () => {
-    service.selectPeriod('Yearly');
+    service.selectedTimePeriod.set('Quarterly');
 
-    expect(service.selectedPeriod()).toBe('Yearly');
-    expect(capturedPeriodSignal?.()).toBe('Yearly');
+    expect(capturedPeriodSignal?.()).toBe('Quarterly');
+  });
+
+  it('should pass the selected date to the resource', () => {
+    const date = new Date(2025, 1, 10);
+
+    service.selectedDate.set(date);
+
+    expect(capturedStartDateSignal?.()).toEqual(date);
   });
 
   it('should reload the resource on refetch', () => {

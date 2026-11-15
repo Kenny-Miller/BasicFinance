@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Signal, inject, resource } from '@angular/core';
 
 import { TimePeriod } from '../../shared/data/time-period';
+import { formatDateOnly } from '../api/date-only';
 import {
   getApiAccounts,
   getApiAccountsBalanceSummary,
@@ -16,7 +17,6 @@ import type {
   TotalBalanceBreakdown,
 } from '../api/generated/types.gen';
 import { normalizeListResult } from '../api/list-result';
-import { TIME_PERIOD_PARAM } from '../api/period-params';
 
 export type Account = AccountDto;
 
@@ -84,7 +84,7 @@ export class AccountClient {
 
   balanceSummaryResource(timePeriodSignal: Signal<TimePeriod>) {
     return resource({
-      params: () => ({ TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()] }),
+      params: () => ({ TimePeriod: timePeriodSignal() }),
       loader: async ({ params }) => {
         const response = await getApiAccountsBalanceSummary({
           httpClient: this.httpClient,
@@ -99,17 +99,19 @@ export class AccountClient {
   institutionSummaryResource(
     institutionIdSignal: Signal<number>,
     timePeriodSignal: Signal<TimePeriod>,
+    recordedDateSignal: Signal<Date | null>,
   ) {
     return resource({
       params: () => ({
         institutionId: institutionIdSignal(),
-        TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()],
+        TimePeriod: timePeriodSignal(),
+        RecordedDate: formatDateOnly(recordedDateSignal()),
       }),
       loader: async ({ params }) => {
         const response = await getApiAccountsInstitutionInstitutionIdSummary({
           httpClient: this.httpClient,
           path: { institutionId: params.institutionId },
-          query: { TimePeriod: params.TimePeriod },
+          query: { TimePeriod: params.TimePeriod, RecordedDate: params.RecordedDate },
           throwOnError: true,
         });
         return response.data;

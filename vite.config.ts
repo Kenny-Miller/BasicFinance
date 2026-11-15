@@ -4,7 +4,8 @@ import { defineConfig } from 'vite-plus';
 export default defineConfig({
   plugins: [tailwindcss()],
   staged: {
-    '*.ts': 'vp lint --fix',
+    // Staged files can all fall under lint ignorePatterns (libs, generated); don't fail on that.
+    '*.ts': 'vp lint --fix --no-error-on-unmatched-pattern',
     '*.{json,html}': 'vp fmt',
     '*.html': 'eslint --fix',
     '*.{css,scss}': ['vp fmt', 'stylelint --fix'],
@@ -83,7 +84,6 @@ export default defineConfig({
       '**/.angular/**',
       '**/node_modules/**',
       'src/BasicFinance.Client/libs/**',
-      'src/BasicFinance.Client/src/app/core/api/generated/**',
     ],
     overrides: [
       {
@@ -199,6 +199,19 @@ export default defineConfig({
       {
         files: ['**/*.html'],
         rules: {},
+        jsPlugins: [],
+      },
+      {
+        // hey-api output: keep correctness checks, but skip style rules the generator doesn't
+        // follow, since `lint --fix` would otherwise rewrite files that must match `gen:api`.
+        files: ['src/BasicFinance.Client/src/app/core/api/generated/**'],
+        rules: {
+          'typescript/array-type': 'off',
+          'typescript/consistent-indexed-object-style': 'off',
+          'typescript/consistent-type-definitions': 'off',
+          'typescript/no-explicit-any': 'off',
+          'typescript/no-inferrable-types': 'off',
+        },
         jsPlugins: [],
       },
     ],

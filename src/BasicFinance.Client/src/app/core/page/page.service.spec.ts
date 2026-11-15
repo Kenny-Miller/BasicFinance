@@ -240,10 +240,4 @@ describe('PageService', () => {
     expect(service.data()).toEqual(institutions);
     expect(institutionsReload).toHaveBeenCalledTimes(1);
   });
-
-  it('should update the page title', () => {
-    service.setPageTitle('Home');
-
-    expect(service.pageTitle()).toBe('Home');
-  });
 });

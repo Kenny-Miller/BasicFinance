@@ -1,0 +1,61 @@
+<div class="flex flex-wrap items-center gap-4">
+  <hlm-toggle-group
+    type="single"
+    spacing="4"
+    aria-label="Time period"
+    [nullable]="false"
+    [value]="selectedTimePeriod()"
+    (valueChange)="changeTimePeriod($event)"
+  >
+    @for (option of timePeriodOptions; track option.value) {
+      <button hlmToggleGroupItem [value]="option.value">
+        {{ option.label }}
+      </button>
+    }
+  </hlm-toggle-group>
+
+  <div class="flex items-center rounded-lg border">
+    <button
+      hlmBtn
+      variant="ghost"
+      type="button"
+      aria-label="Previous period"
+      (click)="step('previous')"
+    >
+      <ng-icon name="lucideChevronLeft" />
+    </button>
+
+    <hlm-popover
+      align="center"
+      sideOffset="6"
+      [state]="pickerState()"
+      (stateChanged)="pickerState.set($event)"
+    >
+      <button hlmBtn hlmPopoverTrigger variant="ghost" type="button" aria-label="Choose period">
+        <span aria-live="polite">{{ label() }}</span>
+        <ng-icon name="lucideChevronDown" />
+      </button>
+
+      <hlm-popover-content class="w-fit p-0" *hlmPopoverPortal="let ctx">
+        <app-time-period-picker
+          [timePeriod]="selectedTimePeriod()"
+          [selectedDate]="selectedDate()"
+          [today]="today()"
+          [weekStartsOn]="weekStartsOn()"
+          (picked)="pickDate($event)"
+        />
+      </hlm-popover-content>
+    </hlm-popover>
+
+    <button
+      hlmBtn
+      variant="ghost"
+      type="button"
+      aria-label="Next period"
+      [disabled]="nextDisabled()"
+      (click)="step('next')"
+    >
+      <ng-icon name="lucideChevronRight" />
+    </button>
+  </div>
+</div>

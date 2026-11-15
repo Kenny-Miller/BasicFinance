@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Signal, inject, resource } from '@angular/core';
 
 import { TimePeriod } from '../../shared/data/time-period';
+import { formatDateOnly } from '../api/date-only';
 import {
   getApiTransactions,
   getApiTransactionsDailySummary,
@@ -9,7 +10,6 @@ import {
 } from '../api/generated/sdk.gen';
 import type { GetApiTransactionsData } from '../api/generated/types.gen';
 import { normalizeListResult } from '../api/list-result';
-import { TIME_PERIOD_PARAM } from '../api/period-params';
 
 export type {
   DailySummaryResponse,
@@ -56,16 +56,6 @@ function toTransactionsQuery(params: ListTransactionsParams): TransactionsQuery 
   };
 }
 
-function formatDateOnly(date: Date | null): string | undefined {
-  if (!date) {
-    return undefined;
-  }
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -105,7 +95,7 @@ export class TransactionClient {
     return resource({
       params: () => ({
         RecordedDate: formatDateOnly(recordedDateSignal()),
-        TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()],
+        TimePeriod: timePeriodSignal(),
       }),
       loader: async ({ params }) => {
         const response = await getApiTransactionsSummary({
@@ -125,7 +115,7 @@ export class TransactionClient {
     return resource({
       params: () => ({
         RecordedDate: formatDateOnly(recordedDateSignal()),
-        TimePeriod: TIME_PERIOD_PARAM[timePeriodSignal()],
+        TimePeriod: timePeriodSignal(),
       }),
       loader: async ({ params }) => {
         const response = await getApiTransactionsDailySummary({

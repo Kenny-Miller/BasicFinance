@@ -1,4 +1,11 @@
-<main class="flex flex-col gap-4 p-4">
+<app-page-header pageTitle="Home">
+  <button hlmBtn variant="outline">
+    <ng-icon name="lucideRefreshCw" />
+    Sync Now
+  </button>
+</app-page-header>
+
+<div class="flex flex-col">
   @if (loading()) {
     <app-home-skeleton />
   } @else if (error()) {
@@ -7,40 +14,25 @@
       <button variant="outline" hlmBtn class="mt-2" (click)="refetchAll()">Retry</button>
     </div>
   } @else {
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-      <app-summary-card
-        title="Net Worth"
-        [currentPeriodValue]="data().currentPeriodTotalBalance"
-        [previousPeriodValue]="data().previousPeriodBalance"
-      />
-
-      <app-summary-card
-        title="Checking"
-        [currentPeriodValue]="data().currentPeriodCheckingBalance"
-        [previousPeriodValue]="data().previousPeriodCheckingBalance"
-      />
-
-      <app-summary-card
-        title="Savings"
-        [currentPeriodValue]="data().currentPeriodSavingsBalance"
-        [previousPeriodValue]="data().previousPeriodSavingsBalance"
-      />
-
-      <app-summary-card
-        title="Investments"
-        [currentPeriodValue]="data().currentPeriodInvestmentsBalance"
-        [previousPeriodValue]="data().previousPeriodInvestmentsBalance"
-      />
+    <div class="grid grid-cols-12 divide-x divide-y divide-gray-300 border border-y">
+      <div class="col-span-12 lg:col-span-9">
+        <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
+      </div>
+      <div class="col-span-12 lg:col-span-3">
+        <app-account-net-worth-breakdown
+          [data]="data().currentPeriodBreakdown"
+          [accountTypes]="accountTypes()"
+        ></app-account-net-worth-breakdown>
+      </div>
+      <div class="col-span-12 lg:col-span-6">
+        <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
+      </div>
+      <div class="col-span-12 lg:col-span-6">
+        <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
+      </div>
+      <div class="col-span-12">
+        <app-recent-transactions [transactions]="data().recentTransactions" />
+      </div>
     </div>
-
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <app-spend-activity-chart [theme]="appTheme()" [data]="data().spendingOverTime" />
-      <app-account-net-worth-breakdown
-        [data]="data().currentPeriodBreakdown"
-        [accountTypes]="accountTypes()"
-      />
-    </div>
-
-    <app-recent-transactions [transactions]="data().recentTransactions" />
   }
-</main>
+</div>

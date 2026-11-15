@@ -1,0 +1,103 @@
+@switch (timePeriod()) {
+  @case ('Weekly') {
+    <hlm-calendar
+      class="rounded-none border-0"
+      [date]="selectedDate()"
+      [defaultFocusedDate]="selectedDate()"
+      [max]="today()"
+      [weekStartsOn]="weekStartsOn()"
+      (dateChange)="pickDate($event)"
+    />
+  }
+  @case ('Monthly') {
+    <hlm-month-year-calendar
+      class="rounded-none border-0"
+      view="month"
+      [date]="selectedDate()"
+      [defaultFocusedDate]="selectedDate()"
+      [max]="today()"
+      (dateChange)="pickDate($event)"
+    />
+  }
+  @case ('Quarterly') {
+    <div class="flex flex-col gap-2 p-3">
+      <div class="flex items-center justify-between">
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Previous year"
+          (click)="shiftQuarterYear(-1)"
+        >
+          <ng-icon name="lucideChevronLeft" />
+        </button>
+        <span class="text-sm font-semibold">{{ quarterYear() }}</span>
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Next year"
+          [disabled]="quarterYear() >= todayYear()"
+          (click)="shiftQuarterYear(1)"
+        >
+          <ng-icon name="lucideChevronRight" />
+        </button>
+      </div>
+      <div class="grid grid-cols-4 gap-1">
+        @for (quarter of quarters; track quarter) {
+          <button
+            hlmBtn
+            size="sm"
+            [variant]="isQuarterSelected(quarter) ? 'default' : 'ghost'"
+            [attr.aria-pressed]="isQuarterSelected(quarter)"
+            [disabled]="isQuarterDisabled(quarter)"
+            (click)="pickQuarter(quarter)"
+          >
+            Q{{ quarter }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+  @case ('Yearly') {
+    <div class="flex flex-col gap-2 p-3">
+      <div class="flex items-center justify-between">
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Previous years"
+          (click)="shiftYearPage(-1)"
+        >
+          <ng-icon name="lucideChevronLeft" />
+        </button>
+        <span class="text-sm font-semibold"
+          >{{ years()[0] }} – {{ years()[years().length - 1] }}</span
+        >
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Next years"
+          [disabled]="yearPageEnd() >= todayYear()"
+          (click)="shiftYearPage(1)"
+        >
+          <ng-icon name="lucideChevronRight" />
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-1">
+        @for (year of years(); track year) {
+          <button
+            hlmBtn
+            size="sm"
+            [variant]="isYearSelected(year) ? 'default' : 'ghost'"
+            [attr.aria-pressed]="isYearSelected(year)"
+            (click)="pickYear(year)"
+          >
+            {{ year }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+}

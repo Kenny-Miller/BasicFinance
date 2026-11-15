@@ -35,4 +35,9 @@ describe('Settings', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should render the page header with the Settings title', () => {
+    const header = (fixture.nativeElement as HTMLElement).querySelector('app-page-header');
+    expect(header?.textContent).toContain('Settings');
+  });
 });

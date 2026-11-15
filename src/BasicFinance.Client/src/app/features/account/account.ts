@@ -1,22 +1,22 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 
-import { PageService } from '../../core/page/page.service';
-import { TimePeriod } from '../../shared/data/time-period';
 import { AccountItem } from '../../shared/ui/accounts/account-item/account-item';
+import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
 import { SummaryCard } from '../../shared/ui/cards/summary-card/summary-card';
 import { InstitutionAvatar } from '../../shared/ui/institutions/institution-avatar/institution-avatar';
-import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
+import { TimePeriodSelector } from '../../shared/ui/time-period-selector/time-period-selector';
 import { AccountPageService } from './account-page-service';
 import { AccountSkeleton } from './components/account-skeleton/account-skeleton';
 
 @Component({
   selector: 'app-account',
   imports: [
-    PeriodSelector,
+    AppPageHeader,
+    TimePeriodSelector,
     InstitutionAvatar,
     SummaryCard,
     AccountItem,
@@ -28,17 +28,15 @@ import { AccountSkeleton } from './components/account-skeleton/account-skeleton'
   styleUrl: './account.css',
 })
 export class Account {
-  private readonly pageService = inject(PageService);
   private readonly accountPageService = inject(AccountPageService);
   private readonly route = inject(ActivatedRoute);
 
   readonly loading = this.accountPageService.loading;
   readonly error = this.accountPageService.error;
   readonly data = this.accountPageService.data;
-  readonly selectedPeriod = this.accountPageService.selectedPeriod;
-
-  readonly selectPeriod = (period: TimePeriod): void =>
-    this.accountPageService.selectPeriod(period);
+  readonly institutionName = this.accountPageService.institutionName;
+  readonly selectedTimePeriod = this.accountPageService.selectedTimePeriod;
+  readonly selectedDate = this.accountPageService.selectedDate;
 
   readonly refetchAll = (): void => this.accountPageService.refetchAll();
 
@@ -46,11 +44,6 @@ export class Account {
     this.route.params.subscribe(params => {
       const parsed = Number.parseInt(params['institutionId'] ?? '0', 10);
       this.accountPageService.setInstitutionId(Number.isNaN(parsed) ? 0 : parsed);
-    });
-
-    effect(() => {
-      const name = this.accountPageService.institutionName();
-      this.pageService.setPageTitle(name || 'Accounts');
     });
   }
 }

@@ -140,19 +140,6 @@
     </hlm-sidebar-footer>
   </hlm-sidebar>
   <main hlmSidebarInset variant="inset">
-    <header [class]="(!isMobile() ? 'h-16 ' : '') + 'flex shrink-0 items-center gap-2 py-4'">
-      <div class="flex items-center gap-2">
-        @if (isMobile()) {
-          <button hlmSidebarTrigger>
-            <span class="sr-only">Toggle Sidebar</span>
-          </button>
-        }
-        <span class="text-2xl font-bold tracking-tight">{{ pageTitle() }}</span>
-      </div>
-    </header>
-    <hlm-separator />
-    <div class="flex min-h-0 flex-1 flex-col p-5">
-      <router-outlet />
-    </div>
+    <router-outlet />
   </main>
 </hlm-sidebar-wrapper>

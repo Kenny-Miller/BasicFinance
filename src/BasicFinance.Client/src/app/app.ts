@@ -58,7 +58,6 @@ export class App {
   private readonly _sidebarService = inject(HlmSidebarService);
   private readonly _themeService = inject(ThemeService);
 
-  readonly pageTitle = this._pageService.pageTitle;
   readonly theme = this._themeService.appTheme;
   readonly isDesktopSidebarOpen = this._sidebarService.open;
   readonly isMobile = this._sidebarService.isMobile;

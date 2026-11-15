@@ -40,7 +40,9 @@
       "@spartan-ng/helm/card": ["./libs/ui/card/src/index.ts"],
       "@spartan-ng/helm/accordion": ["./libs/ui/accordion/src/index.ts"],
       "@spartan-ng/helm/dialog": ["./libs/ui/dialog/src/index.ts"],
-      "@spartan-ng/helm/progress": ["./libs/ui/progress/src/index.ts"]
+      "@spartan-ng/helm/progress": ["./libs/ui/progress/src/index.ts"],
+      "@spartan-ng/helm/badge": ["./libs/ui/badge/src/index.ts"],
+      "@spartan-ng/helm/marker": ["./libs/ui/marker/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

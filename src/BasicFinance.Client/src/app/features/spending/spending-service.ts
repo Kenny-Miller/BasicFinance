@@ -19,12 +19,12 @@ export class SpendingService {
   private readonly spendingClient = inject(SpendingClient);
   private readonly pageService = inject(PageService);
 
-  readonly selectedPeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
-  private readonly startDate = signal(new Date().toISOString().split('T')[0]);
+  readonly selectedTimePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
+  readonly selectedDate = signal(new Date());
 
   private readonly spendingResource = this.spendingClient.spendingByPeriodResource(
-    this.selectedPeriod,
-    this.startDate,
+    this.selectedTimePeriod,
+    this.selectedDate,
   );
 
   readonly loading = computed(
@@ -32,10 +32,6 @@ export class SpendingService {
   );
   readonly error = computed(() => this.pageService.error() || this.spendingResource.error());
   readonly data = computed<SpendingByPeriod>(() => this.spendingResource.value() ?? EMPTY_SPENDING);
-
-  selectPeriod(period: TimePeriod): void {
-    this.selectedPeriod.set(period);
-  }
 
   refetchAll(): void {
     this.pageService.refetchAll();

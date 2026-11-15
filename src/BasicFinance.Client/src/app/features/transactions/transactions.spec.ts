@@ -12,7 +12,8 @@ import { TransactionsService } from './transactions-service';
 describe('Transactions', () => {
   function service(summaryError: boolean) {
     return {
-      period: signal('Monthly'),
+      selectedTimePeriod: signal('Monthly'),
+      selectedDate: signal(new Date(2026, 10, 14)),
       page: signal(1),
       pageSize: signal(10),
       filters: signal({}),

@@ -1,3 +1,10 @@
+<app-page-header pageTitle="Spending">
+  <app-time-period-selector
+    [(selectedTimePeriod)]="selectedTimePeriod"
+    [(selectedDate)]="selectedDate"
+  />
+</app-page-header>
+
 <main class="flex flex-col gap-4 p-4">
   @if (loading()) {
     <app-spending-skeleton />
@@ -7,8 +14,6 @@
       <button hlmBtn variant="outline" class="mt-2" (click)="refetchAll()">Retry</button>
     </div>
   } @else {
-    <app-period-selector [activePeriod]="selectedPeriod()" (periodChange)="selectPeriod($event)" />
-
     <app-spending-summary-tile
       [totalIncome]="data().totalIncome"
       [totalSpend]="data().totalSpend"
