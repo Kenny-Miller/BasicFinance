@@ -181,3 +181,13 @@ public record AccountBalanceSummaryResponseDto(
     DateOnly CurrentPeriodEnd,
     DateOnly PreviousPeriodStart,
     DateOnly PreviousPeriodEnd);
+
+public record MyNetworthPointDto(
+    DateTime Date,
+    decimal Networth);
+
+public record MyNetworthResponseDto(
+    List<MyNetworthPointDto> NetworthTimeline,
+    decimal TotalNetworth,
+    decimal NetworthChange,
+    decimal NetworthChangePercentage);
