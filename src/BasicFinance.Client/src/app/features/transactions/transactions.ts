@@ -1,13 +1,13 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 
 import { TransactionFilters } from '../../core/data-access/transaction-client';
-import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { TimePeriod } from '../../shared/data/time-period';
+import { TIME_PERIOD_CONFIG } from '../../shared/data/time-period';
+import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
 import { Paginator } from '../../shared/ui/paginator/paginator';
-import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
+import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
 import { TransactionsListSkeleton } from '../../shared/ui/transactions/transactions-list-skeleton/transactions-list-skeleton';
 import { TransactionsList } from '../../shared/ui/transactions/transactions-list/transactions-list';
 import { DailySpendChart } from './components/daily-spend-chart/daily-spend-chart';
@@ -16,18 +16,11 @@ import { TransactionsSkeleton } from './components/transactions-skeleton/transac
 import { TransactionsSummaryTile } from './components/transactions-summary-tile/transactions-summary-tile';
 import { TransactionsService } from './transactions-service';
 
-const DELTA_LABELS: Record<TimePeriod, string> = {
-  Weekly: 'last week',
-  Monthly: 'last month',
-  Quarterly: 'last quarter',
-  Yearly: 'last year',
-};
-
 @Component({
   selector: 'app-transactions',
   imports: [
     HlmButtonImports,
-    PeriodSelector,
+    PeriodStepper,
     TransactionsSummaryTile,
     DailySpendChart,
     TransactionsList,
@@ -35,17 +28,18 @@ const DELTA_LABELS: Record<TimePeriod, string> = {
     FilterBar,
     Paginator,
     TransactionsSkeleton,
+    AppPageHeader,
   ],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
 })
-export class Transactions implements OnInit {
+export class Transactions {
   private readonly transactionService = inject(TransactionsService);
-  private readonly pageService = inject(PageService);
   private readonly themeService = inject(ThemeService);
 
   readonly appTheme = this.themeService.appTheme;
-  readonly selectedPeriod = this.transactionService.period;
+  readonly selectedTimePeriod = this.transactionService.selectedTimePeriod;
+  readonly selectedDate = this.transactionService.selectedDate;
   readonly page = this.transactionService.page;
   readonly pageSize = this.transactionService.pageSize;
   readonly filters = this.transactionService.filters;
@@ -56,9 +50,7 @@ export class Transactions implements OnInit {
   readonly transactionTypes = this.transactionService.transactionTypes;
   readonly transactionCategories = this.transactionService.transactionCategories;
 
-  readonly deltaLabel = computed(() => DELTA_LABELS[this.transactionService.period()]);
-
-  readonly selectPeriod = (period: TimePeriod): void => this.transactionService.period.set(period);
+  readonly deltaLabel = computed(() => TIME_PERIOD_CONFIG[this.selectedTimePeriod()].previousLabel);
 
   readonly refetchAll = (): void => this.transactionService.refetchAll();
 
@@ -66,8 +58,4 @@ export class Transactions implements OnInit {
     this.transactionService.filters.set(value);
     this.transactionService.page.set(1);
   };
-
-  ngOnInit(): void {
-    this.pageService.setPageTitle('Transactions');
-  }
 }

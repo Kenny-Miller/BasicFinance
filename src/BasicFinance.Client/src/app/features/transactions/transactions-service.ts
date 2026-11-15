@@ -69,7 +69,8 @@ export class TransactionsService {
   private readonly accountClient = inject(AccountClient);
   private readonly pageService = inject(PageService);
 
-  readonly period = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
+  readonly selectedTimePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
+  readonly selectedDate = signal(new Date());
   readonly page = signal<number>(1);
   readonly pageSize = signal<number>(10);
   readonly sortField = signal<string>('date');
@@ -92,13 +93,13 @@ export class TransactionsService {
     this.filters,
   );
   private readonly transactionSummary = this.transactionsClient.transactionSummaryResource(
-    signal<Date | null>(null),
-    this.period,
+    this.selectedDate,
+    this.selectedTimePeriod,
   );
 
   private readonly dailySummary = this.transactionsClient.dailyTransactionSummaryResource(
-    signal<Date | null>(null),
-    this.period,
+    this.selectedDate,
+    this.selectedTimePeriod,
   );
 
   readonly loading = computed(

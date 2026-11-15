@@ -20,7 +20,8 @@ describe('Spending', () => {
         {
           provide: SpendingService,
           useValue: {
-            selectedPeriod: signal<TimePeriod>('Monthly'),
+            selectedTimePeriod: signal<TimePeriod>('Monthly'),
+            selectedDate: signal(new Date(2026, 10, 14)),
             loading: () => false,
             error: () => undefined,
             data: () => ({
@@ -30,7 +31,6 @@ describe('Spending', () => {
               totalIncome: 0,
               spendingActivityByCategory: {},
             }),
-            selectPeriod: () => undefined,
             refetchAll: () => undefined,
           },
         },

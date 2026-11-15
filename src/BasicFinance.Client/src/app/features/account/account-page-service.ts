@@ -48,12 +48,13 @@ export class AccountPageService {
   private readonly pageService = inject(PageService);
 
   readonly institutionId = signal<number>(0);
-  readonly timePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
-  readonly selectedPeriod = this.timePeriod.asReadonly();
+  readonly selectedTimePeriod = signal<TimePeriod>(DEFAULT_TIME_PERIOD);
+  readonly selectedDate = signal(new Date());
 
   private readonly summaryResource = this.accountClient.institutionSummaryResource(
     this.institutionId,
-    this.timePeriod,
+    this.selectedTimePeriod,
+    this.selectedDate,
   );
 
   readonly loading = computed(() => this.pageService.loading() || !this.summaryResource.hasValue());
@@ -109,10 +110,6 @@ export class AccountPageService {
 
   setInstitutionId(institutionId: number): void {
     this.institutionId.set(institutionId);
-  }
-
-  selectPeriod(period: TimePeriod): void {
-    this.timePeriod.set(period);
   }
 
   refetchAll(): void {

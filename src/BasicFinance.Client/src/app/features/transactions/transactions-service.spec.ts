@@ -121,8 +121,8 @@ describe('TransactionsService', () => {
     service = TestBed.inject(TransactionsService);
   });
 
-  it('should default to the monthly period on page one with descending date sort', () => {
-    expect(service.period()).toBe(DEFAULT_TIME_PERIOD);
+  it('should default to the default period on page one with descending date sort', () => {
+    expect(service.selectedTimePeriod()).toBe(DEFAULT_TIME_PERIOD);
     expect(service.page()).toBe(1);
     expect(service.pageSize()).toBe(10);
     expect(service.sortField()).toBe('date');

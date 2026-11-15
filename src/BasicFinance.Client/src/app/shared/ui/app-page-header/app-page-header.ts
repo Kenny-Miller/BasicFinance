@@ -4,10 +4,10 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideDot } from '@ng-icons/lucide';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmMarkerImports } from '@spartan-ng/helm/marker';
-import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
+import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 
 @Component({
-  imports: [NgIcon, HlmBadgeImports, HlmMarkerImports],
+  imports: [NgIcon, HlmBadgeImports, HlmMarkerImports, HlmSidebarImports],
   providers: [provideIcons({ lucideDot })],
   selector: 'app-page-header',
   styleUrl: './app-page-header.css',

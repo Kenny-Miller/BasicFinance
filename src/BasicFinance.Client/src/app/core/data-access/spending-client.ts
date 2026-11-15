@@ -2,11 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Signal, inject, resource } from '@angular/core';
 
 import { TimePeriod } from '../../shared/data/time-period';
+import { formatDateOnly } from '../api/date-only';
 import {
   getApiSpendingActivityByPeriod,
   getApiSpendingOverTimeSummary,
 } from '../api/generated/sdk.gen';
-import { SPENDING_PERIOD_PARAM } from '../api/period-params';
 
 export type {
   DailySpendingOverTime,
@@ -33,11 +33,11 @@ export class SpendingClient {
     });
   }
 
-  spendingByPeriodResource(periodSignal: Signal<TimePeriod>, startDateSignal: Signal<string>) {
+  spendingByPeriodResource(periodSignal: Signal<TimePeriod>, startDateSignal: Signal<Date>) {
     return resource({
       params: () => ({
-        StartDate: startDateSignal(),
-        SpendingPeriod: SPENDING_PERIOD_PARAM[periodSignal()],
+        StartDate: formatDateOnly(startDateSignal()),
+        TimePeriod: periodSignal(),
       }),
       loader: async ({ params }) => {
         const response = await getApiSpendingActivityByPeriod({

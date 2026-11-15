@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { GetMyInstitutionsResponse } from '../api/generated';
 import { AccountType, AccountTypeClient } from '../data-access/account-type-client';
@@ -17,15 +17,12 @@ export class PageService {
   private readonly _accountTypeClient = inject(AccountTypeClient);
   private readonly _transactionTypeClient = inject(TransactionTypeClient);
   private readonly _transactionCategoryClient = inject(TransactionCategoryClient);
-  private readonly _pageTitle = signal<string>('');
 
   private readonly institutionsResource = this._institutionClient.myInstitutions();
   private readonly accountTypesResource = this._accountTypeClient.accountTypes();
   private readonly transactionTypesResource = this._transactionTypeClient.transactionTypes();
   private readonly transactionCategoriesResource =
     this._transactionCategoryClient.transactionCategories();
-
-  readonly pageTitle = this._pageTitle.asReadonly();
 
   /**
    * Page-level ("global") state shared across features. Holds the user's
@@ -81,9 +78,5 @@ export class PageService {
     this.accountTypesResource.reload();
     this.transactionTypesResource.reload();
     this.transactionCategoriesResource.reload();
-  }
-
-  setPageTitle(title: string) {
-    this._pageTitle.set(title);
   }
 }

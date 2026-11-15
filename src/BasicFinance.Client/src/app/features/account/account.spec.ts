@@ -9,9 +9,9 @@ import { AccountTypeClient } from '../../core/data-access/account-type-client';
 import { InstitutionClient } from '../../core/data-access/institution-client';
 import { TransactionCategoryClient } from '../../core/data-access/transaction-category-client';
 import { TransactionTypeClient } from '../../core/data-access/transaction-type-client';
-import { PageService } from '../../core/page/page.service';
 import { TimePeriod } from '../../shared/data/time-period';
-import { PeriodSelector } from '../../shared/ui/period-selector/period-selector';
+import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
+import { PeriodStepper } from '../../shared/ui/period-stepper/period-stepper';
 import { Account } from './account';
 import { AccountPageData, AccountPageService } from './account-page-service';
 
@@ -66,7 +66,8 @@ describe('Account', () => {
   let institutionName: WritableSignal<string>;
   let data: WritableSignal<AccountPageData>;
   let institutionIdCalls: number[] = [];
-  let selectPeriodCalls: TimePeriod[] = [];
+  let selectedTimePeriod: WritableSignal<TimePeriod>;
+  let selectedDate: WritableSignal<Date>;
   let refetchAllCalls = 0;
 
   beforeEach(async () => {
@@ -76,9 +77,9 @@ describe('Account', () => {
     institutionName = signal('Wells Fargo');
     data = signal(createData());
     institutionIdCalls = [];
-    selectPeriodCalls = [];
     refetchAllCalls = 0;
-    const selectedPeriod = signal<TimePeriod>('Monthly');
+    selectedTimePeriod = signal<TimePeriod>('Monthly');
+    selectedDate = signal(new Date(2026, 10, 14));
 
     await TestBed.configureTestingModule({
       imports: [Account],
@@ -90,11 +91,8 @@ describe('Account', () => {
             error,
             institutionName,
             data,
-            selectedPeriod,
-            selectPeriod: (period: TimePeriod) => {
-              selectPeriodCalls.push(period);
-              selectedPeriod.set(period);
-            },
+            selectedTimePeriod,
+            selectedDate,
             refetchAll: () => {
               refetchAllCalls++;
             },
@@ -191,7 +189,7 @@ describe('Account', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Failed to load account data');
 
-    const retry = fixture.debugElement.query(By.css('button'));
+    const retry = fixture.debugElement.query(By.css('main button'));
     retry.triggerEventHandler('click', null);
 
     expect(refetchAllCalls).toBe(1);
@@ -201,7 +199,7 @@ describe('Account', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Wells Fargo');
-    expect(fixture.debugElement.query(By.css('app-period-selector'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-period-stepper'))).toBeTruthy();
 
     // Total card + one card per account type
     expect(fixture.debugElement.queryAll(By.css('app-summary-card')).length).toBe(4);
@@ -232,24 +230,27 @@ describe('Account', () => {
   it('should set the page title from the institution name', () => {
     fixture.detectChanges();
 
-    const pageService = TestBed.inject(PageService);
-    expect(pageService.pageTitle()).toBe('Wells Fargo');
+    const header = fixture.debugElement.query(By.directive(AppPageHeader));
+    expect(header.componentInstance.pageTitle()).toBe('Wells Fargo');
   });
 
   it('should fall back to a default page title when the institution name is empty', () => {
     institutionName.set('');
     fixture.detectChanges();
 
-    const pageService = TestBed.inject(PageService);
-    expect(pageService.pageTitle()).toBe('Accounts');
+    const header = fixture.debugElement.query(By.directive(AppPageHeader));
+    expect(header.componentInstance.pageTitle()).toBe('Accounts');
   });
 
   it('should forward period changes to the service', () => {
     fixture.detectChanges();
 
-    const selector = fixture.debugElement.query(By.directive(PeriodSelector));
-    selector.triggerEventHandler('periodChange', 'Quarterly');
+    const stepper = fixture.debugElement.query(By.directive(PeriodStepper));
+    const date = new Date(2025, 1, 10);
+    stepper.triggerEventHandler('selectedTimePeriodChange', 'Quarterly');
+    stepper.triggerEventHandler('selectedDateChange', date);
 
-    expect(selectPeriodCalls).toEqual(['Quarterly']);
+    expect(selectedTimePeriod()).toBe('Quarterly');
+    expect(selectedDate()).toEqual(date);
   });
 });

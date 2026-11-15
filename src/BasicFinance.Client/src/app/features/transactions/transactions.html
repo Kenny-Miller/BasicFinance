@@ -1,3 +1,7 @@
+<app-page-header pageTitle="Transactions">
+  <app-period-stepper [(selectedTimePeriod)]="selectedTimePeriod" [(selectedDate)]="selectedDate" />
+</app-page-header>
+
 <main class="flex flex-col gap-4 p-4">
   @if (loading()) {
     <app-transactions-skeleton />
@@ -7,8 +11,6 @@
       <button hlmBtn variant="outline" class="mt-2" (click)="refetchAll()">Retry</button>
     </div>
   } @else {
-    <app-period-selector [activePeriod]="selectedPeriod()" (periodChange)="selectPeriod($event)" />
-
     @let transactionSummary = data().transactionSummary;
 
     <div class="grid gap-4 sm:grid-cols-3">

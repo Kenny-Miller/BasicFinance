@@ -1,12 +1,14 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideRefreshCw } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { OAuthService } from 'angular-oauth2-oidc';
 
 import { AuthUserProfile, AuthUserProfileResponse } from '../../core/auth/auth-userprofile';
 import { PageService } from '../../core/page/page.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { SummaryCard } from '../../shared/ui/cards/summary-card/summary-card';
+import { AppPageHeader } from '../../shared/ui/app-page-header/app-page-header';
 import { AccountNetWorthBreakdown } from './components/account-net-worth-breakdown/account-net-worth-breakdown';
 import { HomeSkeleton } from './components/home-skeleton/home-skeleton';
 import { RecentTransactions } from './components/recent-transactions/recent-transactions';
@@ -17,12 +19,14 @@ import { HomeService } from './home-service';
   selector: 'app-home',
   imports: [
     HlmButtonImports,
-    SummaryCard,
     AccountNetWorthBreakdown,
     SpendActivityChart,
     HomeSkeleton,
     RecentTransactions,
+    AppPageHeader,
+    NgIcon,
   ],
+  providers: [provideIcons({ lucideRefreshCw })],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -43,7 +47,6 @@ export class Home implements OnInit {
   readonly user = signal<AuthUserProfile | null>(null);
 
   async ngOnInit() {
-    this.pageService.setPageTitle('Home');
     const response = (await this.oauthService.loadUserProfile()) as AuthUserProfileResponse;
     this.user.set(response.info);
   }

@@ -7,7 +7,7 @@ import {
   InstitutionSummaryResponse,
 } from '../../core/data-access/account-client';
 import { PageService } from '../../core/page/page.service';
-import { TimePeriod } from '../../shared/data/time-period';
+import { DEFAULT_TIME_PERIOD, TimePeriod } from '../../shared/data/time-period';
 import { AccountPageService } from './account-page-service';
 
 function makeAccount(id: string, code: string, name: string, balance: number | null): Account {
@@ -60,6 +60,7 @@ describe('AccountPageService', () => {
 
   let providedInstitutionId: Signal<number> | undefined;
   let providedTimePeriod: Signal<TimePeriod> | undefined;
+  let providedRecordedDate: Signal<Date | null> | undefined;
 
   beforeEach(() => {
     summaryValue = signal<InstitutionSummaryResponse | null>(null);
@@ -71,6 +72,7 @@ describe('AccountPageService', () => {
     institutionsReloadCount = 0;
     providedInstitutionId = undefined;
     providedTimePeriod = undefined;
+    providedRecordedDate = undefined;
 
     TestBed.configureTestingModule({
       providers: [
@@ -80,9 +82,11 @@ describe('AccountPageService', () => {
             institutionSummaryResource: (
               institutionId: Signal<number>,
               timePeriod: Signal<TimePeriod>,
+              recordedDate: Signal<Date | null>,
             ) => {
               providedInstitutionId = institutionId;
               providedTimePeriod = timePeriod;
+              providedRecordedDate = recordedDate;
               return {
                 hasValue: () => summaryHasValue(),
                 error: () => summaryError(),
@@ -246,12 +250,19 @@ describe('AccountPageService', () => {
   });
 
   it('should switch the time period used by the resource', () => {
-    expect(service.selectedPeriod()).toBe('Monthly');
+    expect(providedTimePeriod?.()).toBe(DEFAULT_TIME_PERIOD);
 
-    service.selectPeriod('Quarterly');
+    service.selectedTimePeriod.set('Quarterly');
 
-    expect(service.selectedPeriod()).toBe('Quarterly');
     expect(providedTimePeriod?.()).toBe('Quarterly');
+  });
+
+  it('should pass the selected date to the resource', () => {
+    const date = new Date(2025, 1, 10);
+
+    service.selectedDate.set(date);
+
+    expect(providedRecordedDate?.()).toEqual(date);
   });
 
   it('should reload the summary resource', () => {

@@ -1,3 +1,7 @@
+<app-page-header [pageTitle]="institutionName() || 'Accounts'">
+  <app-period-stepper [(selectedTimePeriod)]="selectedTimePeriod" [(selectedDate)]="selectedDate" />
+</app-page-header>
+
 <main class="flex flex-col gap-4 p-4">
   @if (loading()) {
     <app-account-skeleton />
@@ -12,10 +16,6 @@
         <app-institution-avatar [name]="data().institutionName" />
         <h2 class="text-lg font-semibold">{{ data().institutionName }}</h2>
       </div>
-      <app-period-selector
-        [activePeriod]="selectedPeriod()"
-        (periodChange)="selectPeriod($event)"
-      />
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-5">
         <app-summary-card
