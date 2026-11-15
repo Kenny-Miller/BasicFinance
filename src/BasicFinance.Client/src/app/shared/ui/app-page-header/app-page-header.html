@@ -1,0 +1,15 @@
+<header class="flex flex-wrap justify-between gap-2 px-4 py-4">
+  <div class="flex items-center gap-3">
+    @if (isMobile()) {
+      <button hlmSidebarTrigger>
+        <span class="sr-only">Toggle Sidebar</span>
+      </button>
+    }
+    <div class="text-2xl font-bold">{{ pageTitle() }}</div>
+    <div class="flex items-center">
+      <ng-icon name="lucideDot" size="1.5rem" class="text-green-500" />
+      <span class="text-xs text-muted-foreground">Synced [PlaceHolder] min ago</span>
+    </div>
+  </div>
+  <ng-content></ng-content>
+</header>
