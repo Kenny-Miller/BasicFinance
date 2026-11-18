@@ -62,7 +62,7 @@ public class GetCashflowOverTimeTests : ApiTestFixtureBase
         Assert.Equal(expectedMonths, midMonth.CashflowTimeline.Count);
         Assert.Equal((2025, 10), (midMonth.CashflowTimeline[^1].Year, midMonth.CashflowTimeline[^1].Month));
         Assert.Equal(midMonth.CashflowTimeline, monthEnd.CashflowTimeline);
-        Assert.Equal(new DateTime(2025, 10, 31), midMonth.Page.WindowEnd);
+        Assert.Equal(new DateTime(2025, 10, 31, 0, 0, 0, DateTimeKind.Unspecified), midMonth.Page.WindowEnd);
     }
 
     [Fact]
@@ -84,8 +84,8 @@ public class GetCashflowOverTimeTests : ApiTestFixtureBase
         // Assert
         Assert.Equal([(2025, 1), (2025, 2), (2025, 3), (2025, 4), (2025, 5)], result.CashflowTimeline.Select(x => (x.Year, x.Month)));
         Assert.Equal(40m, result.TotalSpend);
-        Assert.Equal(new DateTime(2025, 1, 1), result.Page.WindowStart);
-        Assert.Equal(new DateTime(2025, 5, 31), result.Page.WindowEnd);
+        Assert.Equal(new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowStart);
+        Assert.Equal(new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowEnd);
         Assert.Null(result.Page.PreviousAsOf);
     }
 
@@ -170,12 +170,12 @@ public class GetCashflowOverTimeTests : ApiTestFixtureBase
         var backAgain = await HttpClient.GetResultAsync<InsightsCashflowOverTimeResponseDto>($"{Endpoint}?range=ThreeMonths&asOf={olderPage.Page.NextAsOf:yyyy-MM-dd}", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2025, 3, 31), firstPage.Page.PreviousAsOf);
+        Assert.Equal(new DateTime(2025, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), firstPage.Page.PreviousAsOf);
         Assert.Equal(50m, firstPage.TotalSpend);
         Assert.Equal([(2025, 1), (2025, 2), (2025, 3)], olderPage.CashflowTimeline.Select(x => (x.Year, x.Month)));
         Assert.Equal(40m, olderPage.TotalSpend);
         Assert.Null(olderPage.Page.PreviousAsOf);
-        Assert.Equal(new DateTime(2025, 6, 30), olderPage.Page.NextAsOf);
+        Assert.Equal(new DateTime(2025, 6, 30, 0, 0, 0, DateTimeKind.Unspecified), olderPage.Page.NextAsOf);
         Assert.Equal(firstPage.CashflowTimeline, backAgain.CashflowTimeline);
     }
 
@@ -206,7 +206,7 @@ public class GetCashflowOverTimeTests : ApiTestFixtureBase
 
         // Assert
         Assert.Equal(today, nearPage.Page.NextAsOf);
-        Assert.Equal(new DateTime(2025, 4, 30), farPage.Page.NextAsOf);
+        Assert.Equal(new DateTime(2025, 4, 30, 0, 0, 0, DateTimeKind.Unspecified), farPage.Page.NextAsOf);
     }
 
     [Fact]

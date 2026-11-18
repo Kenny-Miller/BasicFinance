@@ -312,10 +312,10 @@ public class GetAccountBalancesByAccountTests : ApiTestFixtureBase
         var account = Assert.Single(result.Accounts);
         Assert.Equal(1100m, account.Balance);
         Assert.Equal(10m, account.PercentChange);
-        Assert.Equal(new DateTime(2026, 3, 1), result.Page.WindowStart);
-        Assert.Equal(new DateTime(2026, 3, 31), result.Page.WindowEnd);
-        Assert.Equal(new DateTime(2026, 2, 1), result.Page.PreviousAsOf);
-        Assert.Equal(new DateTime(2026, 4, 1), result.Page.NextAsOf);
+        Assert.Equal(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowStart);
+        Assert.Equal(new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowEnd);
+        Assert.Equal(new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.PreviousAsOf);
+        Assert.Equal(new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.NextAsOf);
     }
 
     [Fact]

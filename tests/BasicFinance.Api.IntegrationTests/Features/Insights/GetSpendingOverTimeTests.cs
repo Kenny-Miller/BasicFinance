@@ -224,7 +224,7 @@ public class GetSpendingOverTimeTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<InsightsSpendingOverTimeResponseDto>($"{Endpoint}?timePeriod=Monthly&asOf=2026-03-15", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2026, 2, 1), result.PreviousPeriodStart);
+        Assert.Equal(new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PreviousPeriodStart);
         Assert.Equal(31, result.CurrentTimeline.Count);
         Assert.Equal(31, result.PreviousTimeline.Count);
         Assert.Equal(0m, result.CurrentTimeline[3].Amount);
@@ -233,10 +233,10 @@ public class GetSpendingOverTimeTests : ApiTestFixtureBase
         Assert.Equal(30m, result.PreviousTimeline[9].Amount);
         Assert.Equal(14m, result.TotalSpend);
         Assert.Equal(30m, result.PreviousTotalSpend);
-        Assert.Equal(new DateTime(2026, 3, 1), result.Page.WindowStart);
-        Assert.Equal(new DateTime(2026, 3, 31), result.Page.WindowEnd);
-        Assert.Equal(new DateTime(2026, 2, 1), result.Page.PreviousAsOf);
-        Assert.Equal(new DateTime(2026, 4, 1), result.Page.NextAsOf);
+        Assert.Equal(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowStart);
+        Assert.Equal(new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowEnd);
+        Assert.Equal(new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.PreviousAsOf);
+        Assert.Equal(new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Unspecified), result.Page.NextAsOf);
     }
 
     [Fact]
@@ -252,9 +252,9 @@ public class GetSpendingOverTimeTests : ApiTestFixtureBase
         var backAgain = await HttpClient.GetResultAsync<InsightsSpendingOverTimeResponseDto>($"{Endpoint}?timePeriod=Weekly&asOf={older.Page.NextAsOf:yyyy-MM-dd}", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2025, 12, 29), page.Page.WindowStart);
-        Assert.Equal(new DateTime(2026, 1, 4), page.Page.WindowEnd);
-        Assert.Equal(new DateTime(2025, 12, 22), older.Page.WindowStart);
+        Assert.Equal(new DateTime(2025, 12, 29, 0, 0, 0, DateTimeKind.Unspecified), page.Page.WindowStart);
+        Assert.Equal(new DateTime(2026, 1, 4, 0, 0, 0, DateTimeKind.Unspecified), page.Page.WindowEnd);
+        Assert.Equal(new DateTime(2025, 12, 22, 0, 0, 0, DateTimeKind.Unspecified), older.Page.WindowStart);
         Assert.Null(older.Page.PreviousAsOf);
         Assert.Equal(page.Page.WindowStart, backAgain.Page.WindowStart);
     }

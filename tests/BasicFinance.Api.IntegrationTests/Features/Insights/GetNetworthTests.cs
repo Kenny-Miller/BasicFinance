@@ -68,7 +68,7 @@ public class GetNetworthTests : ApiTestFixtureBase
 
         // Assert
         Assert.Equal(DaysInPeriod, result.NetworthTimeline.Count);
-        Assert.Equal(new DateTime(2026, 3, 31), result.NetworthTimeline[^1].Date);
+        Assert.Equal(new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), result.NetworthTimeline[^1].Date);
     }
 
     [Theory]
@@ -84,7 +84,7 @@ public class GetNetworthTests : ApiTestFixtureBase
         // Assert
         Assert.Equal(DateTime.Parse(expectedStart, System.Globalization.CultureInfo.InvariantCulture), result.Page.WindowStart);
         Assert.Equal(result.Page.WindowStart, result.NetworthTimeline[0].Date);
-        Assert.Equal(new DateTime(2026, 3, 31), result.Page.WindowEnd);
+        Assert.Equal(new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowEnd);
     }
 
     [Fact]
@@ -104,12 +104,12 @@ public class GetNetworthTests : ApiTestFixtureBase
 
         // Assert
         Assert.Equal(81, result.NetworthTimeline.Count);
-        Assert.Equal(new DateTime(2025, 1, 10), result.NetworthTimeline[0].Date);
+        Assert.Equal(new DateTime(2025, 1, 10, 0, 0, 0, DateTimeKind.Unspecified), result.NetworthTimeline[0].Date);
         Assert.Equal(100m, result.NetworthTimeline[0].Networth);
-        Assert.Equal(new DateTime(2025, 3, 31), result.NetworthTimeline[^1].Date);
+        Assert.Equal(new DateTime(2025, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), result.NetworthTimeline[^1].Date);
         Assert.Equal(400m, result.TotalNetworth);
         Assert.Equal(400m, result.NetworthChange);
-        Assert.Equal(new DateTime(2025, 1, 10), result.Page.WindowStart);
+        Assert.Equal(new DateTime(2025, 1, 10, 0, 0, 0, DateTimeKind.Unspecified), result.Page.WindowStart);
         Assert.Null(result.Page.PreviousAsOf);
     }
 
@@ -121,7 +121,7 @@ public class GetNetworthTests : ApiTestFixtureBase
 
         // Assert
         var point = Assert.Single(result.NetworthTimeline);
-        Assert.Equal(new DateTime(2025, 3, 31), point.Date);
+        Assert.Equal(new DateTime(2025, 3, 31, 0, 0, 0, DateTimeKind.Unspecified), point.Date);
         Assert.Equal(0m, point.Networth);
         Assert.Null(result.Page.PreviousAsOf);
     }
@@ -140,10 +140,10 @@ public class GetNetworthTests : ApiTestFixtureBase
         var backAgain = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth&asOf={older.Page.NextAsOf:yyyy-MM-dd}", CancellationToken);
 
         // Assert
-        Assert.Equal(new DateTime(2026, 2, 28), page.Page.PreviousAsOf);
-        Assert.Equal(new DateTime(2026, 4, 30), page.Page.NextAsOf);
-        Assert.Equal(new DateTime(2026, 2, 1), older.Page.WindowStart);
-        Assert.Equal(new DateTime(2026, 2, 28), older.Page.WindowEnd);
+        Assert.Equal(new DateTime(2026, 2, 28, 0, 0, 0, DateTimeKind.Unspecified), page.Page.PreviousAsOf);
+        Assert.Equal(new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Unspecified), page.Page.NextAsOf);
+        Assert.Equal(new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Unspecified), older.Page.WindowStart);
+        Assert.Equal(new DateTime(2026, 2, 28, 0, 0, 0, DateTimeKind.Unspecified), older.Page.WindowEnd);
         Assert.Equal(page.Page.WindowStart, backAgain.Page.WindowStart);
         Assert.Equal(page.Page.WindowEnd, backAgain.Page.WindowEnd);
     }
