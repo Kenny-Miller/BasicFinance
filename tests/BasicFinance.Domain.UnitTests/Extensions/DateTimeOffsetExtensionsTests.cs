@@ -384,4 +384,157 @@ public class DateTimeOffsetExtensionsTests
         Assert.Equal(DateTimeOffsetHelper.TestOffset, range.RangeStartDate.Offset);
         Assert.Equal(DateTimeOffsetHelper.TestOffset, range.RangeEndDate.Offset);
     }
+
+    [Fact]
+    public void StartOfDay_MidDay_ReturnsMidnightPreservingOffset()
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var result = testDate.StartOfDay;
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2026, 8, 7, 0, 0, 0, DateTimeOffsetHelper.TestOffset), result);
+        Assert.Equal(DateTimeOffsetHelper.TestOffset, result.Offset);
+    }
+
+    [Theory]
+    [InlineData(TimePeriod.Weekly, 2026, 8, 3, 2026, 8, 10)]
+    [InlineData(TimePeriod.Monthly, 2026, 8, 1, 2026, 9, 1)]
+    [InlineData(TimePeriod.Quarterly, 2026, 7, 1, 2026, 10, 1)]
+    [InlineData(TimePeriod.Yearly, 2026, 1, 1, 2027, 1, 1)]
+    public void ToPeriodWindow_EachPeriod_RunsFromPeriodStartToNextPeriodStart(
+        TimePeriod period, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay)
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var window = testDate.ToPeriodWindow(period);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(startYear, startMonth, startDay, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.Start);
+        Assert.Equal(new DateTimeOffset(endYear, endMonth, endDay, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.EndExclusive);
+    }
+
+    [Fact]
+    public void ToPeriodWindow_NegativeOffset_EndsWhereCurrentPeriodStarts()
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var current = testDate.ToPeriodWindow(TimePeriod.Monthly);
+        var previous = testDate.ToPeriodWindow(TimePeriod.Monthly, -1);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2026, 7, 1, 0, 0, 0, DateTimeOffsetHelper.TestOffset), previous.Start);
+        Assert.Equal(current.Start, previous.EndExclusive);
+        Assert.Equal(31, previous.Days);
+    }
+
+    [Fact]
+    public void ToPeriodWindow_AcrossYearBoundary_RollsIntoNextYear()
+    {
+        // Arrange
+        var december = new DateTimeOffset(2026, 12, 15, 9, 0, 0, DateTimeOffsetHelper.TestOffset);
+
+        // Act
+        var window = december.ToPeriodWindow(TimePeriod.Monthly);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2027, 1, 1, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.EndExclusive);
+        Assert.Equal(new DateTimeOffset(2026, 12, 31, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.LastDay);
+        Assert.Equal(31, window.Days);
+    }
+
+    [Theory]
+    [InlineData(LookbackRange.OneMonth, 2026, 7, 8)]
+    [InlineData(LookbackRange.ThreeMonths, 2026, 5, 8)]
+    [InlineData(LookbackRange.SixMonths, 2026, 2, 8)]
+    [InlineData(LookbackRange.OneYear, 2025, 8, 8)]
+    public void ToLookbackWindow_EachRange_EndsAfterSourceDayAndStartsOneRangeEarlier(
+        LookbackRange range, int startYear, int startMonth, int startDay)
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var window = testDate.ToLookbackWindow(range);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2026, 8, 8, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.EndExclusive);
+        Assert.Equal(new DateTimeOffset(startYear, startMonth, startDay, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.Start);
+        Assert.False(window.IsUnbounded);
+    }
+
+    [Fact]
+    public void ToLookbackWindow_All_HasNoStart()
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var window = testDate.ToLookbackWindow(LookbackRange.All);
+
+        // Assert
+        Assert.Null(window.Start);
+        Assert.True(window.IsUnbounded);
+        Assert.Equal(new DateTimeOffset(2026, 8, 8, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.EndExclusive);
+    }
+
+    [Fact]
+    public void ToLookbackWindow_LastDayOfMonth_CoversExactlyThatCalendarMonth()
+    {
+        // Arrange
+        var endOfMarch = new DateTimeOffset(2026, 3, 31, 18, 30, 0, DateTimeOffsetHelper.TestOffset);
+
+        // Act
+        var window = endOfMarch.ToLookbackWindow(LookbackRange.OneMonth);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2026, 3, 1, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.Start);
+        Assert.Equal(new DateTimeOffset(2026, 4, 1, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.EndExclusive);
+    }
+
+    [Fact]
+    public void ToLookbackWindow_StartWouldFallOnMissingDay_ClampsToLastDayOfThatMonth()
+    {
+        // Arrange: the window ends after 30 March, and there is no 31 February to start from.
+        var lateMarch = new DateTimeOffset(2026, 3, 30, 0, 0, 0, DateTimeOffsetHelper.TestOffset);
+
+        // Act
+        var window = lateMarch.ToLookbackWindow(LookbackRange.OneMonth);
+
+        // Assert
+        Assert.Equal(new DateTimeOffset(2026, 2, 28, 0, 0, 0, DateTimeOffsetHelper.TestOffset), window.Start);
+    }
+
+    [Fact]
+    public void ToLookbackWindow_InvalidEnum_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => testDate.ToLookbackWindow((LookbackRange)999));
+    }
+
+    [Fact]
+    public void AddLookbackRanges_PositiveAndNegativeCounts_MoveByWholeRanges()
+    {
+        // Arrange
+        var testDate = DateTimeOffsetHelper.CreateTestDate();
+
+        // Act
+        var forward = testDate.AddLookbackRanges(LookbackRange.ThreeMonths, 2);
+        var back = testDate.AddLookbackRanges(LookbackRange.OneYear, -1);
+        var all = testDate.AddLookbackRanges(LookbackRange.All, 1);
+
+        // Assert
+        Assert.Equal(testDate.AddMonths(6), forward);
+        Assert.Equal(testDate.AddYears(-1), back);
+        Assert.Null(all);
+    }
 }

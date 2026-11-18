@@ -33,8 +33,8 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         // Assert
         Assert.Equal(TestConstants.ChaseInstitutionId, result.InstitutionId);
         Assert.Equal("Chase", result.InstitutionName);
-        Assert.Single(result.Accounts);
-        var rosterAccount = result.Accounts.First();
+        var item = Assert.Single(result.Accounts);
+        var rosterAccount = item;
         Assert.Equal("Chase Checking", rosterAccount.Name);
         Assert.Equal("CHK", rosterAccount.AccountTypeCode);
         Assert.Equal("CHASE", rosterAccount.InstitutionCode);
@@ -66,8 +66,8 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.ChaseInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
-        Assert.Single(result.Accounts);
-        var rosterAccount = result.Accounts.First();
+        var item = Assert.Single(result.Accounts);
+        var rosterAccount = item;
         Assert.Equal(800m, rosterAccount.LatestBalance);
         Assert.Equal(new DateTimeOffset(2026, 7, 28, 0, 0, 0, TimeSpan.Zero), rosterAccount.LatestBalanceRecordedDate);
         Assert.Equal(4, result.AccountTypeTotals.Count);
@@ -95,8 +95,8 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.ChaseInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
-        Assert.Single(result.Accounts);
-        var rosterAccount = result.Accounts.First();
+        var item = Assert.Single(result.Accounts);
+        var rosterAccount = item;
         Assert.Equal(0m, rosterAccount.LatestBalance);
         Assert.Equal(openingRecordedDate, rosterAccount.LatestBalanceRecordedDate);
         Assert.Equal(4, result.AccountTypeTotals.Count);
@@ -150,8 +150,8 @@ public class GetInstitutionSummaryTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<InstitutionSummaryResponseDto>($"/api/accounts/institution/{TestConstants.WellsFargoInstitutionId}/summary?{MonthlyQuery}", CancellationToken);
 
         // Assert
-        Assert.Single(result.Accounts);
-        Assert.Equal("Active Wells Fargo", result.Accounts.First().Name);
+        var item = Assert.Single(result.Accounts);
+        Assert.Equal("Active Wells Fargo", item.Name);
         Assert.Equal(4, result.AccountTypeTotals.Count);
         Assert.Equal(1000m, result.AccountTypeTotals["CHK"]);
         Assert.All(ActiveAccountTypeCodes.Except(["CHK"]), code => Assert.Equal(0m, result.AccountTypeTotals[code]));

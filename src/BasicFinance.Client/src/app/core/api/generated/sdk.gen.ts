@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteApiSpreadsheetsSpreadsheetIdData, DeleteApiSpreadsheetsSpreadsheetIdErrors, DeleteApiSpreadsheetsSpreadsheetIdResponses, GetApiAccountsAccountIdData, GetApiAccountsAccountIdErrors, GetApiAccountsAccountIdResponses, GetApiAccountsBalanceSummaryData, GetApiAccountsBalanceSummaryErrors, GetApiAccountsBalanceSummaryResponses, GetApiAccountsData, GetApiAccountsErrors, GetApiAccountsInstitutionInstitutionIdSummaryData, GetApiAccountsInstitutionInstitutionIdSummaryErrors, GetApiAccountsInstitutionInstitutionIdSummaryResponses, GetApiAccountsResponses, GetApiAccountTypesData, GetApiAccountTypesErrors, GetApiAccountTypesResponses, GetApiInstitutionsData, GetApiInstitutionsErrors, GetApiInstitutionsInstitutionIdData, GetApiInstitutionsInstitutionIdErrors, GetApiInstitutionsInstitutionIdResponses, GetApiInstitutionsResponses, GetApiMyAccountsData, GetApiMyAccountsErrors, GetApiMyAccountsResponses, GetApiMyInstitutionsData, GetApiMyInstitutionsErrors, GetApiMyInstitutionsResponses, GetApiSpendingActivityByPeriodData, GetApiSpendingActivityByPeriodErrors, GetApiSpendingActivityByPeriodResponses, GetApiSpendingOverTimeSummaryData, GetApiSpendingOverTimeSummaryErrors, GetApiSpendingOverTimeSummaryResponses, GetApiSpreadsheetsData, GetApiSpreadsheetsErrors, GetApiSpreadsheetsResponses, GetApiSpreadsheetsUserGoogleSpreadsheetIdData, GetApiSpreadsheetsUserGoogleSpreadsheetIdErrors, GetApiSpreadsheetsUserGoogleSpreadsheetIdResponses, GetApiTransactionCategoriesData, GetApiTransactionCategoriesErrors, GetApiTransactionCategoriesResponses, GetApiTransactionsDailySummaryData, GetApiTransactionsDailySummaryErrors, GetApiTransactionsDailySummaryResponses, GetApiTransactionsData, GetApiTransactionsErrors, GetApiTransactionsResponses, GetApiTransactionsSummaryData, GetApiTransactionsSummaryErrors, GetApiTransactionsSummaryResponses, GetApiTransactionsTransactionIdData, GetApiTransactionsTransactionIdErrors, GetApiTransactionsTransactionIdResponses, GetApiTransactionTypesData, GetApiTransactionTypesErrors, GetApiTransactionTypesResponses, GetUsersMeData, GetUsersMeResponses, PostApiSpreadsheetsData, PostApiSpreadsheetsErrors, PostApiSpreadsheetsResponses } from './types.gen';
+import type { DeleteApiSpreadsheetsSpreadsheetIdData, DeleteApiSpreadsheetsSpreadsheetIdErrors, DeleteApiSpreadsheetsSpreadsheetIdResponses, GetApiAccountsAccountIdData, GetApiAccountsAccountIdErrors, GetApiAccountsAccountIdResponses, GetApiAccountsBalanceSummaryData, GetApiAccountsBalanceSummaryErrors, GetApiAccountsBalanceSummaryResponses, GetApiAccountsData, GetApiAccountsErrors, GetApiAccountsInstitutionInstitutionIdSummaryData, GetApiAccountsInstitutionInstitutionIdSummaryErrors, GetApiAccountsInstitutionInstitutionIdSummaryResponses, GetApiAccountsResponses, GetApiAccountTypesData, GetApiAccountTypesErrors, GetApiAccountTypesResponses, GetApiInsightsAccountBalancesByAccountData, GetApiInsightsAccountBalancesByAccountErrors, GetApiInsightsAccountBalancesByAccountResponses, GetApiInsightsAccountBalancesByTypeData, GetApiInsightsAccountBalancesByTypeErrors, GetApiInsightsAccountBalancesByTypeResponses, GetApiInsightsCashflowOverTimeData, GetApiInsightsCashflowOverTimeErrors, GetApiInsightsCashflowOverTimeResponses, GetApiInsightsNetworthData, GetApiInsightsNetworthErrors, GetApiInsightsNetworthResponses, GetApiInsightsSpendingOverTimeData, GetApiInsightsSpendingOverTimeErrors, GetApiInsightsSpendingOverTimeResponses, GetApiInstitutionsData, GetApiInstitutionsErrors, GetApiInstitutionsInstitutionIdData, GetApiInstitutionsInstitutionIdErrors, GetApiInstitutionsInstitutionIdResponses, GetApiInstitutionsResponses, GetApiMyAccountsData, GetApiMyAccountsErrors, GetApiMyAccountsResponses, GetApiMyInstitutionsData, GetApiMyInstitutionsErrors, GetApiMyInstitutionsResponses, GetApiSpendingActivityByPeriodData, GetApiSpendingActivityByPeriodErrors, GetApiSpendingActivityByPeriodResponses, GetApiSpendingOverTimeSummaryData, GetApiSpendingOverTimeSummaryErrors, GetApiSpendingOverTimeSummaryResponses, GetApiSpreadsheetsData, GetApiSpreadsheetsErrors, GetApiSpreadsheetsResponses, GetApiSpreadsheetsUserGoogleSpreadsheetIdData, GetApiSpreadsheetsUserGoogleSpreadsheetIdErrors, GetApiSpreadsheetsUserGoogleSpreadsheetIdResponses, GetApiTransactionCategoriesData, GetApiTransactionCategoriesErrors, GetApiTransactionCategoriesResponses, GetApiTransactionsDailySummaryData, GetApiTransactionsDailySummaryErrors, GetApiTransactionsDailySummaryResponses, GetApiTransactionsData, GetApiTransactionsErrors, GetApiTransactionsResponses, GetApiTransactionsSummaryData, GetApiTransactionsSummaryErrors, GetApiTransactionsSummaryResponses, GetApiTransactionsTransactionIdData, GetApiTransactionsTransactionIdErrors, GetApiTransactionsTransactionIdResponses, GetApiTransactionTypesData, GetApiTransactionTypesErrors, GetApiTransactionTypesResponses, GetUsersMeData, GetUsersMeResponses, PostApiSpreadsheetsData, PostApiSpreadsheetsErrors, PostApiSpreadsheetsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -135,6 +135,59 @@ export const getApiMyInstitutions = <ThrowOnError extends boolean = false>(optio
  * GET_api_institutions
  */
 export const getApiInstitutions = <ThrowOnError extends boolean = false>(options?: Options<GetApiInstitutionsData, ThrowOnError>): RequestResult<GetApiInstitutionsResponses, GetApiInstitutionsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInstitutionsResponses, GetApiInstitutionsErrors, ThrowOnError>({ url: '/api/institutions', ...options });
+
+/**
+ * Retrieves the latest balance and the change over the period for each of the user's accounts.
+ *
+ * The opening balance is each account's latest ledger entry recorded before the period starts (zero when
+ * there is none); the closing balance is its latest ledger entry recorded before the period ends. Only active
+ * accounts of active account types at active institutions are included, ordered by account type and then
+ * account name.
+ */
+export const getApiInsightsAccountBalancesByAccount = <ThrowOnError extends boolean = false>(options?: Options<GetApiInsightsAccountBalancesByAccountData, ThrowOnError>): RequestResult<GetApiInsightsAccountBalancesByAccountResponses, GetApiInsightsAccountBalancesByAccountErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInsightsAccountBalancesByAccountResponses, GetApiInsightsAccountBalancesByAccountErrors, ThrowOnError>({ url: '/api/insights/account-balances/by-account', ...options });
+
+/**
+ * Retrieves the latest balance and the change over the period for each active account type,
+ * along with the total asset and liability balances.
+ *
+ * Each account contributes its latest ledger entry recorded before the period starts to the opening balance
+ * (nothing when there is none) and its latest ledger entry recorded before the period ends to the closing
+ * balance. The per-account balances come back in one query and are summed by account type in memory. Only
+ * active accounts at active institutions are included, optionally limited to one institution.
+ */
+export const getApiInsightsAccountBalancesByType = <ThrowOnError extends boolean = false>(options?: Options<GetApiInsightsAccountBalancesByTypeData, ThrowOnError>): RequestResult<GetApiInsightsAccountBalancesByTypeResponses, GetApiInsightsAccountBalancesByTypeErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInsightsAccountBalancesByTypeResponses, GetApiInsightsAccountBalancesByTypeErrors, ThrowOnError>({ url: '/api/insights/account-balances/by-type', ...options });
+
+/**
+ * Retrieves monthly income and spend for the whole months ending with the month of the requested day.
+ *
+ * The window always covers whole calendar months, so a range of six months returns six entries whatever day
+ * of the month is requested. Credits count as income and debits as spend. Only active transactions on active
+ * accounts at active institutions are included, and transfers between the user's own accounts are excluded.
+ */
+export const getApiInsightsCashflowOverTime = <ThrowOnError extends boolean = false>(options?: Options<GetApiInsightsCashflowOverTimeData, ThrowOnError>): RequestResult<GetApiInsightsCashflowOverTimeResponses, GetApiInsightsCashflowOverTimeErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInsightsCashflowOverTimeResponses, GetApiInsightsCashflowOverTimeErrors, ThrowOnError>({ url: '/api/insights/cashflow-over-time', ...options });
+
+/**
+ * Retrieves the user's daily net worth over a trailing window ending at the requested day.
+ *
+ * First finds the user's earliest ledger entry, which gives LookbackRange.All its start and
+ * tells whether an older page exists. A second query over the user's accounts then returns, per account, its
+ * opening balance (the latest ledger entry recorded before the window starts, or zero when there is none) and
+ * its latest ledger entry for each day within the window. Each account's balance is then carried forward day
+ * by day in memory, so an account without an entry on a given day contributes its last known balance.
+ * Only active accounts at active institutions are included, optionally limited to one institution.
+ */
+export const getApiInsightsNetworth = <ThrowOnError extends boolean = false>(options?: Options<GetApiInsightsNetworthData, ThrowOnError>): RequestResult<GetApiInsightsNetworthResponses, GetApiInsightsNetworthErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInsightsNetworthResponses, GetApiInsightsNetworthErrors, ThrowOnError>({ url: '/api/insights/networth', ...options });
+
+/**
+ * Retrieves the cumulative daily spend for the current period alongside the previous period for comparison.
+ *
+ * Sums the user's spend per UTC day across both periods in one query. Each day's spend is then added
+ * to a running total in memory, so a day without spend carries the previous day's total forward.
+ * A second query checks for spend before the current period, which decides whether an older page exists.
+ * Debits count as spend. Only active transactions on active accounts at active institutions are included,
+ * optionally limited to one institution, and transfers between the user's own accounts are excluded.
+ */
+export const getApiInsightsSpendingOverTime = <ThrowOnError extends boolean = false>(options?: Options<GetApiInsightsSpendingOverTimeData, ThrowOnError>): RequestResult<GetApiInsightsSpendingOverTimeResponses, GetApiInsightsSpendingOverTimeErrors, ThrowOnError> => (options?.client ?? client).get<GetApiInsightsSpendingOverTimeResponses, GetApiInsightsSpendingOverTimeErrors, ThrowOnError>({ url: '/api/insights/spending-over-time', ...options });
 
 /**
  * Retrieves the active AccountTypes.

@@ -77,8 +77,8 @@ public class ListAccountsTests : ApiTestFixtureBase
         Assert.Equal(3, result.TotalCount);
         Assert.Equal(2, result.PageCount);
         var names = result.Items.Select(a => a.Name).ToList();
-        Assert.Single(names);
-        Assert.Equal("Account 2", names[0]);
+        var item = Assert.Single(names);
+        Assert.Equal("Account 2", item);
     }
 
     [Fact]

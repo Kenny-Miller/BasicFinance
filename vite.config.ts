@@ -9,7 +9,8 @@ export default defineConfig({
     '*.{json,html}': 'vp fmt',
     '*.html': 'eslint --fix',
     '*.{css,scss}': ['vp fmt', 'stylelint --fix'],
-    '*.cs': 'dotnet format --include',
+    // IDE0130's auto-fix crashes dotnet format; the build reports namespace mismatches as errors instead.
+    '*.cs': 'dotnet format --exclude-diagnostics IDE0130 --include',
   },
   fmt: {
     printWidth: 100,

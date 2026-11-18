@@ -57,8 +57,8 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("Active Account", result[0].Name);
+        var item = Assert.Single(result);
+        Assert.Equal("Active Account", item.Name);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class GetMyAccountsTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<List<AccountDto>>("/api/my/accounts", CancellationToken);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("My Account", result[0].Name);
+        var item = Assert.Single(result);
+        Assert.Equal("My Account", item.Name);
     }
 }
