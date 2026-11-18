@@ -258,6 +258,9 @@ dotnet_diagnostic.CA1008.severity = none
 # CA1034: Nested types should not be visible
 dotnet_diagnostic.CA1034.severity = silent
 
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = none
+
 [*.{cs,vb}]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 tab_width = 4
@@ -295,8 +298,15 @@ dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_event = false:silent
 
+# xUnit2033: Use the assertion return value instead of re-deriving it
+dotnet_diagnostic.xUnit2033.severity = suggestion
+
 [tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
+
+# EF Core scaffolded migrations are generated code, so style rules and analyzers skip them
+[src/BasicFinance.Infrastructure/Migrations/**.cs]
+generated_code = true
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]

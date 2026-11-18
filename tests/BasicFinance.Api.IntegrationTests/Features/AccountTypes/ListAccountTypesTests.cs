@@ -1,7 +1,6 @@
 using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
-using BasicFinance.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -36,7 +35,7 @@ public class ListAccountTypesTests : ApiTestFixtureBase
         Assert.Contains(result, x => x.Code == "CC" && x.Name == "Credit Card" && x.IsLiability);
         Assert.Contains(result, x => x.Code == "INV" && x.Name == "Investment" && !x.IsLiability);
         var orderedNames = result.Select(x => x.Name).OrderBy(x => x, StringComparer.Ordinal).ToList();
-        Assert.Equal(orderedNames, result.Select(x => x.Name).ToList());
+        Assert.Equal(orderedNames, [.. result.Select(x => x.Name)]);
     }
 
     [Fact]

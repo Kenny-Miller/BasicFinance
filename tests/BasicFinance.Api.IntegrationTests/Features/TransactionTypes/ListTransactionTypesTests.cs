@@ -1,7 +1,6 @@
 using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
-using BasicFinance.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -45,8 +44,8 @@ public class ListTransactionTypesTests : ApiTestFixtureBase
         var result = await HttpClient.GetResultAsync<List<TransactionTypeDto>>("/api/transaction-types", CancellationToken);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("CR", result[0].Code);
+        var item = Assert.Single(result);
+        Assert.Equal("CR", item.Code);
     }
 
     [Fact]
