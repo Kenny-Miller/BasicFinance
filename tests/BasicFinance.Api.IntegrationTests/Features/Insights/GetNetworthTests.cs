@@ -2,43 +2,179 @@ using BasicFinance.Api.IntegrationTests.Helpers;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Extensions;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Factories;
 using BasicFinance.Api.IntegrationTests.Infrastructure.Fixtures;
-using BasicFinance.Domain.Enums;
-using BasicFinance.Domain.Extensions;
 using Xunit;
 using AccountTypeEnum = BasicFinance.Infrastructure.Enums.AccountType;
 
 namespace BasicFinance.Api.IntegrationTests.Features.Insights;
 
-public class GetMyNetworthTests : ApiTestFixtureBase
+public class GetNetworthTests : ApiTestFixtureBase
 {
     private const string Endpoint = "/api/insights/networth";
 
-    private const string MonthlyQuery = "timePeriod=Monthly";
+    /// <summary>
+    /// A one month lookback ending on a fixed past day, so the window is always 1–31 March 2026 whatever
+    /// day the tests run on.
+    /// </summary>
+    private const string MonthlyQuery = "range=OneMonth&asOf=2026-03-31";
+
+    private const int DaysInPeriod = 31;
 
     private const string OtherUserId = "11111111-1111-1111-1111-111111111111";
 
-    public GetMyNetworthTests(ApiClassFixture fixture)
+    /// <summary>
+    /// The start (UTC midnight) of the window requested by <see cref="MonthlyQuery"/>. Seeded ledger dates are
+    /// expressed relative to this value.
+    /// </summary>
+    private static readonly DateTimeOffset PeriodStart = new(2026, 3, 1, 0, 0, 0, TimeSpan.Zero);
+
+    public GetNetworthTests(ApiClassFixture fixture)
         : base(fixture)
     {
     }
 
-    /// <summary>
-    /// Gets the start (UTC midnight) of the current monthly period. The endpoint always reports the period
-    /// containing today, so seeded ledger dates are expressed relative to this value. Offsets of up to 27 days
-    /// always fall inside the period.
-    /// </summary>
-    private static DateTimeOffset PeriodStart => DateTimeOffset.UtcNow.ToPeriodRange(TimePeriod.Monthly).RangeStartDate;
-
-    private static int DaysInPeriod => DateTime.DaysInMonth(PeriodStart.Year, PeriodStart.Month);
+    private static DateTime Today => DateTimeOffset.UtcNow.UtcDateTime.Date;
 
     [Fact]
-    public async Task GetMyNetworth_NoAccounts_ReturnsZeroTimelineForEveryDayOfPeriod()
+    public async Task GetNetworth_AsOfOmitted_TimelineEndsTodayWithNoNextPage()
+    {
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth", CancellationToken);
+
+        // Assert
+        Assert.Equal(Today, result.NetworthTimeline[^1].Date);
+        Assert.Equal(Today, result.Page.WindowEnd);
+        Assert.Null(result.Page.NextAsOf);
+    }
+
+    [Fact]
+    public async Task GetNetworth_FutureAsOf_IsClampedToToday()
+    {
+        // Arrange
+        var future = Today.AddDays(400);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth&asOf={future:yyyy-MM-dd}", CancellationToken);
+
+        // Assert
+        Assert.Equal(Today, result.NetworthTimeline[^1].Date);
+        Assert.Null(result.Page.NextAsOf);
+    }
+
+    [Fact]
+    public async Task GetNetworth_AsOfWithTimeOfDay_UsesWholeDay()
+    {
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth&asOf=2026-03-31T17:45:00", CancellationToken);
+
+        // Assert
+        Assert.Equal(DaysInPeriod, result.NetworthTimeline.Count);
+        Assert.Equal(new DateTime(2026, 3, 31), result.NetworthTimeline[^1].Date);
+    }
+
+    [Theory]
+    [InlineData("OneMonth", "2026-03-01")]
+    [InlineData("ThreeMonths", "2026-01-01")]
+    [InlineData("SixMonths", "2025-10-01")]
+    [InlineData("OneYear", "2025-04-01")]
+    public async Task GetNetworth_EachRange_LooksBackThatFarFromAsOf(string range, string expectedStart)
+    {
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range={range}&asOf=2026-03-31", CancellationToken);
+
+        // Assert
+        Assert.Equal(DateTime.Parse(expectedStart, System.Globalization.CultureInfo.InvariantCulture), result.Page.WindowStart);
+        Assert.Equal(result.Page.WindowStart, result.NetworthTimeline[0].Date);
+        Assert.Equal(new DateTime(2026, 3, 31), result.Page.WindowEnd);
+    }
+
+    [Fact]
+    public async Task GetNetworth_AllRange_StartsAtEarliestEntryWithZeroOpeningAndNoPreviousPage()
+    {
+        // Arrange
+        var checking = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "All Checking",
+            openingBalance: 100m,
+            openingBalanceRecordedDate: new DateTimeOffset(2025, 1, 10, 15, 0, 0, TimeSpan.Zero));
+        await DbContext.SeedAsync(checking, CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(checking, 400m, new DateTimeOffset(2025, 3, 5, 9, 0, 0, TimeSpan.Zero)), CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=All&asOf=2025-03-31", CancellationToken);
+
+        // Assert
+        Assert.Equal(81, result.NetworthTimeline.Count);
+        Assert.Equal(new DateTime(2025, 1, 10), result.NetworthTimeline[0].Date);
+        Assert.Equal(100m, result.NetworthTimeline[0].Networth);
+        Assert.Equal(new DateTime(2025, 3, 31), result.NetworthTimeline[^1].Date);
+        Assert.Equal(400m, result.TotalNetworth);
+        Assert.Equal(400m, result.NetworthChange);
+        Assert.Equal(new DateTime(2025, 1, 10), result.Page.WindowStart);
+        Assert.Null(result.Page.PreviousAsOf);
+    }
+
+    [Fact]
+    public async Task GetNetworth_AllRangeWithNoEntries_ReturnsSingleZeroDay()
+    {
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=All&asOf=2025-03-31", CancellationToken);
+
+        // Assert
+        var point = Assert.Single(result.NetworthTimeline);
+        Assert.Equal(new DateTime(2025, 3, 31), point.Date);
+        Assert.Equal(0m, point.Networth);
+        Assert.Null(result.Page.PreviousAsOf);
+    }
+
+    [Fact]
+    public async Task GetNetworth_PastPageWithEarlierEntries_PreviousAndNextAsOfStepOneRangeEachWay()
+    {
+        // Arrange
+        var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Paging Checking");
+        await DbContext.SeedAsync(checking, CancellationToken);
+        await DbContext.SeedAsync(AccountLedgerFactory.CreateFor(checking, 1000m, PeriodStart.AddDays(-40)), CancellationToken);
+
+        // Act
+        var page = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var older = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth&asOf={page.Page.PreviousAsOf:yyyy-MM-dd}", CancellationToken);
+        var backAgain = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?range=OneMonth&asOf={older.Page.NextAsOf:yyyy-MM-dd}", CancellationToken);
+
+        // Assert
+        Assert.Equal(new DateTime(2026, 2, 28), page.Page.PreviousAsOf);
+        Assert.Equal(new DateTime(2026, 4, 30), page.Page.NextAsOf);
+        Assert.Equal(new DateTime(2026, 2, 1), older.Page.WindowStart);
+        Assert.Equal(new DateTime(2026, 2, 28), older.Page.WindowEnd);
+        Assert.Equal(page.Page.WindowStart, backAgain.Page.WindowStart);
+        Assert.Equal(page.Page.WindowEnd, backAgain.Page.WindowEnd);
+    }
+
+    [Fact]
+    public async Task GetNetworth_NoEntriesBeforeWindow_PreviousAsOfIsNull()
+    {
+        // Arrange
+        var checking = AccountFactory.Create(
+            AuthenticatedUserId,
+            accountName: "New Checking",
+            openingBalance: 250m,
+            openingBalanceRecordedDate: PeriodStart.AddDays(4));
+        await DbContext.SeedAsync(checking, CancellationToken);
+
+        // Act
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+
+        // Assert
+        Assert.Null(result.Page.PreviousAsOf);
+        Assert.Equal(250m, result.TotalNetworth);
+    }
+
+    [Fact]
+    public async Task GetNetworth_NoAccounts_ReturnsZeroTimelineForEveryDayOfPeriod()
     {
         // Arrange
         var periodStart = PeriodStart;
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(DaysInPeriod, result.NetworthTimeline.Count);
@@ -51,7 +187,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_LedgersBeforePeriod_AreCarriedForwardAcrossTimeline()
+    public async Task GetNetworth_LedgersBeforePeriod_AreCarriedForwardAcrossTimeline()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Carry Checking");
@@ -63,7 +199,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([checkingLedger, savingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(DaysInPeriod, result.NetworthTimeline.Count);
@@ -74,7 +210,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_OneAccountUpdatedMidPeriod_OtherAccountsKeepLastKnownBalance()
+    public async Task GetNetworth_OneAccountUpdatedMidPeriod_OtherAccountsKeepLastKnownBalance()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Updated Checking");
@@ -86,7 +222,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([openingChecking, openingSavings, updatedChecking], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(6000m, result.NetworthTimeline[0].Networth);
@@ -99,7 +235,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_MultipleEntriesOnSameDay_UsesLatestRecordedEntry()
+    public async Task GetNetworth_MultipleEntriesOnSameDay_UsesLatestRecordedEntry()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Same Day Checking");
@@ -109,7 +245,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([eveningLedger, morningLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(0m, result.NetworthTimeline[0].Networth);
@@ -118,7 +254,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_EntriesWithSameRecordedDate_UsesLatestSystemCreatedDate()
+    public async Task GetNetworth_EntriesWithSameRecordedDate_UsesLatestSystemCreatedDate()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Tie Break Checking");
@@ -129,7 +265,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([newerLedger, olderLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(950m, result.NetworthTimeline[3].Networth);
@@ -137,7 +273,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_AccountWithFirstEntryMidPeriod_ContributesZeroUntilFirstEntry()
+    public async Task GetNetworth_AccountWithFirstEntryMidPeriod_ContributesZeroUntilFirstEntry()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Existing Checking");
@@ -148,7 +284,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([checkingLedger, savingsLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(1000m, result.NetworthTimeline[2].Networth);
@@ -159,7 +295,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_EntryAtPeriodStart_ReplacesOpeningBalanceOnFirstDay()
+    public async Task GetNetworth_EntryAtPeriodStart_ReplacesOpeningBalanceOnFirstDay()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Boundary Checking");
@@ -169,7 +305,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([openingLedger, periodStartLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(1500m, result.NetworthTimeline[0].Networth);
@@ -179,7 +315,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_NetworthDecreased_ReturnsNegativeChangeAndPercentage()
+    public async Task GetNetworth_NetworthDecreased_ReturnsNegativeChangeAndPercentage()
     {
         // Arrange
         var checking = AccountFactory.Create(AuthenticatedUserId, accountName: "Decrease Checking");
@@ -189,7 +325,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([openingLedger, currentLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(800m, result.TotalNetworth);
@@ -198,7 +334,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_NegativeOpeningNetworthImproves_ReturnsPositivePercentage()
+    public async Task GetNetworth_NegativeOpeningNetworthImproves_ReturnsPositivePercentage()
     {
         // Arrange
         var creditCard = AccountFactory.Create(AuthenticatedUserId, accountType: AccountTypeEnum.CreditCard, accountName: "Liability Card");
@@ -208,7 +344,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([openingLedger, currentLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(-1000m, result.NetworthTimeline[0].Networth);
@@ -218,7 +354,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_InstitutionFilter_OnlyIncludesAccountsAtInstitution()
+    public async Task GetNetworth_InstitutionFilter_OnlyIncludesAccountsAtInstitution()
     {
         // Arrange
         var wellsFargoChecking = AccountFactory.Create(AuthenticatedUserId, accountName: "WF Checking");
@@ -229,7 +365,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([wellsFargoLedger, chaseLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}&institutionId={TestConstants.WellsFargoInstitutionId}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}&institutionId={TestConstants.WellsFargoInstitutionId}", CancellationToken);
 
         // Assert
         Assert.All(result.NetworthTimeline, point => Assert.Equal(1000m, point.Networth));
@@ -237,7 +373,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_AccountsFromOtherUsers_AreExcluded()
+    public async Task GetNetworth_AccountsFromOtherUsers_AreExcluded()
     {
         // Arrange
         var ownAccount = AccountFactory.Create(AuthenticatedUserId, accountName: "Own Checking");
@@ -248,7 +384,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([ownLedger, otherLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.Equal(100m, result.NetworthTimeline[1].Networth);
@@ -256,7 +392,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_InactiveAccounts_AreExcluded()
+    public async Task GetNetworth_InactiveAccounts_AreExcluded()
     {
         // Arrange
         var activeChecking = AccountFactory.Create(AuthenticatedUserId, accountName: "Active Checking");
@@ -268,7 +404,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedRangeAsync([activeLedger, inactiveLedger], CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.All(result.NetworthTimeline, point => Assert.Equal(1000m, point.Networth));
@@ -276,7 +412,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
     }
 
     [Fact]
-    public async Task GetMyNetworth_AccountsFromInactiveInstitution_AreExcluded()
+    public async Task GetNetworth_AccountsFromInactiveInstitution_AreExcluded()
     {
         // Arrange
         var inactiveInstitution = InstitutionFactory.Create(name: "Inactive Bank", institutionCode: "INACT");
@@ -289,7 +425,7 @@ public class GetMyNetworthTests : ApiTestFixtureBase
         await DbContext.SeedAsync(ledger, CancellationToken);
 
         // Act
-        var result = await HttpClient.GetResultAsync<MyNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
+        var result = await HttpClient.GetResultAsync<InsightsNetworthResponseDto>($"{Endpoint}?{MonthlyQuery}", CancellationToken);
 
         // Assert
         Assert.All(result.NetworthTimeline, point => Assert.Equal(0m, point.Networth));

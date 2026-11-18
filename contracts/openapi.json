@@ -771,6 +771,281 @@
         }
       }
     },
+    "/api/insights/account-balances/by-account": {
+      "get": {
+        "tags": ["BasicFinance.Api.Features.Insights.GetAccountBalancesByAccount"],
+        "summary": "Retrieves the latest balance and the change over the period for each of the user's accounts.",
+        "description": "The opening balance is each account's latest ledger entry recorded before the period starts (zero when\r\nthere is none); the closing balance is its latest ledger entry recorded before the period ends. Only active\r\naccounts of active account types at active institutions are included, ordered by account type and then\r\naccount name.",
+        "operationId": "GET_api_insights_account_balances_by_account",
+        "parameters": [
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          },
+          {
+            "name": "AsOf",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAccountBalancesByAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/insights/account-balances/by-type": {
+      "get": {
+        "tags": ["BasicFinance.Api.Features.Insights.GetAccountBalancesByType"],
+        "summary": "Retrieves the latest balance and the change over the period for each active account type,\r\nalong with the total asset and liability balances.",
+        "description": "Each account contributes its latest ledger entry recorded before the period starts to the opening balance\r\n(nothing when there is none) and its latest ledger entry recorded before the period ends to the closing\r\nbalance. The per-account balances come back in one query and are summed by account type in memory. Only\r\nactive accounts at active institutions are included, optionally limited to one institution.",
+        "operationId": "GET_api_insights_account_balances_by_type",
+        "parameters": [
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          },
+          {
+            "name": "AsOf",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAccountBalancesByTypeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/insights/cashflow-over-time": {
+      "get": {
+        "tags": ["BasicFinance.Api.Features.Insights.GetCashflowOverTime"],
+        "summary": "Retrieves monthly income and spend for the whole months ending with the month of the requested day.",
+        "description": "The window always covers whole calendar months, so a range of six months returns six entries whatever day\r\nof the month is requested. Credits count as income and debits as spend. Only active transactions on active\r\naccounts at active institutions are included, and transfers between the user's own accounts are excluded.",
+        "operationId": "GET_api_insights_cashflow_over_time",
+        "parameters": [
+          {
+            "name": "Range",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LookbackRange"
+            }
+          },
+          {
+            "name": "AsOf",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCashflowOverTimeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/insights/networth": {
+      "get": {
+        "tags": ["BasicFinance.Api.Features.Insights.GetNetworth"],
+        "summary": "Retrieves the user's daily net worth over a trailing window ending at the requested day.",
+        "description": "First finds the user's earliest ledger entry, which gives LookbackRange.All its start and\r\ntells whether an older page exists. A second query over the user's accounts then returns, per account, its\r\nopening balance (the latest ledger entry recorded before the window starts, or zero when there is none) and\r\nits latest ledger entry for each day within the window. Each account's balance is then carried forward day\r\nby day in memory, so an account without an entry on a given day contributes its last known balance.\r\nOnly active accounts at active institutions are included, optionally limited to one institution.",
+        "operationId": "GET_api_insights_networth",
+        "parameters": [
+          {
+            "name": "Range",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LookbackRange"
+            }
+          },
+          {
+            "name": "AsOf",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNetworthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/insights/spending-over-time": {
+      "get": {
+        "tags": ["BasicFinance.Api.Features.Insights.GetSpendingOverTime"],
+        "summary": "Retrieves the cumulative daily spend for the current period alongside the previous period for comparison.",
+        "description": "Sums the user's spend per UTC day across both periods in one query. Each day's spend is then added\r\nto a running total in memory, so a day without spend carries the previous day's total forward.\r\nA second query checks for spend before the current period, which decides whether an older page exists.\r\nDebits count as spend. Only active transactions on active accounts at active institutions are included,\r\noptionally limited to one institution, and transfers between the user's own accounts are excluded.",
+        "operationId": "GET_api_insights_spending_over_time",
+        "parameters": [
+          {
+            "name": "TimePeriod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimePeriod"
+            }
+          },
+          {
+            "name": "AsOf",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "InstitutionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSpendingOverTimeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/account-types": {
       "get": {
         "tags": ["BasicFinance.Api.Features.AccountTypes.ListAccountTypes"],
@@ -1085,6 +1360,57 @@
   },
   "components": {
     "schemas": {
+      "AccountBalance": {
+        "required": [
+          "accountId",
+          "accountName",
+          "accountTypeCode",
+          "accountTypeName",
+          "institutionName",
+          "isLiability",
+          "balance",
+          "percentChange"
+        ],
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "The unique identifier of the account.",
+            "format": "uuid"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "The name of the account."
+          },
+          "accountTypeCode": {
+            "type": "string",
+            "description": "The code of the account's type (e.g. `CHK`)."
+          },
+          "accountTypeName": {
+            "type": "string",
+            "description": "The display name of the account's type (e.g. `Checking`)."
+          },
+          "institutionName": {
+            "type": "string",
+            "description": "The name of the institution the account belongs to."
+          },
+          "isLiability": {
+            "type": "boolean",
+            "description": "Whether the account's type is a liability. Liability balances are negative."
+          },
+          "balance": {
+            "type": "number",
+            "description": "The account's latest balance within or before the period, or zero when it has none.",
+            "format": "double"
+          },
+          "percentChange": {
+            "type": "number",
+            "description": "Change in the size of the balance since the start of the period, rounded to one decimal place.\r\nFor liabilities, positive means the amount owed grew. Zero when the opening balance is zero.",
+            "format": "double"
+          }
+        },
+        "description": "Latest balance and change over the period for a single account."
+      },
       "AccountBalanceDto": {
         "required": [
           "id",
@@ -1235,6 +1561,27 @@
         },
         "description": "Dto containing Account data."
       },
+      "AccountTypeBalance": {
+        "required": ["accountTypeCode", "balance", "percentChanged"],
+        "type": "object",
+        "properties": {
+          "accountTypeCode": {
+            "type": "string",
+            "description": "The code of the account type (e.g. `CHK`)."
+          },
+          "balance": {
+            "type": "number",
+            "description": "The sum of the latest balance of every account of this type, or zero when there are none.",
+            "format": "double"
+          },
+          "percentChanged": {
+            "type": "number",
+            "description": "Change in the size of the balance since the start of the period, rounded to one decimal place.\r\nFor liabilities, positive means the amount owed grew. Zero when the opening balance is zero.",
+            "format": "double"
+          }
+        },
+        "description": "Latest balance and change over the period for a single account type."
+      },
       "AccountTypeBreakdown": {
         "required": ["balance", "percentageOfTotalBalance", "accounts"],
         "type": "object",
@@ -1282,6 +1629,23 @@
           }
         },
         "description": "Dto containing AccountType data."
+      },
+      "CumulativeSpend": {
+        "required": ["day", "amount"],
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "integer",
+            "description": "The day of the period, starting at 1. Shared X axis for both timelines.",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Total spend from the start of the period up to and including Day.",
+            "format": "double"
+          }
+        },
+        "description": "Running total of spend within a period."
       },
       "DailySpendingOverTime": {
         "required": ["x", "y"],
@@ -1370,6 +1734,85 @@
         },
         "description": "Spend and transaction count for a single calendar day."
       },
+      "GetAccountBalancesByAccountResponse": {
+        "required": ["accounts", "page"],
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountBalance"
+            },
+            "description": "One entry per account, ordered by account type and then account name."
+          },
+          "page": {
+            "description": "The period's window and the `asOf` values of the neighbouring pages.",
+            "$ref": "#/components/schemas/InsightPage"
+          }
+        },
+        "description": "Response Dto for the GetAccountBalancesByAccount endpoint."
+      },
+      "GetAccountBalancesByTypeResponse": {
+        "required": ["accountTypeBalances", "totalPositiveBalance", "totalNegativeBalance", "page"],
+        "type": "object",
+        "properties": {
+          "accountTypeBalances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountTypeBalance"
+            },
+            "description": "One entry per active account type, including types the user has no accounts for."
+          },
+          "totalPositiveBalance": {
+            "type": "number",
+            "description": "Sum of the latest balances of all non-liability account types (\"You have\").",
+            "format": "double"
+          },
+          "totalNegativeBalance": {
+            "type": "number",
+            "description": "Sum of the latest balances of all liability account types (\"You owe\"). Negative or zero.",
+            "format": "double"
+          },
+          "page": {
+            "description": "The period's window and the `asOf` values of the neighbouring pages.",
+            "$ref": "#/components/schemas/InsightPage"
+          }
+        },
+        "description": "Response Dto for the GetAccountBalancesByType endpoint."
+      },
+      "GetCashflowOverTimeResponse": {
+        "required": ["cashflowTimeline", "totalIncome", "totalSpend", "netCashflow", "page"],
+        "type": "object",
+        "properties": {
+          "cashflowTimeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyCashflow"
+            },
+            "description": "One entry per month of the window, oldest first. Months without transactions are zero."
+          },
+          "totalIncome": {
+            "type": "number",
+            "description": "Sum of income across the window.",
+            "format": "double"
+          },
+          "totalSpend": {
+            "type": "number",
+            "description": "Sum of spend across the window.",
+            "format": "double"
+          },
+          "netCashflow": {
+            "type": "number",
+            "description": "TotalIncome minus TotalSpend.",
+            "format": "double"
+          },
+          "page": {
+            "description": "The window covered and the `asOf` values of the neighbouring pages.",
+            "$ref": "#/components/schemas/InsightPage"
+          }
+        },
+        "description": "Response Dto for the GetCashflowOverTime endpoint."
+      },
       "GetMyInstitutionsResponse": {
         "required": [
           "institutionId",
@@ -1411,6 +1854,98 @@
         },
         "description": "Response for the GetMyInstitutions endpoint."
       },
+      "GetNetworthResponse": {
+        "required": [
+          "networthTimeline",
+          "totalNetworth",
+          "networthChange",
+          "networthChangePercentage",
+          "page"
+        ],
+        "type": "object",
+        "properties": {
+          "networthTimeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NetworthOverTime"
+            },
+            "description": "Net worth for each day of the window (UTC days), oldest first."
+          },
+          "totalNetworth": {
+            "type": "number",
+            "description": "Net worth as of the last day of the timeline.",
+            "format": "double"
+          },
+          "networthChange": {
+            "type": "number",
+            "description": "Change in net worth since the start of the window (the opening net worth).",
+            "format": "double"
+          },
+          "networthChangePercentage": {
+            "type": "number",
+            "description": "NetworthChange as a percentage of the absolute opening net worth, rounded to two decimals.\r\nNegative when net worth decreased. Zero when the opening net worth is zero.",
+            "format": "double"
+          },
+          "page": {
+            "description": "The window covered and the `asOf` values of the neighbouring pages.",
+            "$ref": "#/components/schemas/InsightPage"
+          }
+        },
+        "description": "Response Dto for the GetNetworth endpoint."
+      },
+      "GetSpendingOverTimeResponse": {
+        "required": [
+          "previousPeriodStart",
+          "currentTimeline",
+          "previousTimeline",
+          "totalSpend",
+          "previousTotalSpend",
+          "spendChange",
+          "page"
+        ],
+        "type": "object",
+        "properties": {
+          "previousPeriodStart": {
+            "type": "string",
+            "description": "The UTC start of the period before the current one.",
+            "format": "date-time"
+          },
+          "currentTimeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CumulativeSpend"
+            },
+            "description": "Cumulative spend for each day of the current period, starting at day 1. Days after today repeat the latest\r\ntotal. Same length as PreviousTimeline."
+          },
+          "previousTimeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CumulativeSpend"
+            },
+            "description": "Cumulative spend for each day of the previous period, starting at day 1. Both timelines are as long as the\r\nlonger of the two periods; days past the end of a shorter period repeat its final total."
+          },
+          "totalSpend": {
+            "type": "number",
+            "description": "Spend in the current period to date.",
+            "format": "double"
+          },
+          "previousTotalSpend": {
+            "type": "number",
+            "description": "Spend in the whole of the previous period.",
+            "format": "double"
+          },
+          "spendChange": {
+            "type": "number",
+            "description": "TotalSpend minus PreviousTotalSpend. Negative when spending less.",
+            "format": "double"
+          },
+          "page": {
+            "description": "The current period's window and the `asOf` values of the neighbouring pages.",
+            "$ref": "#/components/schemas/InsightPage"
+          }
+        },
+        "description": "Response Dto for the GetSpendingOverTime endpoint."
+      },
       "HttpValidationProblemDetails": {
         "type": "object",
         "properties": {
@@ -1440,6 +1975,33 @@
             }
           }
         }
+      },
+      "InsightPage": {
+        "required": ["windowStart", "windowEnd", "previousAsOf", "nextAsOf"],
+        "type": "object",
+        "properties": {
+          "windowStart": {
+            "type": "string",
+            "description": "The first UTC day the response covers.",
+            "format": "date-time"
+          },
+          "windowEnd": {
+            "type": "string",
+            "description": "The last UTC day the response covers, inclusive.",
+            "format": "date-time"
+          },
+          "previousAsOf": {
+            "type": ["null", "string"],
+            "description": "The `asOf` value to request for the previous (older) page. `null` when no matching data\r\nexists before WindowStart.",
+            "format": "date-time"
+          },
+          "nextAsOf": {
+            "type": ["null", "string"],
+            "description": "The `asOf` value to request for the next (newer) page, never later than today. `null` when\r\nthis page already includes today.",
+            "format": "date-time"
+          }
+        },
+        "description": "Describes the window an insights response covers and how to reach the pages either side of it."
       },
       "InstitutionDto": {
         "required": ["id", "code", "name", "logoUrl"],
@@ -1637,6 +2199,58 @@
             "format": "int32"
           }
         }
+      },
+      "LookbackRange": {
+        "enum": ["OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All"]
+      },
+      "MonthlyCashflow": {
+        "required": ["year", "month", "income", "spend", "net"],
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "description": "The calendar year of the month.",
+            "format": "int32"
+          },
+          "month": {
+            "type": "integer",
+            "description": "The calendar month, 1–12.",
+            "format": "int32"
+          },
+          "income": {
+            "type": "number",
+            "description": "Sum of credit transactions in the month.",
+            "format": "double"
+          },
+          "spend": {
+            "type": "number",
+            "description": "Sum of debit transactions in the month.",
+            "format": "double"
+          },
+          "net": {
+            "type": "number",
+            "description": "Income minus Spend.",
+            "format": "double"
+          }
+        },
+        "description": "Income and spend for a single calendar month (UTC)."
+      },
+      "NetworthOverTime": {
+        "required": ["date", "networth"],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The UTC day the net worth is calculated as of.",
+            "format": "date-time"
+          },
+          "networth": {
+            "type": "number",
+            "description": "The sum of every account's last known balance at the end of Date.",
+            "format": "double"
+          }
+        },
+        "description": "Net worth as of a point in time."
       },
       "ProblemDetails": {
         "type": "object",
@@ -2025,6 +2639,21 @@
     },
     {
       "name": "BasicFinance.Api.Features.Institutions.ListInstitutions"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Insights.GetAccountBalancesByAccount"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Insights.GetAccountBalancesByType"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Insights.GetCashflowOverTime"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Insights.GetNetworth"
+    },
+    {
+      "name": "BasicFinance.Api.Features.Insights.GetSpendingOverTime"
     },
     {
       "name": "BasicFinance.Api.Features.AccountTypes.ListAccountTypes"
