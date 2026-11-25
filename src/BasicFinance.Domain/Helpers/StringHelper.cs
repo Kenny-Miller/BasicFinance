@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace BasicFinance.Infrastructure.Helpers
+namespace BasicFinance.Domain.Helpers
 {
     public static class StringHelper
     {

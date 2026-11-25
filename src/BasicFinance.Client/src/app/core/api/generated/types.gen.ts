@@ -5,6 +5,45 @@ export type ClientOptions = {
 };
 
 /**
+ * Latest balance and change over the period for a single account.
+ */
+export type AccountBalance = {
+    /**
+     * The unique identifier of the account.
+     */
+    accountId: string;
+    /**
+     * The name of the account.
+     */
+    accountName: string;
+    /**
+     * The code of the account's type (e.g. `CHK`).
+     */
+    accountTypeCode: string;
+    /**
+     * The display name of the account's type (e.g. `Checking`).
+     */
+    accountTypeName: string;
+    /**
+     * The name of the institution the account belongs to.
+     */
+    institutionName: string;
+    /**
+     * Whether the account's type is a liability. Liability balances are negative.
+     */
+    isLiability: boolean;
+    /**
+     * The account's latest balance within or before the period, or zero when it has none.
+     */
+    balance: number;
+    /**
+     * Change in the size of the balance since the start of the period, rounded to one decimal place.
+     * For liabilities, positive means the amount owed grew. Zero when the opening balance is zero.
+     */
+    percentChange: number;
+};
+
+/**
  * Balance and percentage breakdown for a single account within a period.
  */
 export type AccountBalanceDto = {
@@ -115,6 +154,25 @@ export type AccountDto = {
 };
 
 /**
+ * Latest balance and change over the period for a single account type.
+ */
+export type AccountTypeBalance = {
+    /**
+     * The code of the account type (e.g. `CHK`).
+     */
+    accountTypeCode: string;
+    /**
+     * The sum of the latest balance of every account of this type, or zero when there are none.
+     */
+    balance: number;
+    /**
+     * Change in the size of the balance since the start of the period, rounded to one decimal place.
+     * For liabilities, positive means the amount owed grew. Zero when the opening balance is zero.
+     */
+    percentChanged: number;
+};
+
+/**
  * Balance and breakdown for a single account type within a period.
  */
 export type AccountTypeBreakdown = {
@@ -152,6 +210,20 @@ export type AccountTypeDto = {
      * Whether the account type is a liability (balances are stored as negative values).
      */
     isLiability: boolean;
+};
+
+/**
+ * Running total of spend within a period.
+ */
+export type CumulativeSpend = {
+    /**
+     * The day of the period, starting at 1. Shared X axis for both timelines.
+     */
+    day: number;
+    /**
+     * Total spend from the start of the period up to and including Day.
+     */
+    amount: number;
 };
 
 /**
@@ -217,6 +289,68 @@ export type DailyTransactionSummary = {
 };
 
 /**
+ * Response Dto for the GetAccountBalancesByAccount endpoint.
+ */
+export type GetAccountBalancesByAccountResponse = {
+    /**
+     * One entry per account, ordered by account type and then account name.
+     */
+    accounts: Array<AccountBalance>;
+    /**
+     * The period's window and the `asOf` values of the neighbouring pages.
+     */
+    page: InsightPage;
+};
+
+/**
+ * Response Dto for the GetAccountBalancesByType endpoint.
+ */
+export type GetAccountBalancesByTypeResponse = {
+    /**
+     * One entry per active account type, including types the user has no accounts for.
+     */
+    accountTypeBalances: Array<AccountTypeBalance>;
+    /**
+     * Sum of the latest balances of all non-liability account types ("You have").
+     */
+    totalPositiveBalance: number;
+    /**
+     * Sum of the latest balances of all liability account types ("You owe"). Negative or zero.
+     */
+    totalNegativeBalance: number;
+    /**
+     * The period's window and the `asOf` values of the neighbouring pages.
+     */
+    page: InsightPage;
+};
+
+/**
+ * Response Dto for the GetCashflowOverTime endpoint.
+ */
+export type GetCashflowOverTimeResponse = {
+    /**
+     * One entry per month of the window, oldest first. Months without transactions are zero.
+     */
+    cashflowTimeline: Array<MonthlyCashflow>;
+    /**
+     * Sum of income across the window.
+     */
+    totalIncome: number;
+    /**
+     * Sum of spend across the window.
+     */
+    totalSpend: number;
+    /**
+     * TotalIncome minus TotalSpend.
+     */
+    netCashflow: number;
+    /**
+     * The window covered and the `asOf` values of the neighbouring pages.
+     */
+    page: InsightPage;
+};
+
+/**
  * Response for the GetMyInstitutions endpoint.
  */
 export type GetMyInstitutionsResponse = {
@@ -246,6 +380,69 @@ export type GetMyInstitutionsResponse = {
     totalBalance: number;
 };
 
+/**
+ * Response Dto for the GetNetworth endpoint.
+ */
+export type GetNetworthResponse = {
+    /**
+     * Net worth for each day of the window (UTC days), oldest first.
+     */
+    networthTimeline: Array<NetworthOverTime>;
+    /**
+     * Net worth as of the last day of the timeline.
+     */
+    totalNetworth: number;
+    /**
+     * Change in net worth since the start of the window (the opening net worth).
+     */
+    networthChange: number;
+    /**
+     * NetworthChange as a percentage of the absolute opening net worth, rounded to two decimals.
+     * Negative when net worth decreased. Zero when the opening net worth is zero.
+     */
+    networthChangePercentage: number;
+    /**
+     * The window covered and the `asOf` values of the neighbouring pages.
+     */
+    page: InsightPage;
+};
+
+/**
+ * Response Dto for the GetSpendingOverTime endpoint.
+ */
+export type GetSpendingOverTimeResponse = {
+    /**
+     * The UTC start of the period before the current one.
+     */
+    previousPeriodStart: string;
+    /**
+     * Cumulative spend for each day of the current period, starting at day 1. Days after today repeat the latest
+     * total. Same length as PreviousTimeline.
+     */
+    currentTimeline: Array<CumulativeSpend>;
+    /**
+     * Cumulative spend for each day of the previous period, starting at day 1. Both timelines are as long as the
+     * longer of the two periods; days past the end of a shorter period repeat its final total.
+     */
+    previousTimeline: Array<CumulativeSpend>;
+    /**
+     * Spend in the current period to date.
+     */
+    totalSpend: number;
+    /**
+     * Spend in the whole of the previous period.
+     */
+    previousTotalSpend: number;
+    /**
+     * TotalSpend minus PreviousTotalSpend. Negative when spending less.
+     */
+    spendChange: number;
+    /**
+     * The current period's window and the `asOf` values of the neighbouring pages.
+     */
+    page: InsightPage;
+};
+
 export type HttpValidationProblemDetails = {
     type?: null | string;
     title?: null | string;
@@ -255,6 +452,30 @@ export type HttpValidationProblemDetails = {
     errors?: {
         [key: string]: Array<string>;
     };
+};
+
+/**
+ * Describes the window an insights response covers and how to reach the pages either side of it.
+ */
+export type InsightPage = {
+    /**
+     * The first UTC day the response covers.
+     */
+    windowStart: string;
+    /**
+     * The last UTC day the response covers, inclusive.
+     */
+    windowEnd: string;
+    /**
+     * The `asOf` value to request for the previous (older) page. `null` when no matching data
+     * exists before WindowStart.
+     */
+    previousAsOf: null | string;
+    /**
+     * The `asOf` value to request for the next (newer) page, never later than today. `null` when
+     * this page already includes today.
+     */
+    nextAsOf: null | string;
 };
 
 /**
@@ -343,6 +564,48 @@ export type ListResultOfUserGoogleSpreadSheetDto = {
     pageSize?: number;
     pageCount?: number;
     totalCount?: number;
+};
+
+export type LookbackRange = 'OneMonth' | 'ThreeMonths' | 'SixMonths' | 'OneYear' | 'All';
+
+/**
+ * Income and spend for a single calendar month (UTC).
+ */
+export type MonthlyCashflow = {
+    /**
+     * The calendar year of the month.
+     */
+    year: number;
+    /**
+     * The calendar month, 1–12.
+     */
+    month: number;
+    /**
+     * Sum of credit transactions in the month.
+     */
+    income: number;
+    /**
+     * Sum of debit transactions in the month.
+     */
+    spend: number;
+    /**
+     * Income minus Spend.
+     */
+    net: number;
+};
+
+/**
+ * Net worth as of a point in time.
+ */
+export type NetworthOverTime = {
+    /**
+     * The UTC day the net worth is calculated as of.
+     */
+    date: string;
+    /**
+     * The sum of every account's last known balance at the end of Date.
+     */
+    networth: number;
 };
 
 export type ProblemDetails = {
@@ -993,6 +1256,151 @@ export type GetApiInstitutionsResponses = {
 };
 
 export type GetApiInstitutionsResponse = GetApiInstitutionsResponses[keyof GetApiInstitutionsResponses];
+
+export type GetApiInsightsAccountBalancesByAccountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        TimePeriod?: TimePeriod;
+        AsOf?: string;
+        InstitutionId?: number;
+    };
+    url: '/api/insights/account-balances/by-account';
+};
+
+export type GetApiInsightsAccountBalancesByAccountErrors = {
+    /**
+     * Bad Request
+     */
+    400: ProblemDetails;
+};
+
+export type GetApiInsightsAccountBalancesByAccountError = GetApiInsightsAccountBalancesByAccountErrors[keyof GetApiInsightsAccountBalancesByAccountErrors];
+
+export type GetApiInsightsAccountBalancesByAccountResponses = {
+    /**
+     * OK
+     */
+    200: GetAccountBalancesByAccountResponse;
+};
+
+export type GetApiInsightsAccountBalancesByAccountResponse = GetApiInsightsAccountBalancesByAccountResponses[keyof GetApiInsightsAccountBalancesByAccountResponses];
+
+export type GetApiInsightsAccountBalancesByTypeData = {
+    body?: never;
+    path?: never;
+    query?: {
+        TimePeriod?: TimePeriod;
+        AsOf?: string;
+        InstitutionId?: number;
+    };
+    url: '/api/insights/account-balances/by-type';
+};
+
+export type GetApiInsightsAccountBalancesByTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ProblemDetails;
+};
+
+export type GetApiInsightsAccountBalancesByTypeError = GetApiInsightsAccountBalancesByTypeErrors[keyof GetApiInsightsAccountBalancesByTypeErrors];
+
+export type GetApiInsightsAccountBalancesByTypeResponses = {
+    /**
+     * OK
+     */
+    200: GetAccountBalancesByTypeResponse;
+};
+
+export type GetApiInsightsAccountBalancesByTypeResponse = GetApiInsightsAccountBalancesByTypeResponses[keyof GetApiInsightsAccountBalancesByTypeResponses];
+
+export type GetApiInsightsCashflowOverTimeData = {
+    body?: never;
+    path?: never;
+    query?: {
+        Range?: LookbackRange;
+        AsOf?: string;
+        InstitutionId?: number;
+    };
+    url: '/api/insights/cashflow-over-time';
+};
+
+export type GetApiInsightsCashflowOverTimeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ProblemDetails;
+};
+
+export type GetApiInsightsCashflowOverTimeError = GetApiInsightsCashflowOverTimeErrors[keyof GetApiInsightsCashflowOverTimeErrors];
+
+export type GetApiInsightsCashflowOverTimeResponses = {
+    /**
+     * OK
+     */
+    200: GetCashflowOverTimeResponse;
+};
+
+export type GetApiInsightsCashflowOverTimeResponse = GetApiInsightsCashflowOverTimeResponses[keyof GetApiInsightsCashflowOverTimeResponses];
+
+export type GetApiInsightsNetworthData = {
+    body?: never;
+    path?: never;
+    query?: {
+        Range?: LookbackRange;
+        AsOf?: string;
+        InstitutionId?: number;
+    };
+    url: '/api/insights/networth';
+};
+
+export type GetApiInsightsNetworthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ProblemDetails;
+};
+
+export type GetApiInsightsNetworthError = GetApiInsightsNetworthErrors[keyof GetApiInsightsNetworthErrors];
+
+export type GetApiInsightsNetworthResponses = {
+    /**
+     * OK
+     */
+    200: GetNetworthResponse;
+};
+
+export type GetApiInsightsNetworthResponse = GetApiInsightsNetworthResponses[keyof GetApiInsightsNetworthResponses];
+
+export type GetApiInsightsSpendingOverTimeData = {
+    body?: never;
+    path?: never;
+    query?: {
+        TimePeriod?: TimePeriod;
+        AsOf?: string;
+        InstitutionId?: number;
+    };
+    url: '/api/insights/spending-over-time';
+};
+
+export type GetApiInsightsSpendingOverTimeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ProblemDetails;
+};
+
+export type GetApiInsightsSpendingOverTimeError = GetApiInsightsSpendingOverTimeErrors[keyof GetApiInsightsSpendingOverTimeErrors];
+
+export type GetApiInsightsSpendingOverTimeResponses = {
+    /**
+     * OK
+     */
+    200: GetSpendingOverTimeResponse;
+};
+
+export type GetApiInsightsSpendingOverTimeResponse = GetApiInsightsSpendingOverTimeResponses[keyof GetApiInsightsSpendingOverTimeResponses];
 
 export type GetApiAccountTypesData = {
     body?: never;

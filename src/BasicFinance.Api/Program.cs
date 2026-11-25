@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using BasicFinance.Api.Common.Authentication;
@@ -15,6 +16,9 @@ using Wolverine.Http;
 using Wolverine.Http.FluentValidation;
 using Wolverine.RabbitMQ;
 using ExchangeType = Wolverine.RabbitMQ.ExchangeType;
+
+// The build-time OpenAPI generator starts this app with no infrastructure available.
+var isGeneratingOpenApiDocument = Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -53,6 +57,11 @@ builder.UseWolverine(x =>
     x.UseFluentValidation();
     x.CodeGeneration.AlwaysUseServiceLocationFor<AppDbContext>();
 
+    if (isGeneratingOpenApiDocument)
+    {
+        return;
+    }
+
     x.UseRabbitMqUsingNamedConnection(ServiceDiscoveryNames.RabbitMq)
         .DeclareExchange("test-exchange", exchange =>
         {
@@ -87,7 +96,7 @@ app.UseAuthorization();
 
 app.MapGet("/users/me", async (IMessageBus messageBus, ClaimsPrincipal claimsPrincipal) =>
 {
-    var claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
+    Dictionary<string, string> claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value);
     return claims;
 })
 .RequireAuthorization();

@@ -181,3 +181,72 @@ public record AccountBalanceSummaryResponseDto(
     DateOnly CurrentPeriodEnd,
     DateOnly PreviousPeriodStart,
     DateOnly PreviousPeriodEnd);
+
+public record InsightsPageDto(
+    DateTime WindowStart,
+    DateTime WindowEnd,
+    DateTime? PreviousAsOf,
+    DateTime? NextAsOf);
+
+public record InsightsNetworthPointDto(
+    DateTime Date,
+    decimal Networth);
+
+public record InsightsNetworthResponseDto(
+    List<InsightsNetworthPointDto> NetworthTimeline,
+    decimal TotalNetworth,
+    decimal NetworthChange,
+    decimal NetworthChangePercentage,
+    InsightsPageDto Page);
+
+public record InsightsAccountBalanceDto(
+    Guid AccountId,
+    string AccountName,
+    string AccountTypeCode,
+    string AccountTypeName,
+    string InstitutionName,
+    bool IsLiability,
+    decimal Balance,
+    decimal PercentChange);
+
+public record InsightsAccountBalancesByAccountResponseDto(
+    List<InsightsAccountBalanceDto> Accounts,
+    InsightsPageDto Page);
+
+public record InsightsAccountTypeBalanceDto(
+    string AccountTypeCode,
+    decimal Balance,
+    decimal PercentChanged);
+
+public record InsightsAccountTypeBalancesResponseDto(
+    List<InsightsAccountTypeBalanceDto> AccountTypeBalances,
+    decimal TotalPositiveBalance,
+    decimal TotalNegativeBalance,
+    InsightsPageDto Page);
+
+public record InsightsMonthlyCashflowDto(
+    int Year,
+    int Month,
+    decimal Income,
+    decimal Spend,
+    decimal Net);
+
+public record InsightsCashflowOverTimeResponseDto(
+    List<InsightsMonthlyCashflowDto> CashflowTimeline,
+    decimal TotalIncome,
+    decimal TotalSpend,
+    decimal NetCashflow,
+    InsightsPageDto Page);
+
+public record InsightsCumulativeSpendDto(
+    int Day,
+    decimal Amount);
+
+public record InsightsSpendingOverTimeResponseDto(
+    DateTime PreviousPeriodStart,
+    List<InsightsCumulativeSpendDto> CurrentTimeline,
+    List<InsightsCumulativeSpendDto> PreviousTimeline,
+    decimal TotalSpend,
+    decimal PreviousTotalSpend,
+    decimal SpendChange,
+    InsightsPageDto Page);

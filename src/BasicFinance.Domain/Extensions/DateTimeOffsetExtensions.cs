@@ -8,6 +8,11 @@ public static class DateTimeOffsetExtensions
     extension(DateTimeOffset source)
     {
         /// <summary>
+        /// Gets a value containing <paramref name="source"/> adjusted to midnight at the start of its day.
+        /// </summary>
+        public DateTimeOffset StartOfDay => new(source.Year, source.Month, source.Day, 0, 0, 0, source.Offset);
+
+        /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the start of the week it lies within, at midnight (00:00:00).
         /// </summary>
         public DateTimeOffset StartOfWeek
@@ -37,7 +42,7 @@ public static class DateTimeOffsetExtensions
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the week it lies within.
         /// </summary>
-        public DateTimeOffset EndOfWeek => new(source.StartOfWeek.AddDays(6).Year, source.StartOfWeek.AddDays(6).Month, source.StartOfWeek.AddDays(6).Day, 23, 59, 59, 999, source.Offset);
+        public DateTimeOffset EndOfWeek => source.StartOfWeek.AddDays(7).AddMilliseconds(-1);
 
         /// <summary>
         /// Gets a value containing <paramref name="source"/> adjusted to the end of the month it lies within.
@@ -86,10 +91,10 @@ public static class DateTimeOffsetExtensions
         {
             return timePeriod switch
             {
-                TimePeriod.Weekly => source.StartOfWeek.AddDays(offset * 7).AddDays(7).AddMilliseconds(-1),
-                TimePeriod.Monthly => source.StartOfMonth.AddMonths(offset).AddMonths(1).AddMilliseconds(-1),
-                TimePeriod.Quarterly => source.StartOfQuarter.AddMonths(offset * 3).AddMonths(3).AddMilliseconds(-1),
-                TimePeriod.Yearly => source.StartOfYear.AddYears(offset).AddYears(1).AddMilliseconds(-1),
+                TimePeriod.Weekly => source.StartOfWeek.AddDays(offset * 7).EndOfWeek,
+                TimePeriod.Monthly => source.StartOfMonth.AddMonths(offset).EndOfMonth,
+                TimePeriod.Quarterly => source.StartOfQuarter.AddMonths(offset * 3).EndOfQuarter,
+                TimePeriod.Yearly => source.StartOfYear.AddYears(offset).EndOfYear,
                 _ => throw new ArgumentOutOfRangeException(nameof(timePeriod), timePeriod, null),
             };
         }
@@ -102,5 +107,52 @@ public static class DateTimeOffsetExtensions
         /// <param name="offset"></param>
         public DateTimeOffsetRange ToPeriodRange(TimePeriod timePeriod, int offset = 0) =>
             new(source.ToStartOfPeriod(timePeriod, offset), source.ToEndOfPeriod(timePeriod, offset));
+
+        /// <summary>
+        /// Returns the half-open <see cref="PeriodWindow"/> of the calendar period containing
+        /// <paramref name="source"/>, shifted by <paramref name="offset"/> whole periods.
+        /// </summary>
+        /// <param name="timePeriod">The calendar period to span.</param>
+        /// <param name="offset">How many periods to move forward (positive) or back (negative).</param>
+        /// <returns>A window from the start of the period up to the start of the next one.</returns>
+        public PeriodWindow ToPeriodWindow(TimePeriod timePeriod, int offset = 0) =>
+            new(source.ToStartOfPeriod(timePeriod, offset), source.ToStartOfPeriod(timePeriod, offset + 1));
+
+        /// <summary>
+        /// Returns the trailing <see cref="LookbackWindow"/> whose final day is the day containing
+        /// <paramref name="source"/>.
+        /// </summary>
+        /// <param name="range">How far the window looks back.</param>
+        /// <returns>
+        /// A window ending after the day of <paramref name="source"/>. Its start is <see langword="null"/> for
+        /// <see cref="LookbackRange.All"/>.
+        /// </returns>
+        public LookbackWindow ToLookbackWindow(LookbackRange range)
+        {
+            var endExclusive = source.StartOfDay.AddDays(1);
+            return new(endExclusive.AddLookbackRanges(range, -1), endExclusive);
+        }
+
+        /// <summary>
+        /// Moves <paramref name="source"/> by <paramref name="count"/> lengths of <paramref name="range"/>.
+        /// </summary>
+        /// <param name="range">The range whose length is the unit of movement.</param>
+        /// <param name="count">How many range lengths to move forward (positive) or back (negative).</param>
+        /// <returns>
+        /// The moved value, or <see langword="null"/> for <see cref="LookbackRange.All"/>, which has no length.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="range"/> is not defined.</exception>
+        public DateTimeOffset? AddLookbackRanges(LookbackRange range, int count)
+        {
+            return range switch
+            {
+                LookbackRange.OneMonth => source.AddMonths(count),
+                LookbackRange.ThreeMonths => source.AddMonths(count * 3),
+                LookbackRange.SixMonths => source.AddMonths(count * 6),
+                LookbackRange.OneYear => source.AddYears(count),
+                LookbackRange.All => null,
+                _ => throw new ArgumentOutOfRangeException(nameof(range), range, null),
+            };
+        }
     }
 }

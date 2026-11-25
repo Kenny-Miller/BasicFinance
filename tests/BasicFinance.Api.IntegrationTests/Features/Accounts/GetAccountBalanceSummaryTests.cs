@@ -44,8 +44,8 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         var currentChecking = result.CurrentPeriodBreakdown.AccountTypeBreakdowns["CHK"];
         Assert.Equal(1000m, currentChecking.Balance);
         Assert.Equal(25m, currentChecking.PercentageOfTotalBalance);
-        Assert.Single(currentChecking.Accounts);
-        var currentCheckingAccount = currentChecking.Accounts[0];
+        var item_2 = Assert.Single(currentChecking.Accounts);
+        var currentCheckingAccount = item_2;
         Assert.Equal(checking.AccountId, currentCheckingAccount.Id);
         Assert.Equal("CHK", currentCheckingAccount.AccountTypeCode);
         Assert.Equal("Wells Fargo", currentCheckingAccount.Institution);
@@ -56,8 +56,8 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         var currentSavings = result.CurrentPeriodBreakdown.AccountTypeBreakdowns["SAV"];
         Assert.Equal(3000m, currentSavings.Balance);
         Assert.Equal(75m, currentSavings.PercentageOfTotalBalance);
-        Assert.Single(currentSavings.Accounts);
-        var currentSavingsAccount = currentSavings.Accounts[0];
+        var item = Assert.Single(currentSavings.Accounts);
+        var currentSavingsAccount = item;
         Assert.Equal(savings.AccountId, currentSavingsAccount.Id);
         Assert.Equal(3000m, currentSavingsAccount.Balance);
         Assert.Equal(75m, currentSavingsAccount.PercentageOfTotalBalance);
@@ -222,8 +222,8 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         Assert.Equal(ActiveAccountTypeCodes.Length, result.CurrentPeriodBreakdown.AccountTypeBreakdowns.Count);
         var currentSavings = result.CurrentPeriodBreakdown.AccountTypeBreakdowns["SAV"];
         Assert.Equal(3000m, currentSavings.Balance);
-        Assert.Single(currentSavings.Accounts);
-        Assert.Equal(activeSavings.AccountId, currentSavings.Accounts[0].Id);
+        var item = Assert.Single(currentSavings.Accounts);
+        Assert.Equal(activeSavings.AccountId, item.Id);
         Assert.NotEqual(inactiveSavings.AccountId, currentSavings.Accounts[0].Id);
     }
 
@@ -245,8 +245,8 @@ public class GetAccountBalanceSummaryTests : ApiTestFixtureBase
         Assert.Equal(100m, result.CurrentPeriodBreakdown.Balance);
         Assert.Equal(ActiveAccountTypeCodes.Length, result.CurrentPeriodBreakdown.AccountTypeBreakdowns.Count);
         var currentChecking = result.CurrentPeriodBreakdown.AccountTypeBreakdowns["CHK"];
-        Assert.Single(currentChecking.Accounts);
-        Assert.Equal(ownAccount.AccountId, currentChecking.Accounts[0].Id);
+        var item = Assert.Single(currentChecking.Accounts);
+        Assert.Equal(ownAccount.AccountId, item.Id);
         Assert.Equal(100m, currentChecking.Accounts[0].Balance);
         var currentSavings = result.CurrentPeriodBreakdown.AccountTypeBreakdowns["SAV"];
         Assert.Equal(0m, currentSavings.Balance);
